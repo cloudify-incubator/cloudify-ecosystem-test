@@ -12,18 +12,20 @@ def execute_command(command):
         command.split(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
+    try:
+        while True:
+            out = process.stdout.read(1)
+            if out == '' and process.poll() is not None:
+                break
+            if out != '':
+                sys.stdout.write(out)
+                sys.stdout.flush()
+    except ValueError:
+        pass
     output, error = process.communicate()
-    while True:
-        out = process.stdout.read(1)
-        if out == '' and process.poll() is not None:
-            break
-        if out != '':
-            sys.stdout.write(out)
-            sys.stdout.flush()
-    output, error = process.communicate()
-    print "{0} output: {1}".format(command, output)
+    print "`{0}` output: {1}".format(command, output)
     if error:
-        print "{0} output: {1}".format(command, error)
+        print "`{0}` output: {1}".format(command, error)
     return process.returncode
 
 
