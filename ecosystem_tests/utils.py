@@ -4,6 +4,7 @@ from random import randint, choice
 import string
 import subprocess
 import sys
+import yaml
 import zipfile
 
 NODECELLAR = 'https://github.com/cloudify-examples/' \
@@ -134,3 +135,42 @@ def workflow_test_resources_to_copy(blueprint_dir):
          'scripts/manager/')
     ]
     return blueprint_resource_list
+
+
+def update_plugin_yaml(
+        commit_id, plugin_mapping, plugin_yaml_path='plugin.yaml'):
+    with open(plugin_yaml_path, 'r') as infile:
+        plugin_yaml = yaml.load(infile)
+    try:
+        old_filename = \
+            plugin_yaml['plugins'][plugin_mapping]['source'].split(
+                '/')[-1]
+    except (KeyError, AttributeError, IndexError):
+        raise
+    plugin_yaml['plugins'][plugin_mapping]['source'] = \
+        plugin_yaml['plugins'][plugin_mapping]['source'].replace(
+            old_filename, '{0}.zip'.format(commit_id))
+    with open(plugin_yaml_path, 'w') as outfile:
+        yaml.dump(plugin_yaml, outfile, default_flow_style=False)
+
+
+def create_wagon(constraints=None):
+    if constraints:
+        with open('constraints', 'w') as outfile:
+            outfile.write(constraints)
+        wagon_command = \
+            "wagon create -s . --validate -v -f -a " \
+            "'--no-cache-dir -c ./constraints"
+    else:
+        wagon_command = "wagon create -s . --validate -v -f"
+    execute_command(wagon_command)
+    try:
+        return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
+    except IndexError:
+        raise
+
+
+def upload_plugin(wagon_path, plugin_path='plugin.yaml'):
+    upload_command = 'cfy plugins upload {0} -y {1}'.format(
+        wagon_path, plugin_path)
+    execute_command(upload_command)
