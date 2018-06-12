@@ -238,7 +238,7 @@ def create_wagon(constraints=None):
             outfile.write(constraints)
         wagon_command = \
             "wagon create . --validate -v -f -a " \
-            "'--no-cache-dir constraints'"
+            "'--no-cache-dir -c constraints'"
     else:
         wagon_command = "wagon create -s . --validate -v -f"
     execute_command(wagon_command)
