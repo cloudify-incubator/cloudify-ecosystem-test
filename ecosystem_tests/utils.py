@@ -81,8 +81,8 @@ def execute_uninstall(deployment_id):
     return execute_command(uninstall_command)
 
 
-def run_nodecellar():
-    upload_blueprint(NODECELLAR, 'nc')
+def run_nodecellar(blueprint_file_name):
+    upload_blueprint(NODECELLAR, 'nc', blueprint_file_name)
     create_deployment('nc')
     execute_install('nc')
     execute_scale('nc')
