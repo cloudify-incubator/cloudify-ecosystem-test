@@ -7,12 +7,15 @@ import sys
 import yaml
 import zipfile
 
+from cloudify_rest_client.client import CloudifyClient
+from cloudify_rest_client.exceptions import CloudifyClientError
+
 NODECELLAR = 'https://github.com/cloudify-examples/' \
              'nodecellar-auto-scale-auto-heal-blueprint' \
              '/archive/master.zip'
 
 
-def execute_command(command):
+def execute_command(command, return_output=False):
     process = subprocess.Popen(
         command.split(),
         stdout=subprocess.PIPE,
@@ -31,7 +34,29 @@ def execute_command(command):
     print "`{0}` output: {1}".format(command, output)
     if error:
         print "`{0}` output: {1}".format(command, error)
+    if return_output:
+        return output
     return process.returncode
+
+
+def get_client_response(client,
+                        _client_name,
+                        _client_attribute,
+                        _client_args):
+
+    _generic_client = \
+        getattr(client, _client)
+
+    _special_client = \
+        getattr(_generic_client, _client_attr)
+
+    try:
+        response = _special_client(**_client_args)
+    except CloudifyClientError as ex:
+        raise NonRecoverableError(
+            'Client action {0} failed: {1}.'.format(_client_attr, str(ex)))
+    else:
+        return response
 
 
 def create_password():
@@ -89,6 +114,13 @@ def run_nodecellar(blueprint_file_name):
     execute_scale('nc')
     execute_uninstall('nc')
 
+
+def get_node_instances(deployment_id, manager_ip, username, password, tenant):
+    client = CloudifyClient(
+        host=manager_ip, username=username,
+        password=password, tenant=tenant)
+    return get_client_response(
+        client, 'node_instances', 'list', {'deployment_id': deployment_id})
 
 def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
     for instance in instances:
@@ -159,8 +191,8 @@ def create_wagon(constraints=None):
         with open('constraints', 'w') as outfile:
             outfile.write(constraints)
         wagon_command = \
-            "wagon create -s . --validate -v -f -a " \
-            "'--no-cache-dir -c ./constraints"
+            "wagon create . --validate -v -f -a " \
+            "'--no-cache-dir constraints'"
     else:
         wagon_command = "wagon create -s . --validate -v -f"
     execute_command(wagon_command)
