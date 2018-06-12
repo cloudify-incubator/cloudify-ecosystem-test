@@ -45,9 +45,12 @@ def get_client_response(_client_name,
 
     client = CloudifyClient(
         host=os.environ['manager_test_ip'],
-        username=os.environ['manager_test_username'],
-        password=os.environ['manager_test_password'],
-        tenant=os.environ['manager_test_tenant'])
+        username=os.environ.get(
+            'manager_test_username', 'admin'),
+        password=os.environ.get(
+            'manager_test_password', 'admin'),
+        tenant=os.environ.get(
+            'manager_test_tenant', 'default_tenant'))
 
     _generic_client = \
         getattr(client, _client_name)
@@ -234,13 +237,15 @@ def update_plugin_yaml(
         yaml.dump(plugin_yaml, outfile, default_flow_style=False)
 
 
+# I don't know what I was thinking.
+# This wont work unless we build it on the manager's OS.
 def create_wagon(constraints=None):
     if constraints:
-        with open('constraints', 'w') as outfile:
+        with open('constraints.txt', 'w') as outfile:
             outfile.write(constraints)
         wagon_command = \
             "wagon create . --validate -v -f -a " \
-            "'--no-cache-dir -c constraints'"
+            "'--no-cache-dir -c constraints.txt'"
     else:
         wagon_command = "wagon create -s . --validate -v -f"
     execute_command(wagon_command)
