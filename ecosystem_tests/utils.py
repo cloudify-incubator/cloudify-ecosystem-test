@@ -174,7 +174,7 @@ def get_deployment_resources_by_node_type_substring(
     return nodes_by_type
 
 
-def get_deployment_resource_names_by_node_type_substring(
+def get_deployment_resource_names(
         deployment_id, node_type_substring, name_property,
         node_type_substring_exclusions=None):
     node_type_substring_exclusions = node_type_substring_exclusions or []
