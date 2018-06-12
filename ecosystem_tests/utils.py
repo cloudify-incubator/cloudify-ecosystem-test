@@ -135,7 +135,7 @@ def install_nodecellar(blueprint_file_name, inputs=None):
         create_deployment('nc')
     else:
         create_deployment('nc', inputs=inputs)
-    execute_install('nc')
+    return execute_install('nc')
 
 
 def get_node_instances(node_id):
