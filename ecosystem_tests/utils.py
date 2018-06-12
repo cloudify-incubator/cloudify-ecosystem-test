@@ -6,6 +6,10 @@ import subprocess
 import sys
 import zipfile
 
+NODECELLAR = 'https://github.com/cloudify-examples/' \
+             'nodecellar-auto-scale-auto-heal-blueprint' \
+             '/archive/master.zip'
+
 
 def execute_command(command):
     process = subprocess.Popen(
@@ -75,6 +79,14 @@ def execute_uninstall(deployment_id):
     uninstall_command = 'cfy executions start uninstall -d {0}'.format(
         deployment_id)
     return execute_command(uninstall_command)
+
+
+def run_nodecellar():
+    upload_blueprint(NODECELLAR, 'nc')
+    create_deployment('nc')
+    execute_install('nc')
+    execute_scale('nc')
+    execute_uninstall('nc')
 
 
 def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
