@@ -176,13 +176,19 @@ def get_deployment_resources_by_node_type_substring(
 
 def get_deployment_resource_names(
         deployment_id, node_type_substring, name_property,
-        node_type_substring_exclusions=None):
+        node_type_substring_exclusions=None,
+        external_resource_key='use_external_resource',
+        resource_id_key='resource_id'):
     node_type_substring_exclusions = node_type_substring_exclusions or []
     names = []
     for node in get_deployment_resources_by_node_type_substring(
             deployment_id, node_type_substring,
             node_type_substring_exclusions):
         for instance in node['instances']:
+            name = \
+                instance['runtime_properties'].get(name_property)
+            if not name and node.properties[external_resource_key]:
+                name = node.properties[external_resource_key]
             names.append(instance['runtime_properties'][name_property])
     return names
 
