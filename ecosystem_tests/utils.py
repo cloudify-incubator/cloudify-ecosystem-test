@@ -159,10 +159,10 @@ def create_wagon(constraints=None):
         with open('constraints', 'w') as outfile:
             outfile.write(constraints)
         wagon_command = \
-            "wagon create -s . --validate -v -f -a " \
+            "wagon create . --validate -v -f -a " \
             "'--no-cache-dir -c ./constraints"
     else:
-        wagon_command = "wagon create -s . --validate -v -f"
+        wagon_command = "wagon create . --validate -v -f"
     execute_command(wagon_command)
     try:
         return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
