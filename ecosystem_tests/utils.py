@@ -39,22 +39,26 @@ def execute_command(command, return_output=False):
     return process.returncode
 
 
-def get_client_response(client,
-                        _client_name,
+def get_client_response(_client_name,
                         _client_attribute,
                         _client_args):
 
+    client = CloudifyClient(
+        host=os.environ['manager_test_ip'],
+        username=os.environ['manager_test_username'],
+        password=os.environ['manager_test_password'],
+        tenant=os.environ['manager_test_tenant'])
+
     _generic_client = \
-        getattr(client, _client)
+        getattr(client, _client_name)
 
     _special_client = \
-        getattr(_generic_client, _client_attr)
+        getattr(_generic_client, _client_attribute)
 
     try:
         response = _special_client(**_client_args)
-    except CloudifyClientError as ex:
-        raise NonRecoverableError(
-            'Client action {0} failed: {1}.'.format(_client_attr, str(ex)))
+    except CloudifyClientError:
+        raise
     else:
         return response
 
@@ -115,12 +119,54 @@ def run_nodecellar(blueprint_file_name):
     execute_uninstall('nc')
 
 
-def get_node_instances(deployment_id, manager_ip, username, password, tenant):
-    client = CloudifyClient(
-        host=manager_ip, username=username,
-        password=password, tenant=tenant)
+def get_node_instances(node_id):
     return get_client_response(
-        client, 'node_instances', 'list', {'deployment_id': deployment_id})
+        'node_instances', 'list', {'node_id': node_id})
+
+
+def get_nodes(deployment_id):
+    return get_client_response(
+        'nodes', 'list', {'deployment_id': deployment_id})
+
+
+def get_deployment_resources_by_node_type_substring(
+        deployment_id, node_type_substring,
+        node_type_substring_exclusions):
+    nodes_by_type = []
+    for node in get_nodes(deployment_id):
+        node_type = node.get('type')
+        if node_type in node_type_substring_exclusions or \
+                node_type_substring not in node_type:
+            continue
+        node_id = node.get('id')
+        current_node = {
+            'id': node_id,
+            'type': node_type,
+            'instances': []
+        }
+        for node_instance in get_node_instances(node_id):
+            current_node_instance = {
+                'id': node_instance.get('id'),
+                'runtime_properties': node_instance.get(
+                    'runtime_properties')
+            }
+            current_node['instances'].append(current_node_instance)
+        nodes_by_type.append(current_node)
+    return nodes_by_type
+
+
+def get_deployment_resource_names_by_node_type_substring(
+        deployment_id, node_type_substring, name_property,
+        node_type_substring_exclusions=None):
+    node_type_substring_exclusions = node_type_substring_exclusions or []
+    names = []
+    for node in get_deployment_resources_by_node_type_substring(
+            deployment_id, node_type_substring,
+            node_type_substring_exclusions):
+        for instance in node['instances']:
+            names.append(instance['runtime_properties'][name_property])
+    return names
+
 
 def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
     for instance in instances:
