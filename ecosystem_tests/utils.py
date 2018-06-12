@@ -91,7 +91,7 @@ def run_nodecellar(blueprint_file_name):
 
 def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
     for instance in instances:
-        if manager_vm_node_id not in instance.node_id:
+        if manager_vm_node_id in instance.node_id:
             return instance.runtime_properties['public_ip']
     raise
 
