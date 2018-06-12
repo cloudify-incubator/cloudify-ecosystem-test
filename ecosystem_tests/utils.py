@@ -92,31 +92,30 @@ def create_deployment(blueprint_id, inputs=None):
 
 
 def execute_install(deployment_id):
-    install_command = 'cfy executions start install -d {0}'.format(
-        deployment_id)
+    install_command = \
+        'cfy executions start install -vv --timeout 1800 -d {0}'.format(
+            deployment_id)
     return execute_command(install_command)
 
 
 def execute_scale(deployment_id, scalable_entity_name='nodejs_group'):
     scale_command = \
-        'cfy executions start scale -d {0} ' \
+        'cfy executions start scale -vv --timeout 1800 -d {0} ' \
         '-p scalable_entity_name={1}'.format(
             deployment_id, scalable_entity_name)
     return execute_command(scale_command)
 
 
 def execute_uninstall(deployment_id):
-    uninstall_command = 'cfy executions start uninstall -d {0}'.format(
+    uninstall_command = 'cfy executions start uninstall -vv -d {0}'.format(
         deployment_id)
     return execute_command(uninstall_command)
 
 
-def run_nodecellar(blueprint_file_name):
+def install_nodecellar(blueprint_file_name):
     upload_blueprint(NODECELLAR, 'nc', blueprint_file_name)
     create_deployment('nc')
     execute_install('nc')
-    execute_scale('nc')
-    execute_uninstall('nc')
 
 
 def get_node_instances(node_id):
