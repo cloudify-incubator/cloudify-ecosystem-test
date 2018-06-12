@@ -63,6 +63,14 @@ def execute_install(deployment_id):
     return execute_command(install_command)
 
 
+def execute_scale(deployment_id, scalable_entity_name='nodejs_group'):
+    scale_command = \
+        'cfy executions start scale -d {0} ' \
+        '-p scalable_entity_name={1}'.format(
+            deployment_id, scalable_entity_name)
+    return execute_command(scale_command)
+
+
 def execute_uninstall(deployment_id):
     uninstall_command = 'cfy executions start uninstall -d {0}'.format(
         deployment_id)
