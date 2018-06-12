@@ -7,12 +7,26 @@ import sys
 import yaml
 import zipfile
 
+from fabric import api as fabric_api
+
 from cloudify_rest_client.client import CloudifyClient
 from cloudify_rest_client.exceptions import CloudifyClientError
 
 NODECELLAR = 'https://github.com/cloudify-examples/' \
              'nodecellar-auto-scale-auto-heal-blueprint' \
              '/archive/master.zip'
+
+
+def execute_command_remotely(command, host_string, user, key_filename):
+    connection = {
+        'host_string': host_string,
+        'user': user,
+        'key_filename': key_filename
+    }
+    with fabric_api.settings(**connection):
+        result = fabric_api.run(command)
+        if result.failed:
+            raise Exception(result)
 
 
 def execute_command(command, return_output=False):
@@ -239,7 +253,7 @@ def update_plugin_yaml(
 
 # I don't know what I was thinking.
 # This wont work unless we build it on the manager's OS.
-def create_wagon(constraints=None):
+def create_wagon(ip, user, keypath, constraints=None):
     if constraints:
         with open('constraints.txt', 'w') as outfile:
             outfile.write(constraints)
@@ -248,14 +262,18 @@ def create_wagon(constraints=None):
             "'--no-cache-dir -c constraints.txt'"
     else:
         wagon_command = "wagon create -s . --validate -v -f"
-    execute_command(wagon_command)
+    execute_command_remotely(wagon_command, ip, user, keypath)
     try:
         return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
     except IndexError:
         raise
 
 
-def upload_plugin(wagon_path, plugin_path='plugin.yaml'):
+def upload_plugin(
+        wagon_path, plugin_path='plugin.yaml',
+        ip=None, user=None, keypath=None):
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
         wagon_path, plugin_path)
     execute_command(upload_command)
+    if ip and user and keypath:
+        execute_command_remotely(upload_command)
