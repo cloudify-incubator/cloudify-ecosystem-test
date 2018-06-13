@@ -40,7 +40,7 @@ def execute_command(command, return_output=False):
         counter = 0
         while True:
             counter += 1
-            if counter >= 10:
+            if counter >= 160:
                 # CircleCI times out after 10 minutes.
                 # Normally this shouldn't be a problem.
                 # But I am troubleshooting something.
