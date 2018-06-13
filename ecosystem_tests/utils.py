@@ -39,9 +39,8 @@ def execute_command(command, return_output=False):
             out = process.stdout.read(1)
             if out == '' and process.poll() is not None:
                 break
-            if out != '':
-                sys.stdout.write(out)
-                sys.stdout.flush()
+            sys.stdout.write(out)
+            sys.stdout.flush()
     except ValueError:
         pass
     output, error = process.communicate()
@@ -187,8 +186,8 @@ def get_deployment_resource_names(
         for instance in node['instances']:
             name = \
                 instance['runtime_properties'].get(name_property)
-            if not name and node.properties[external_resource_key]:
-                name = node.properties[external_resource_key]
+            if not name and node['properties'][external_resource_key]:
+                name = node['properties'][external_resource_key]
             names.append(instance['runtime_properties'][name_property])
     return names
 
