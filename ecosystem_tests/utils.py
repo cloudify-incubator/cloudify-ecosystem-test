@@ -281,12 +281,16 @@ def update_plugin_yaml(
 
 # I don't know what I was thinking.
 # This wont work unless we build it on the manager's OS.
-def create_wagon(ip, user, keypath, package_url, constraints=None):
+def create_wagon(
+        ip, user, keypath, package_url,
+        plugin_path='plugin.yaml', constraints=None):
     if constraints:
         with open('constraints.txt', 'w') as outfile:
             outfile.write(constraints)
         remote_constraints = put_file_remotely(
             os.path.abspath('constraints.txt'), ip, user, keypath)
+        remote_constraints = put_file_remotely(
+            os.path.abspath(plugin_path), ip, user, keypath)
         wagon_command = \
             "wagon create {0} --validate -v -f -a " \
             "'--no-cache-dir -c {1}'".format(
