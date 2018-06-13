@@ -188,7 +188,7 @@ def get_deployment_resource_names(
             node_type_substring_exclusions):
         for instance in node['instances']:
             print 'Getting resource property {0} in {1}'.format(
-                instance['runtime_properties'])
+                name_property, instance)
             name = \
                 instance['runtime_properties'].get(name_property)
             if not name and node['properties'][external_resource_key]:
