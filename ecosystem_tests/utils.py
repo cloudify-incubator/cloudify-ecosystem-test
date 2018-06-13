@@ -18,6 +18,7 @@ NODECELLAR = 'https://github.com/cloudify-examples/' \
 
 
 def execute_command_remotely(command, host_string, user, key_filename):
+    print "Executing command `{0}`".format(command)
     connection = {
         'host_string': host_string,
         'user': user,
@@ -30,6 +31,7 @@ def execute_command_remotely(command, host_string, user, key_filename):
 
 
 def execute_command(command, return_output=False):
+    print "Executing command `{0}`".format(command)
     process = subprocess.Popen(
         command.split(),
         stdout=subprocess.PIPE,
@@ -160,6 +162,7 @@ def get_deployment_resources_by_node_type_substring(
         current_node = {
             'id': node_id,
             'type': node_type,
+            'properties': node.get('properties')
             'instances': []
         }
         for node_instance in get_node_instances(node_id):
@@ -196,7 +199,7 @@ def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
     for instance in instances:
         if manager_vm_node_id in instance.node_id:
             return instance.runtime_properties['public_ip']
-    raise
+    raise Exception('No manager IP found.')
 
 
 def get_resource_ids_by_type(
