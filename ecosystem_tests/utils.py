@@ -30,6 +30,20 @@ def execute_command_remotely(command, host_string, user, key_filename):
             raise Exception(result)
 
 
+def put_file_remotely(filename, host_string, user, key_filename):
+    print "Putting file `{0}`".format(filename)
+    connection = {
+        'host_string': host_string,
+        'user': user,
+        'key_filename': key_filename
+    }
+    with fabric_api.settings(**connection):
+        result = fabric_api.put(filename, '/tmp')
+        if result.failed:
+            raise Exception(result)
+        return result
+
+
 def execute_command(command, return_output=False):
     print "Executing command `{0}`".format(command)
     process = subprocess.Popen(
@@ -267,15 +281,19 @@ def update_plugin_yaml(
 
 # I don't know what I was thinking.
 # This wont work unless we build it on the manager's OS.
-def create_wagon(ip, user, keypath, constraints=None):
+def create_wagon(ip, user, keypath, package_url, constraints=None):
     if constraints:
         with open('constraints.txt', 'w') as outfile:
             outfile.write(constraints)
+        remote_constraints = put_file_remotely(
+            os.path.abspath('constraints.txt'), ip, user, keypath)
         wagon_command = \
-            "wagon create . --validate -v -f -a " \
-            "'--no-cache-dir -c constraints.txt'"
+            "wagon create {0} --validate -v -f -a " \
+            "'--no-cache-dir -c {1}'".format(
+                package_url, remote_constraints)
     else:
-        wagon_command = "wagon create -s . --validate -v -f"
+        wagon_command = "wagon create -s {0} --validate -v -f".format(
+            package_url)
     execute_command_remotely(wagon_command, ip, user, keypath)
     try:
         return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
