@@ -159,6 +159,7 @@ def get_deployment_resources_by_node_type_substring(
                 node_type_substring not in node_type:
             continue
         node_id = node.get('id')
+        print 'Creating a node dictionary for {0}'.format(node_id)
         current_node = {
             'id': node_id,
             'type': node_type,
@@ -166,8 +167,11 @@ def get_deployment_resources_by_node_type_substring(
             'instances': []
         }
         for node_instance in get_node_instances(node_id):
+            node_instance_id = node_instance.get('id')
+            print 'Creating a node-instance dictionary for {0}'.format(
+                node_instance_id)
             current_node_instance = {
-                'id': node_instance.get('id'),
+                'id': node_instance_id,
                 'runtime_properties': node_instance.get(
                     'runtime_properties')
             }
@@ -186,14 +190,14 @@ def get_deployment_resource_names(
     for node in get_deployment_resources_by_node_type_substring(
             deployment_id, node_type_substring,
             node_type_substring_exclusions):
+        print 'Getting {0} resource properties in {1}'.format(
+            name_property, node)
         for instance in node['instances']:
-            print 'Getting resource property {0} in {1}'.format(
-                name_property, instance)
             name = \
                 instance['runtime_properties'].get(name_property)
             if not name and node['properties'][external_resource_key]:
                 name = node['properties'][external_resource_key]
-            names.append(instance['runtime_properties'][name_property])
+            names.append(name)
     return names
 
 
