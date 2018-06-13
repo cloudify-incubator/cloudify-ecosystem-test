@@ -25,9 +25,10 @@ def execute_command_remotely(command, host_string, user, key_filename):
         'key_filename': key_filename
     }
     with fabric_api.settings(**connection):
-        result = fabric_api.run(command)
-        if result.failed:
-            raise Exception(result)
+        with fabric_api.cd('/tmp'):
+            result = fabric_api.run(command)
+            if result.failed:
+                raise Exception(result)
 
 
 def put_file_remotely(filename, host_string, user, key_filename):
@@ -38,10 +39,11 @@ def put_file_remotely(filename, host_string, user, key_filename):
         'key_filename': key_filename
     }
     with fabric_api.settings(**connection):
-        result = fabric_api.put(filename, '/tmp')
-        if result.failed:
-            raise Exception(result)
-        return result
+        with fabric_api.cd('/tmp'):
+            result = fabric_api.put(filename, '/tmp')
+            if result.failed:
+                raise Exception(result)
+            return result
 
 
 def execute_command(command, return_output=False):
