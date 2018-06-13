@@ -294,12 +294,12 @@ def create_wagon(
         remote_constraints = put_file_remotely(
             os.path.abspath(plugin_path), ip, user, keypath)
         wagon_command = \
-            "wagon create {0} --validate -v -f -a " \
-            "'--no-cache-dir -c {1}'".format(
+            "/opt/cfy/embedded/bin/wagon create {0} --validate " \
+            "-v -f -a '--no-cache-dir -c {1}'".format(
                 package_url, remote_constraints)
     else:
-        wagon_command = "wagon create -s {0} --validate -v -f".format(
-            package_url)
+        wagon_command = "/opt/cfy/embedded/bin/wagon create -s " \
+                        "{0} --validate -v -f".format(package_url)
     execute_command_remotely(wagon_command, ip, user, keypath)
     try:
         return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
