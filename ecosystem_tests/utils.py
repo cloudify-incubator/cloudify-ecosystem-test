@@ -162,7 +162,7 @@ def get_deployment_resources_by_node_type_substring(
         current_node = {
             'id': node_id,
             'type': node_type,
-            'properties': node.get('properties')
+            'properties': node.get('properties'),
             'instances': []
         }
         for node_instance in get_node_instances(node_id):
