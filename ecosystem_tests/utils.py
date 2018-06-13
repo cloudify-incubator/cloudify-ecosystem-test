@@ -37,15 +37,7 @@ def execute_command(command, return_output=False):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     try:
-        counter = 0
         while True:
-            counter += 1
-            if counter >= 160:
-                # CircleCI times out after 10 minutes.
-                # Normally this shouldn't be a problem.
-                # But I am troubleshooting something.
-                print '.'
-                counter = 0
             out = process.stdout.read(1)
             if out == '' and process.poll() is not None:
                 break
