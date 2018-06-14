@@ -71,8 +71,6 @@ class TestLocal(testtools.TestCase):
         sys.stdout = PasswordFilter(self.sensitive_data, sys.stdout)
         sys.stderr = PasswordFilter(self.sensitive_data, sys.stderr)
         super(TestLocal, self).setUp()
-        if os.environ('ECOSYSTEM_CLOUDIFY_MANAGER_IP'):
-            return
         self.blueprinturl = 'https://github.com/cloudify-examples/' \
                             'cloudify-environment-setup/archive/latest.zip'
         self.blueprintdir = tempfile.mkdtemp()
