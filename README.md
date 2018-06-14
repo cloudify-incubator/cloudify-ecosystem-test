@@ -2,6 +2,9 @@
 
 This is a basic set of utilities (and setup class) to run live tests on plugins and blueprints.
 
+It is intended for use with Github and CircleCI. Although it should be easy to adapt it to some other build system like Jenkins.
+
+
 ## Usage
 
 In the repository that you want to test, add a test somewhere, like `./manager_tests/test_manager.py`.
@@ -56,11 +59,11 @@ Then add some tests:
 
 ```python
     def test_node_instances_after_setup(self):
+    	""" Test that all cloudify.azure.nodes.* were created in Azure"""
         for resource in utils.get_resource_ids_by_type(
                 self.node_instances,
                 'cloudify.azure.nodes',
                 self.cfy_local.storage.get_node):
             list_resources = 'az resource list --name {0}'.format(resource)
             self.assertEqual(0, utils.execute_command(list_resources))
-
 ```

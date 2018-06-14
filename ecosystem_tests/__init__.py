@@ -58,33 +58,36 @@ class TestLocal(testtools.TestCase):
             inputs=self.inputs(),
             ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
 
-    @classmethod
-    def setUpClass(cls,
-                   blueprint_file_name,
-                   blueprint_archive='cloudify-environment-setup-latest',
-                   plugins_to_upload=None,
-                   package_url=None,
-                   sensitive_data=None):
+    def setUp(self,
+              blueprint_file_name,
+              blueprint_archive='cloudify-environment-setup-latest',
+              plugins_to_upload=None,
+              package_url=None,
+              sensitive_data=None):
 
-        cls.password = create_password()
-        cls.sensitive_data = sensitive_data or []
-        cls.sensitive_data.append(cls.password)
-        sys.stdout = PasswordFilter(cls.sensitive_data, sys.stdout)
-        sys.stderr = PasswordFilter(cls.sensitive_data, sys.stderr)
-        cls.blueprinturl = 'https://github.com/cloudify-examples/' \
-                           'cloudify-environment-setup/archive/latest.zip'
-        cls.blueprintdir = tempfile.mkdtemp()
-        cls.blueprint_zip = os.path.join(cls.blueprintdir, 'blueprint.zip')
-        cls.blueprint_file_name = blueprint_file_name
-        cls.blueprint_archive = blueprint_archive
-        cls.blueprint_path = \
+        self.password = create_password()
+        self.sensitive_data = sensitive_data or []
+        self.sensitive_data.append(self.password)
+        sys.stdout = PasswordFilter(self.sensitive_data, sys.stdout)
+        sys.stderr = PasswordFilter(self.sensitive_data, sys.stderr)
+        super(TestLocal, self).setUp()
+        if os.environ('ECOSYSTEM_CLOUDIFY_MANAGER_IP'):
+            return
+        self.blueprinturl = 'https://github.com/cloudify-examples/' \
+                            'cloudify-environment-setup/archive/latest.zip'
+        self.blueprintdir = tempfile.mkdtemp()
+        self.blueprint_zip = os.path.join(self.blueprintdir, 'blueprint.zip')
+        self.blueprint_file_name = blueprint_file_name
+        self.blueprint_archive = blueprint_archive
+        self.blueprint_path = \
             os.path.join(
-                cls.blueprintdir,
-                cls.blueprint_archive,
-                cls.blueprint_file_name)
-        cls.package_url = package_url
-        cls.plugins_to_upload = \
+                self.blueprintdir,
+                self.blueprint_archive,
+                self.blueprint_file_name)
+        self.package_url = package_url
+        self.plugins_to_upload = \
             plugins_to_upload or [(DIAMOND_WAGON, DIAMOND_YAML)]
+        self.cfy_local = self.setup_cfy_local()
 
     def install_manager(self):
         self.cfy_local.execute(
