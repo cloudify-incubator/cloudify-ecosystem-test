@@ -87,7 +87,7 @@ class TestLocal(testtools.TestCase):
             plugins_to_upload or [(DIAMOND_WAGON, DIAMOND_YAML)]
         self.cfy_local = self.setup_cfy_local()
 
-    def execute_install(self):
+    def install_manager(self):
         self.cfy_local.execute(
             'install',
             task_retries=45,
@@ -95,7 +95,7 @@ class TestLocal(testtools.TestCase):
         self.node_instances = \
             self.cfy_local.storage.get_node_instances()
 
-    def execute_uninstall(self):
+    def uninstall_manager(self):
         initialize_cfy_profile()
         self.cfy_local.execute(
             'uninstall',
