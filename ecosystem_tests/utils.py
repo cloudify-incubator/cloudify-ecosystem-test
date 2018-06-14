@@ -289,10 +289,9 @@ def update_plugin_yaml(
 
 
 def get_wagon_path(workspace_path):
-    os.chdir(workspace_path)
     try:
         filename = \
-            [file for file in os.listdir('.')
+            [file for file in os.listdir(workspace_path)
              if file.endswith('.wgn')][0]
     except IndexError:
         raise
