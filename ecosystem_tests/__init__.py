@@ -1,6 +1,6 @@
-# import testtools
+import testtools
 import re
-# import .utils
+from utils import initialize_cfy_profile
 
 IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
 
@@ -29,26 +29,8 @@ class PasswordFilter(object):
         self.stream.flush()
 
 
-# class TestLocal(testtools.TestCase):
+class TestLocal(testtools.TestCase):
 
-#     def create_inputs():
-#         raise NotImplementedError(
-#             'Class create_inputs implemented by subclass.')
-
-#     def _test_manager(self, _cfy_local, post_install=None):
-
-#         try:
-#             cfy_local.execute(
-#                 'install',
-#                 task_retries=45,
-#                 task_retry_interval=10)
-#             if post_install:
-#                 post_install()
-#         finally:
-#             utils.initialize_cfy_profile()
-#             _cfy_local.execute(
-#                 'uninstall',
-#                 parameters={'ignore_failure': True},
-#                 allow_custom_parameters=True,
-#                 task_retries=100,
-#                 task_retry_interval=15)
+    def create_inputs():
+        raise NotImplementedError(
+            'Class create_inputs implemented by subclass.')
