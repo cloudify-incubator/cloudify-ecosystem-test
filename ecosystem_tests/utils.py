@@ -43,7 +43,9 @@ def put_file_remotely(filename, host_string, user, key_filename):
             result = fabric_api.put(filename, '/tmp')
             if result.failed:
                 raise Exception(result)
-            return result
+            elif len(result) != 1:
+                raise Exception('Something wrong with {0}.'.format(result))
+            return result[0]
 
 
 def execute_command(command, return_output=False):
