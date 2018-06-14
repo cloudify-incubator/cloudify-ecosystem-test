@@ -9,5 +9,5 @@ setup(
         'ecosystem_tests',
     ],
     description='Stuff that Ecosystem Tests Use',
-    install_requires=[]
+    install_requires=['testtools']
 )
