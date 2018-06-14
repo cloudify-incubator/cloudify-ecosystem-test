@@ -285,14 +285,12 @@ def update_plugin_yaml(
 # This wont work unless we build it on the manager's OS.
 def create_wagon(
         ip, user, keypath, package_url,
-        plugin_path='plugin.yaml', constraints=None):
+        constraints=None):
     if constraints:
         with open('constraints.txt', 'w') as outfile:
             outfile.write(constraints)
         remote_constraints = put_file_remotely(
             os.path.abspath('constraints.txt'), ip, user, keypath)
-        remote_constraints = put_file_remotely(
-            os.path.abspath(plugin_path), ip, user, keypath)
         wagon_command = \
             "/opt/cfy/embedded/bin/wagon create {0} --validate " \
             "-v -f -a '--no-cache-dir -c {1}'".format(
@@ -311,8 +309,10 @@ def create_wagon(
 def upload_plugin(
         wagon_path, plugin_path='plugin.yaml',
         ip=None, user=None, keypath=None):
+    remote_plugin_yaml = put_file_remotely(
+        os.path.abspath(plugin_path), ip, user, keypath)
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
-        wagon_path, plugin_path)
+        wagon_path, remote_plugin_yaml)
     execute_command(upload_command)
     if ip and user and keypath:
         execute_command_remotely(upload_command)
