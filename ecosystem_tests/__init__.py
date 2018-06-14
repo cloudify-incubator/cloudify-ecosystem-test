@@ -5,7 +5,7 @@ import re
 import sys
 from utils import initialize_cfy_profile, \
     create_password, create_blueprint
-from cloudify.workflows.local import init_env
+from cloudify.workflows.local import init_env, load_env, FileStorage
 from cloudify.test_utils.local_workflow_decorator \
     import IGNORED_LOCAL_WORKFLOW_MODULES
 
@@ -53,10 +53,18 @@ class TestLocal(testtools.TestCase):
         blueprint_path = create_blueprint(
             self.blueprinturl, self.blueprint_zip,
             self.blueprintdir, self.blueprint_path)
-        return init_env(
-            blueprint_path,
-            inputs=self.inputs(),
-            ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
+        cfy_storage = FileStorage()
+        cfy_storage.__init__(self.blueprintdir)
+        if os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
+            return load_env(cfy_storage)
+        else:
+            cfy_local = init_env(
+                blueprint_path,
+                inputs=self.inputs(),
+                storage=cfy_storage,
+                ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
+            os.environ['ECOSYSTEM_SESSION_LOADED'] = 'true'
+            return cfy_local
 
     def setUp(self,
               blueprint_file_name,
@@ -65,7 +73,9 @@ class TestLocal(testtools.TestCase):
               package_url=None,
               sensitive_data=None):
 
-        self.password = create_password()
+        if 'ECOSYSTEM_SESSION_PASSWORD' not in os.environ:
+            os.environ['ECOSYSTEM_SESSION_PASSWORD'] = create_password()
+        self.password = os.environ['ECOSYSTEM_SESSION_PASSWORD']
         self.sensitive_data = sensitive_data or []
         self.sensitive_data.append(self.password)
         sys.stdout = PasswordFilter(self.sensitive_data, sys.stdout)
@@ -73,7 +83,9 @@ class TestLocal(testtools.TestCase):
         super(TestLocal, self).setUp()
         self.blueprinturl = 'https://github.com/cloudify-examples/' \
                             'cloudify-environment-setup/archive/latest.zip'
-        self.blueprintdir = tempfile.mkdtemp()
+        if 'ECOSYSTEM_SESSION_BLUEPRINT_DIR' not in os.environ:
+            os.environ['ECOSYSTEM_SESSION_BLUEPRINT_DIR'] = tempfile.mkdtemp()
+        self.blueprintdir = os.environ['ECOSYSTEM_SESSION_BLUEPRINT_DIR']
         self.blueprint_zip = os.path.join(self.blueprintdir, 'blueprint.zip')
         self.blueprint_file_name = blueprint_file_name
         self.blueprint_archive = blueprint_archive

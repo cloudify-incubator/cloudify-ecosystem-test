@@ -82,13 +82,13 @@ def get_client_response(_client_name,
                         _client_args):
 
     client = CloudifyClient(
-        host=os.environ['manager_test_ip'],
+        host=os.environ['ECOSYSTEM_SESSION_MANAGER_IP'],
         username=os.environ.get(
-            'manager_test_username', 'admin'),
+            'ECOSYSTEM_SESSION_MANAGER_USER', 'admin'),
         password=os.environ.get(
-            'manager_test_password', 'admin'),
+            'ECOSYSTEM_SESSION_PASSWORD', 'admin'),
         tenant=os.environ.get(
-            'manager_test_tenant', 'default_tenant'))
+            'ECOSYSTEM_SESSION_MANAGER_TENANT', 'default_tenant'))
 
     _generic_client = \
         getattr(client, _client_name)
