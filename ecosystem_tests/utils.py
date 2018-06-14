@@ -17,7 +17,9 @@ NODECELLAR = 'https://github.com/cloudify-examples/' \
              '/archive/master.zip'
 
 
-def execute_command_remotely(command, host_string, user, key_filename):
+def execute_command_remotely(command,
+                             host_string, user, key_filename,
+                             use_sudo=False):
     print "Executing command `{0}`".format(command)
     connection = {
         'host_string': host_string,
@@ -26,7 +28,10 @@ def execute_command_remotely(command, host_string, user, key_filename):
     }
     with fabric_api.settings(**connection):
         with fabric_api.cd('/tmp'):
-            result = fabric_api.run(command)
+            if use_sudo:
+                result = fabric_api.sudo(command)
+            else:
+                result = fabric_api.run(command)
             if result.failed:
                 raise Exception(result)
 
@@ -283,38 +288,18 @@ def update_plugin_yaml(
         yaml.dump(plugin_yaml, outfile, default_flow_style=False)
 
 
-# I don't know what I was thinking.
-# This wont work unless we build it on the manager's OS.
-def create_wagon(
-        ip, user, keypath, package_url,
-        constraints=None):
-    if constraints:
-        with open('constraints.txt', 'w') as outfile:
-            outfile.write(constraints)
-        remote_constraints = put_file_remotely(
-            os.path.abspath('constraints.txt'), ip, user, keypath)
-        wagon_command = \
-            "/opt/cfy/embedded/bin/wagon create {0} --validate " \
-            "-v -f -a '--no-cache-dir -c {1}'".format(
-                package_url, remote_constraints)
-    else:
-        wagon_command = "source /optn/cfy/embedded/bin/activate " \
-                        "&& /opt/cfy/embedded/bin/wagon create -s " \
-                        "{0} --validate -v -f".format(package_url)
-    execute_command_remotely(wagon_command, ip, user, keypath)
+def get_wagon_path(workspace_path):
+    os.chdir(workspace_path)
     try:
-        return [file for file in os.listdir('.') if file.endswith('.wgn')][0]
+        filename = \
+            [file for file in os.listdir('.')
+             if file.endswith('.wgn')][0]
     except IndexError:
         raise
+    return os.path.join(workspace_path, filename)
 
 
-def upload_plugin(
-        wagon_path, plugin_path='plugin.yaml',
-        ip=None, user=None, keypath=None):
-    remote_plugin_yaml = put_file_remotely(
-        os.path.abspath(plugin_path), ip, user, keypath)
+def upload_plugin(wagon_path, plugin_yaml='plugin.yaml'):
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
-        wagon_path, remote_plugin_yaml)
+        wagon_path, plugin_yaml)
     execute_command(upload_command)
-    if ip and user and keypath:
-        execute_command_remotely(upload_command)
