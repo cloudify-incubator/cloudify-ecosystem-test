@@ -85,7 +85,6 @@ class TestLocal(testtools.TestCase):
         cls.package_url = package_url
         cls.plugins_to_upload = \
             plugins_to_upload or [(DIAMOND_WAGON, DIAMOND_YAML)]
-        cls.cfy_local = cls.setup_cfy_local()
 
     def install_manager(self):
         self.cfy_local.execute(
