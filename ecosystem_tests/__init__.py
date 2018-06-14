@@ -65,6 +65,7 @@ class TestLocal(testtools.TestCase):
               package_url=None,
               sensitive_data=None):
 
+        super(TestLocal, self).setUpClass()
         self.password = create_password()
         self.sensitive_data = sensitive_data or []
         self.sensitive_data.append(self.password)
