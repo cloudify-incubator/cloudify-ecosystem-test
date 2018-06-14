@@ -298,7 +298,8 @@ def create_wagon(
             "-v -f -a '--no-cache-dir -c {1}'".format(
                 package_url, remote_constraints)
     else:
-        wagon_command = "/opt/cfy/embedded/bin/wagon create -s " \
+        wagon_command = "source /optn/cfy/embedded/bin/activate " \
+                        "&& /opt/cfy/embedded/bin/wagon create -s " \
                         "{0} --validate -v -f".format(package_url)
     execute_command_remotely(wagon_command, ip, user, keypath)
     try:
