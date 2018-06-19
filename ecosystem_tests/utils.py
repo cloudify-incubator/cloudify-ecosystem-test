@@ -93,8 +93,17 @@ def get_client_response(_client_name,
     _generic_client = \
         getattr(client, _client_name)
 
-    _special_client = \
-        getattr(_generic_client, _client_attribute)
+    try:
+        _client_attribute_left, _client_attribute_right = \
+            _client_attribute.split('.')
+    except ValueError:
+        _special_client = \
+            getattr(_generic_client, _client_attribute)
+    else:
+        _special_client = \
+            getattr(_generic_client, _client_attribute_left)
+        _special_client = \
+            getattr(_special_client, _client_attribute_right)
 
     try:
         response = _special_client(**_client_args)
@@ -170,6 +179,11 @@ def get_node_instances(node_id):
 def get_nodes(deployment_id):
     return get_client_response(
         'nodes', 'list', {'deployment_id': deployment_id})
+
+
+def get_deployment_outputs(deployment_id):
+    return get_client_response(
+        'deployments', 'outputs.get', {'deployment_id': deployment_id})
 
 
 def get_deployment_resources_by_node_type_substring(
