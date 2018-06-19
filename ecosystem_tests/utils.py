@@ -186,7 +186,7 @@ def get_deployment_outputs(deployment_id):
         'deployments', 'outputs.get', {'deployment_id': deployment_id})
 
 
-def get_secrets(secret_name)
+def get_secrets(secret_name):
     return get_client_response(
         'secrets', 'get', {'key': secret_name})
 
