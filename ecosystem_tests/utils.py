@@ -193,8 +193,10 @@ def get_secrets(secret_name):
 
 def get_deployment_resources_by_node_type_substring(
         deployment_id, node_type_substring,
-        node_type_substring_exclusions):
+        node_type_substring_exclusions=None):
     nodes_by_type = []
+    node_type_substring_exclusions = \
+        node_type_substring_exclusions or []
     for node in get_nodes(deployment_id):
         node_type = node.get('type')
         if node_type in node_type_substring_exclusions or \
