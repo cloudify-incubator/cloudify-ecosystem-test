@@ -71,7 +71,7 @@ def execute_command(command, return_output=False):
     output, error = process.communicate()
     print "`{0}` output: {1}".format(command, output)
     if error:
-        print "`{0}` output: {1}".format(command, error)
+        print "`{0}` error: {1}".format(command, error)
     if return_output:
         return output
     return process.returncode
@@ -184,6 +184,11 @@ def get_nodes(deployment_id):
 def get_deployment_outputs(deployment_id):
     return get_client_response(
         'deployments', 'outputs.get', {'deployment_id': deployment_id})
+
+
+def get_secrets(secret_name)
+    return get_client_response(
+        'secrets', 'get', {'key': secret_name})
 
 
 def get_deployment_resources_by_node_type_substring(
