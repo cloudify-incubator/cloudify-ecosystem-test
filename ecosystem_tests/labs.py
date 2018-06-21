@@ -129,7 +129,7 @@ def wait_for_manager_ready(ip_address, max_wait_seconds=700):
         sleep(5)
         try:
             get_response = requests.get(
-                'http://{0}/'.format(ip_address), timeout=0.1)
+                'http://{0}/'.format(ip_address), timeout=1.0)
         except (requests.exceptions.Timeout,
                 requests.exceptions.ConnectionError):
             continue
