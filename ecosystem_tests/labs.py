@@ -161,7 +161,8 @@ def create_lab():
         os.environ.get(
             'TEST_BLUEPRINT',
             'Testing_CFY432_Vanilla_v15_LabCertified')
-    lab_server = os.environ.get('LAB_SERVER', 'http://localhost:8000')
+    lab_server = 'http://'.format(
+        os.environ.get('LAB_SERVER', 'localhost:8000'))
 
     lab_access_token = create_lab_as_sales(
         application_prefix,
