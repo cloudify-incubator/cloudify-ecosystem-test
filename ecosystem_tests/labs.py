@@ -130,7 +130,8 @@ def wait_for_manager_ready(ip_address, max_wait_seconds=300):
         try:
             get_response = requests.get(
                 'http://{0}/'.format(ip_address), timeout=0.1)
-        except requests.exceptions.Timeout:
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError):
             continue
 
         if get_response.status_code == 200:
