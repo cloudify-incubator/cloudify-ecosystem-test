@@ -121,7 +121,7 @@ def run_workflow(endpoint, access_token, operations=['deploy']):
         return parsed_url.netloc
 
 
-def wait_for_manager_ready(ip_address, max_wait_seconds=300):
+def wait_for_manager_ready(ip_address, max_wait_seconds=700):
     start_time = datetime.now()
     finish_time = start_time + timedelta(seconds=max_wait_seconds)
     while True:
