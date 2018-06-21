@@ -47,7 +47,7 @@ def create_lab_as_sales(description,
             get_response = requests.get(
                 post_response.json()['lab_url'],
                 headers={'Content-type': 'application/json'},
-                allow_redirects=True)
+                verify=False)
         except (ValueError, KeyError):
             raise
         if get_response.status_code in [200, 201]:
