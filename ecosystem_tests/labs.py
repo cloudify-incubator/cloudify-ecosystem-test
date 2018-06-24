@@ -92,35 +92,35 @@ def run_workflow(endpoint, access_token, operations=['deploy']):
 
     for operation in operations:
         run_operation(endpoint, access_token, operation)
+        if operation == 'undeploy':
+            while True:
+                print 'Checking if status is completed successfully.'
+                sleep(5)
+                status = get_status(endpoint, access_token)
+                if status["status"] == "completed successfully":
+                    break
+            return
 
-    if 'delete' in operations:
-        while True:
-            print 'Checking if status is deleted.'
-            sleep(5)
-            status = get_status(endpoint, access_token)
-            if status["status"] == "deleted":
-                break
-        return
+        if operation == 'deploy':
+            while True:
+                print 'Checking if lab has started.'
+                sleep(5)
+                status = get_status(endpoint, access_token)
+                if status["status"] == "started":
+                    try:
+                        lab_ui_outputs = \
+                            status['outputs']['lab_ui_outputs'][0]['items']
+                        for lab_ui_output in lab_ui_outputs:
+                            if lab_ui_output['name'] == \
+                                    'Cloudify Manager Link':
+                                manager_url = lab_ui_output['value']
+                        parsed_url = urlparse(manager_url)
+                        if parsed_url.netloc != 'None':
+                            break
+                    except (NameError, KeyError):
+                        raise
 
-    if 'deploy' in operations:
-        while True:
-            print 'Checking if lab has started.'
-            sleep(5)
-            status = get_status(endpoint, access_token)
-            if status["status"] == "started":
-                try:
-                    lab_ui_outputs = \
-                        status['outputs']['lab_ui_outputs'][0]['items']
-                    for lab_ui_output in lab_ui_outputs:
-                        if lab_ui_output['name'] == 'Cloudify Manager Link':
-                            manager_url = lab_ui_output['value']
-                    parsed_url = urlparse(manager_url)
-                    if parsed_url.netloc != 'None':
-                        break
-                except (NameError, KeyError):
-                    raise
-
-        return parsed_url.netloc
+            return parsed_url.netloc
 
 
 def wait_for_manager_ready(ip_address, max_wait_seconds=700):
@@ -192,10 +192,4 @@ def delete_lab():
     lab_access_token = os.environ.get('LAB_ACCESS_TOKEN')
     if not lab_access_token:
         raise Exception('Failed to call delete.')
-    while True:
-        print 'Checking if status is ready to delete.'
-        sleep(5)
-        status = get_status(lab_server, lab_access_token)
-        if status["status"] in ["started", "completed successfully"]:
-            break
     run_workflow(lab_server, lab_access_token, ['undeploy', 'delete'])
