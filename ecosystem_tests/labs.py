@@ -77,6 +77,7 @@ def get_status(endpoint, access_token):
 
     response = requests.get(endpoint +
                             '/api-rest/lab_states/{}/'.format(access_token))
+    print 'Status: {0}'.format(response.status_code)
     if response.status_code != 200:
         print response.text
         print 'Error'
