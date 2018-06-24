@@ -192,4 +192,10 @@ def delete_lab():
     lab_access_token = os.environ.get('LAB_ACCESS_TOKEN')
     if not lab_access_token:
         raise Exception('Failed to call delete.')
+    while True:
+        print 'Checking if status is ready to delete.'
+        sleep(5)
+        status = get_status(lab_server, lab_access_token)
+        if status["status"] in ["started", "completed successfully"]:
+            break
     run_workflow(lab_server, lab_access_token, ['undeploy', 'delete'])
