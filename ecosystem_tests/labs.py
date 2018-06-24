@@ -185,7 +185,8 @@ def create_lab():
 
 
 def delete_lab():
-    lab_server = os.environ.get('LAB_SERVER', 'http://localhost:8000')
+    lab_server = 'http://{0}'.format(
+        os.environ.get('LAB_SERVER', 'localhost:8000'))
     lab_access_token = os.environ.get('LAB_ACCESS_TOKEN')
     if not lab_access_token:
         raise Exception('Failed to call delete.')
