@@ -77,12 +77,13 @@ def get_status(endpoint, access_token):
 
     response = requests.get(endpoint +
                             '/api-rest/lab_states/{}/'.format(access_token))
-    print 'Status: {0}'.format(response.status_code)
+    response_text = json.loads(response.text)
+    print 'Status: {0}'.format(response_text['status'])
     if response.status_code != 200:
         print response.text
         print 'Error'
         quit()
-    return json.loads(response.text)
+    return response_text
 
 
 def run_workflow(endpoint, access_token, operations=['deploy']):
