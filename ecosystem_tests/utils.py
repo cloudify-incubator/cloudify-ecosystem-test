@@ -53,7 +53,7 @@ def put_file_remotely(filename, host_string, user, key_filename):
             return result[0]
 
 
-def execute_command(command, return_output=False, use_sudo=True):
+def execute_command(command, return_output=False, use_sudo=False):
     print "Executing command `{0}`".format(command)
     process = subprocess.Popen(
         command.split(),
