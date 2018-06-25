@@ -53,12 +53,13 @@ def put_file_remotely(filename, host_string, user, key_filename):
             return result[0]
 
 
-def execute_command(command, return_output=False):
+def execute_command(command, return_output=False, use_sudo=True):
     print "Executing command `{0}`".format(command)
     process = subprocess.Popen(
         command.split(),
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+        shell=use_sudo)
     try:
         while True:
             out = process.stdout.read(1)
