@@ -4,6 +4,7 @@ import os
 import requests
 from time import sleep
 from urlparse import urlparse
+from utils import download_file, execute_command
 
 
 def create_lab_as_sales(description,
@@ -192,6 +193,10 @@ def create_lab():
 
     manager_ip = run_workflow(lab_server, lab_access_token)
     wait_for_manager_ready(manager_ip)
+    download_file(
+        'http://{0}/vpn/client.ovpn'.format(manager_ip),
+        os.path.join(os.curdir, 'client.ovpn'))
+    execute_command('sudo openvpn client.ovpn')
     return manager_ip
 
 

@@ -270,11 +270,15 @@ def get_resource_ids_by_type(
     return resources
 
 
+def download_file(url_path, file_path):
+    print "downloading with requests"
+    response = requests.get(url_path)
+    with open(file_path, "wb") as outfile:
+        outfile.write(response.content)
+
 def create_blueprint(
         blueprint_url, blueprint_zip, blueprint_dir, blueprint_path):
-    r = requests.get(blueprint_url)
-    with open(blueprint_zip, 'wb') as outfile:
-        outfile.write(r.content)
+    download_file(blueprint_url, blueprint_zip)
     zip_ref = zipfile.ZipFile(blueprint_zip, 'r')
     zip_ref.extractall(blueprint_dir)
     zip_ref.close()
