@@ -276,6 +276,7 @@ def download_file(url_path, file_path):
     with open(file_path, "wb") as outfile:
         outfile.write(response.content)
 
+
 def create_blueprint(
         blueprint_url, blueprint_zip, blueprint_dir, blueprint_path):
     download_file(blueprint_url, blueprint_zip)
