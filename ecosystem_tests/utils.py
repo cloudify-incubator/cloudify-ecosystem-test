@@ -209,7 +209,7 @@ def get_deployment_resources_by_node_type_substring(
         print 'Creating a node dictionary for {0}'.format(node_id)
         current_node = {
             'id': node_id,
-            'type': node_type,
+            'node_type': node_type,
             'properties': node.get('properties'),
             'instances': []
         }
