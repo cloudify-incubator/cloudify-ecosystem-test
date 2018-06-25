@@ -101,7 +101,16 @@ def run_workflow(endpoint, access_token, operations=['deploy']):
                     break
             return
 
-        if operation == 'deploy':
+        elif operation == 'delete':
+            while True:
+                print 'Checking if status is deleted.'
+                sleep(5)
+                status = get_status(endpoint, access_token)
+                if status["status"] == "deleted":
+                    break
+            return
+
+        elif operation == 'deploy':
             while True:
                 print 'Checking if lab has started.'
                 sleep(5)
