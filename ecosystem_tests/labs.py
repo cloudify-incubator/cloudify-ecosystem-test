@@ -3,7 +3,6 @@ import json
 import os
 import requests
 from time import sleep
-import tempfile
 from urlparse import urlparse
 from utils import download_file, execute_command
 
@@ -194,10 +193,10 @@ def create_lab():
 
     manager_ip = run_workflow(lab_server, lab_access_token)
     wait_for_manager_ready(manager_ip)
-    openvpn_file = os.path.join(tempfile.gettempdir(), 'client.ovpn')
+    openvpn_file = os.path.join(os.getcwd(), 'client.ovpn')
     download_file(
         'http://{0}/vpn/client.ovpn'.format(manager_ip),
-        openvpn_file)
+        openvpn_file, filemode='w')
     execute_command('sudo openvpn {0}'.format(openvpn_file))
     return manager_ip
 

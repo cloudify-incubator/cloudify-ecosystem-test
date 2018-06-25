@@ -270,10 +270,10 @@ def get_resource_ids_by_type(
     return resources
 
 
-def download_file(url_path, file_path):
+def download_file(url_path, file_path, filemode='wb'):
     print "downloading with requests"
     response = requests.get(url_path)
-    with open(file_path, "wb") as outfile:
+    with open(file_path, filemode) as outfile:
         outfile.write(response.content)
 
 
