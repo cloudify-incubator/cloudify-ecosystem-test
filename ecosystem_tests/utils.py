@@ -171,9 +171,12 @@ def install_nodecellar(blueprint_file_name, inputs=None):
     return execute_install('nc')
 
 
-def get_node_instances(node_id):
+def get_node_instances(node_id, deployment_id):
+    params = {'node_id': node_id}
+    if deployment_id:
+        params['deployment_id'] = deployment_id
     return get_client_response(
-        'node_instances', 'list', {'node_id': node_id})
+        'node_instances', 'list', params)
 
 
 def get_nodes(deployment_id):
@@ -210,7 +213,8 @@ def get_deployment_resources_by_node_type_substring(
             'properties': node.get('properties'),
             'instances': []
         }
-        for node_instance in get_node_instances(node_id):
+        for node_instance in get_node_instances(
+                node_id, deployment_id=deployment_id):
             node_instance_id = node_instance.get('id')
             print 'Creating a node-instance dictionary for {0}'.format(
                 node_instance_id)
