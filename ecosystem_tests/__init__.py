@@ -100,6 +100,7 @@ class TestLocal(testtools.TestCase):
         self.cfy_local = self.setup_cfy_local()
 
     def install_manager(self):
+        self.addCleanup(self.uninstall_manager)
         self.cfy_local.execute(
             'install',
             task_retries=45,
