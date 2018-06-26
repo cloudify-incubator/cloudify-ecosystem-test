@@ -335,3 +335,27 @@ def upload_plugin(wagon_path, plugin_yaml='plugin.yaml'):
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
         wagon_path, plugin_yaml)
     execute_command(upload_command)
+
+
+def check_deployment(blueprint_path,
+                     blueprint_id,
+                     node_type_substring,
+                     nodes_to_check,
+                     check_nodes_installed,
+                     check_nodes_uninstalled):
+
+    install_command = 'cfy install {0} -d {1}'.format(
+        blueprint_path, blueprint_id)
+    failed = execute_command(install_command)
+    if failed:
+        raise Exception(
+            'Install {0} failed.'.format(blueprint_id))
+    deployment_nodes = \
+        get_deployment_resources_by_node_type_substring(
+            blueprint_id, node_type_substring)
+    check_nodes_installed(deployment_nodes, nodes_to_check)
+    failed = execute_uninstall(blueprint_id)
+    if failed:
+        raise Exception(
+            'Uninstall {0} failed.'.format(blueprint_id))
+    check_nodes_uninstalled(deployment_nodes, nodes_to_check)
