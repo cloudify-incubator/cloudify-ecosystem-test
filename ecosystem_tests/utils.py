@@ -4,6 +4,7 @@ from random import randint, choice
 import string
 import subprocess
 import sys
+import time
 import yaml
 import zipfile
 
@@ -123,7 +124,13 @@ def create_password():
 
 def initialize_cfy_profile(profile='local'):
     profile_command = 'cfy profiles use {0}'.format(profile)
-    return execute_command(profile_command)
+    count = 0
+    while True:
+        failed = execute_command(profile_command)
+        if not failed or count >= 10:
+            return failed
+        count += 1
+        time.sleep(5)
 
 
 def upload_blueprint(
