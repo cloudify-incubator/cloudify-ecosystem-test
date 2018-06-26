@@ -197,7 +197,7 @@ def create_lab():
     download_file(
         'http://{0}/vpn/client.ovpn'.format(manager_ip),
         openvpn_file, filemode='w')
-    execute_command('openvpn --config {0}'.format(openvpn_file))
+    execute_command('openvpn --mktun --config {0}'.format(openvpn_file))
     return manager_ip
 
 
