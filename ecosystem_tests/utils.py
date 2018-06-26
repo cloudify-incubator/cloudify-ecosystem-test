@@ -250,10 +250,12 @@ def get_deployment_resource_names(
     return names
 
 
-def get_manager_ip(instances, manager_vm_node_id='cloudify_host'):
+def get_manager_ip(instances,
+                   manager_vm_node_id='cloudify_host',
+                   manager_ip_prop_key='public_ip'):
     for instance in instances:
         if manager_vm_node_id in instance.node_id:
-            return instance.runtime_properties['public_ip']
+            return instance.runtime_properties[manager_ip_prop_key]
     raise Exception('No manager IP found.')
 
 
