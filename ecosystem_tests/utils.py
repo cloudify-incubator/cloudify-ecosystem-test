@@ -4,6 +4,7 @@ from random import randint, choice
 import string
 import subprocess
 import sys
+import tempfile
 import time
 import yaml
 import zipfile
@@ -287,12 +288,16 @@ def download_file(url_path, file_path, filemode='wb'):
         outfile.write(response.content)
 
 
+def unzip_file(zip_path, out_dir):
+    zip_ref = zipfile.ZipFile(zip_path, 'r')
+    zip_ref.extractall(out_dir)
+    zip_ref.close()
+
+
 def create_blueprint(
         blueprint_url, blueprint_zip, blueprint_dir, blueprint_path):
     download_file(blueprint_url, blueprint_zip)
-    zip_ref = zipfile.ZipFile(blueprint_zip, 'r')
-    zip_ref.extractall(blueprint_dir)
-    zip_ref.close()
+    unzip_file(blueprint_zip, blueprint_dir)
     return blueprint_path
 
 
@@ -311,10 +316,19 @@ def workflow_test_resources_to_copy(blueprint_dir):
     return blueprint_resource_list
 
 
+def read_blueprint_yaml(yaml_path):
+    with open(yaml_path, 'r') as infile:
+        return yaml.load(infile)
+
+
+def write_blueprint_yaml(new_yaml, yaml_path):
+    with open(yaml_path, 'w') as outfile:
+        yaml.dump(new_yaml, outfile, default_flow_style=False)
+
+
 def update_plugin_yaml(
         commit_id, plugin_mapping, plugin_yaml_path='plugin.yaml'):
-    with open(plugin_yaml_path, 'r') as infile:
-        plugin_yaml = yaml.load(infile)
+    plugin_yaml = read_blueprint_yaml(plugin_yaml_path)
     try:
         old_filename = \
             plugin_yaml['plugins'][plugin_mapping]['source'].split(
@@ -324,8 +338,7 @@ def update_plugin_yaml(
     plugin_yaml['plugins'][plugin_mapping]['source'] = \
         plugin_yaml['plugins'][plugin_mapping]['source'].replace(
             old_filename, '{0}.zip'.format(commit_id))
-    with open(plugin_yaml_path, 'w') as outfile:
-        yaml.dump(plugin_yaml, outfile, default_flow_style=False)
+    write_blueprint_yaml(plugin_yaml, plugin_yaml_path)
 
 
 def get_wagon_path(workspace_path):
@@ -366,3 +379,44 @@ def check_deployment(blueprint_path,
         raise Exception(
             'Uninstall {0} failed.'.format(blueprint_id))
     check_nodes_uninstalled(deployment_nodes, nodes_to_check)
+
+
+def get_node_templates(blueprint_yaml):
+    return blueprint_yaml['node_templates']
+
+
+def download_blueprint(blueprint_id):
+    blueprint_dir = tempfile.gettempdir()
+    blueprint_zip = get_client_response(
+        'blueprints', 'download',
+        {'blueprint_id': blueprint_id, 'output_file': blueprint_dir})
+    unzip_file(blueprint_zip, blueprint_dir)
+    return blueprint_dir
+
+
+def create_external_resource_blueprint(
+        blueprint_path,
+        nodes_to_use,
+        deployment_nodes,
+        external_resource_key='use_external_resource',
+        resource_id_prop='resource_id',
+        resource_id_attr='external_id'):
+
+    blueprint_yaml = read_blueprint_yaml(blueprint_path)
+    new_node_templates = {}
+    for node in deployment_nodes:
+        if node['id'] not in nodes_to_use:
+            continue
+        node_definition = blueprint_yaml['node_templates'][node['id']]
+        node_definition['properties'][external_resource_key] = True
+        node_definition['properties'][resource_id_prop] = \
+            node['instances'][0]['runtime_properties'][resource_id_attr]
+        new_node_templates[node['id']] = {
+            'type': node_definition['type'],
+            'properties': node_definition['properties']
+        }
+    blueprint_yaml['node_templates'] = new_node_templates
+    new_blueprint_path = '{0}-external.yaml'.format(
+        blueprint_path.split('.yaml')[0])
+    write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
+    return new_blueprint_path
