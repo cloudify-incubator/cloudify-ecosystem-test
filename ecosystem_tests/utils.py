@@ -387,9 +387,12 @@ def get_node_templates(blueprint_yaml):
 
 def download_blueprint(blueprint_id):
     blueprint_dir = tempfile.gettempdir()
-    blueprint_zip = get_client_response(
-        'blueprints', 'download',
-        {'blueprint_id': blueprint_id, 'output_file': blueprint_dir})
+    blueprint_zip = os.path.join(blueprint_dir, 'file.zip')
+    get_client_response('blueprints', 'download',
+                        {
+                            'blueprint_id': blueprint_id,
+                            'output_file': blueprint_zip
+                        })
     unzip_file(blueprint_zip, blueprint_dir)
     return blueprint_dir
 
@@ -400,22 +403,30 @@ def create_external_resource_blueprint(
         deployment_nodes,
         external_resource_key='use_external_resource',
         resource_id_prop='resource_id',
-        resource_id_attr='external_id'):
+        resource_id_attr='external_id',
+        nodes_to_keep_without_transform=[]):
 
     blueprint_yaml = read_blueprint_yaml(blueprint_path)
     new_node_templates = {}
     for node in deployment_nodes:
-        if node['id'] not in nodes_to_use:
-            continue
         node_definition = blueprint_yaml['node_templates'][node['id']]
-        node_definition['properties'][external_resource_key] = True
-        node_definition['properties'][resource_id_prop] = \
-            node['instances'][0]['runtime_properties'][resource_id_attr]
+        if node['id'] in nodes_to_keep_without_transform:
+            pass
+        elif node['id'] not in nodes_to_use:
+            continue
+        else:
+            node_definition = blueprint_yaml['node_templates'][node['id']]
+            node_definition['properties'][external_resource_key] = True
+            node_definition['properties'][resource_id_prop] = \
+                node['instances'][0]['runtime_properties'][resource_id_attr]
         new_node_templates[node['id']] = {
             'type': node_definition['type'],
             'properties': node_definition['properties']
         }
     blueprint_yaml['node_templates'] = new_node_templates
+    for unneeded in ['outputs', 'groups', 'policies', 'description']:
+        if unneeded in blueprint_yaml:
+            del blueprint_yaml[unneeded]
     new_blueprint_path = '{0}-external.yaml'.format(
         blueprint_path.split('.yaml')[0])
     write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
