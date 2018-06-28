@@ -12,22 +12,38 @@ checkout:
 jobs:
 
   unittests:
-    docker:
-      - image: circleci/python:2.7.15-stretch
+    # docker:
+    #   - image: circleci/python:2.7.15-stretch
+    machine:
+      enabled: true
+      python:
+        version: pypy-2.2.1
     steps:
       - checkout
+      # - run:
+      #     name: Download pip
+      #     command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+      # - run:
+      #     name: Install pip
+      #     command: sudo python get-pip.py
+      # - run:
+      #     name: Install virtualenv
+      #     command: pip install --user virtualenv
+      # - run:
+      #     name: Init virtualenv
+      #     command: virtualenv env
       - run:
-          name: Download pip
-          command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+          name: download manager docker image
+          command: wget http://repository.cloudifysource.org/cloudify/4.3.2/ga-release/cloudify-docker-manager-4.3.2ga.tar
       - run:
-          name: Install pip
-          command: sudo python get-pip.py
+          name: load docker image
+          command: docker load -i cloudify-docker-manager-4.3.2ga.tar
       - run:
-          name: Install virtualenv
-          command: pip install --user virtualenv
+          name: retain space by dumping the tar
+          command: rm cloudify-docker-manager-4.3.2ga.tar
       - run:
-          name: Init virtualenv
-          command: virtualenv env
+          name: start docker container
+          command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host docker-cfy-manager:latest
       - run:
           name: Install tox
           command: |
