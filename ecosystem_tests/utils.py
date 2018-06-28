@@ -429,5 +429,6 @@ def create_external_resource_blueprint(
             del blueprint_yaml[unneeded]
     new_blueprint_path = '{0}-external.yaml'.format(
         blueprint_path.split('.yaml')[0])
+    print blueprint_yaml
     write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
     return new_blueprint_path
