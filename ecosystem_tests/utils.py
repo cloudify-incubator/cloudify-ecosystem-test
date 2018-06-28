@@ -304,15 +304,13 @@ def create_blueprint(
 def workflow_test_resources_to_copy(blueprint_dir):
     blueprint_resource_list = [
         (os.path.join(
-           blueprint_dir,
-           'cloudify-environment-setup-latest/imports/'
-           'manager-configuration.yaml'),
-         'imports/'),
+            blueprint_dir,
+            'cloudify-environment-setup-latest/imports/'
+            'manager-configuration.yaml'), 'imports/'),
         (os.path.join(
             blueprint_dir,
             'cloudify-environment-setup-latest/scripts/manager/tasks.py'),
-         'scripts/manager/')
-    ]
+            'scripts/manager/')]
     return blueprint_resource_list
 
 
@@ -348,7 +346,7 @@ def get_wagon_path(workspace_path):
             [file for file in os.listdir(workspace_path)
              if file.endswith('.wgn')][0]
     except IndexError:
-        raise
+        raise Exception('Wagon does not exist.')
     return os.path.join(workspace_path, filename)
 
 
@@ -382,10 +380,6 @@ def check_deployment(blueprint_path,
     check_nodes_uninstalled(deployment_nodes, nodes_to_check)
 
 
-def get_node_templates(blueprint_yaml):
-    return blueprint_yaml['node_templates']
-
-
 def download_blueprint(blueprint_id):
     blueprint_dir = tempfile.gettempdir()
     blueprint_zip = os.path.join(blueprint_dir, 'file.zip')
@@ -413,18 +407,19 @@ def create_external_resource_blueprint(
         node_id = node['id'] if not isinstance(
             node['id'], unicode) else node['id'].encode('utf-8')
         node_definition = blueprint_yaml['node_templates'][node_id]
-        if node_id not in nodes_to_use:
+        if node_id not in nodes_to_use and node_id not in \
+                nodes_to_keep_without_transform:
             continue
-        elif:
-            node_definition = blueprint_yaml['node_templates'][node_id]
-            node_definition['properties'][external_resource_key] = True
         external_id = \
             node['instances'][0]['runtime_properties'].get(
                 resource_id_attr,
-                node_definition['properties'][resource_id_prop])
+                node_definition['properties'].get(resource_id_prop))
         external_id = external_id if not isinstance(
             external_id, unicode) else external_id.encode('utf-8')
-        node_definition['properties'][resource_id_prop] = external_id
+        if node_id not in nodes_to_keep_without_transform:
+            node_definition = blueprint_yaml['node_templates'][node_id]
+            node_definition['properties'][external_resource_key] = True
+            node_definition['properties'][resource_id_prop] = external_id
         new_node_templates[node_id] = {
             'type': node_definition['type'],
             'properties': node_definition['properties']
