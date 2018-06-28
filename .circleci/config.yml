@@ -29,10 +29,20 @@ jobs:
           name: Init virtualenv
           command: virtualenv env
       - run:
-          name: install tox
-          command: pip install --user tox
-      - run: /home/circleci/.local/bin/tox -e pep8
-      - run: /home/circleci/.local/bin/tox -e py27
+          name: Install tox
+          command: |
+            source env/bin/activate
+            pip install tox
+      - run:
+          name: Runt flake8 test
+          command: |
+            source env/bin/activate
+            tox -e pep8
+      - run:
+          name: Run py27 test
+          command: |
+            source env/bin/activate
+            tox -e py27
 
 workflows:
   version: 2

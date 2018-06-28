@@ -107,6 +107,15 @@ class TestEcosytem(unittest.TestCase):
         return os.path.join(
             os.path.dirname(__file__), 'resources', 'blueprint.yaml')
 
+    @property
+    def build_dir(self):
+        workspace_dir = os.path.join(os.path.dirname(__file__), 'workspace')
+        return os.path.join(workspace_dir, 'build')
+
+    @property
+    def wagon_path(self):
+        return os.path.join(self.build_dir, 'file.wgn')
+
     def test_create_external_resource_blueprint(self):
         self.addCleanup(
             os.remove,
@@ -119,3 +128,17 @@ class TestEcosytem(unittest.TestCase):
         self.assertEqual(
             utils.read_blueprint_yaml(updated_blueprint),
             self.existing_blueprint_yaml)
+
+    def test_get_wagon_path(self):
+        open(self.wagon_path, 'w')
+        wgn_path = utils.get_wagon_path(self.build_dir)
+        self.assertEqual(self.wagon_path, wgn_path)
+        self.addCleanup(os.remove, self.wagon_path)
+
+    def test_get_wagon_path(self):
+        try:
+            os.remove(self.wagon_path)
+        except OSError:
+            pass
+        with self.assertRaises(Exception):
+            utils.get_wagon_path(self.build_dir)
