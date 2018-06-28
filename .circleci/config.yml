@@ -46,19 +46,13 @@ jobs:
           command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host docker-cfy-manager:latest
       - run:
           name: Install tox
-          command: |
-            source env/bin/activate
-            pip install tox
+          command: pip install tox
       - run:
           name: Runt flake8 test
-          command: |
-            source env/bin/activate
-            tox -e pep8
+          command: tox -e pep8
       - run:
           name: Run py27 test
-          command: |
-            source env/bin/activate
-            tox -e py27
+          command: tox -e py27
 
 workflows:
   version: 2
