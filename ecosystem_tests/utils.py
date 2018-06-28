@@ -304,15 +304,13 @@ def create_blueprint(
 def workflow_test_resources_to_copy(blueprint_dir):
     blueprint_resource_list = [
         (os.path.join(
-           blueprint_dir,
-           'cloudify-environment-setup-latest/imports/'
-           'manager-configuration.yaml'),
-         'imports/'),
+            blueprint_dir,
+            'cloudify-environment-setup-latest/imports/'
+            'manager-configuration.yaml'), 'imports/'),
         (os.path.join(
             blueprint_dir,
             'cloudify-environment-setup-latest/scripts/manager/tasks.py'),
-         'scripts/manager/')
-    ]
+            'scripts/manager/')]
     return blueprint_resource_list
 
 
@@ -415,13 +413,13 @@ def create_external_resource_blueprint(
         node_definition = blueprint_yaml['node_templates'][node_id]
         if node_id not in nodes_to_use:
             continue
-        elif:
+        elif node_id not in nodes_to_keep_without_transform:
             node_definition = blueprint_yaml['node_templates'][node_id]
             node_definition['properties'][external_resource_key] = True
         external_id = \
             node['instances'][0]['runtime_properties'].get(
                 resource_id_attr,
-                node_definition['properties'][resource_id_prop])
+                node_definition['properties'].get(resource_id_prop))
         external_id = external_id if not isinstance(
             external_id, unicode) else external_id.encode('utf-8')
         node_definition['properties'][resource_id_prop] = external_id

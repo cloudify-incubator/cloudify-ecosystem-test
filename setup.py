@@ -9,5 +9,8 @@ setup(
         'ecosystem_tests',
     ],
     description='Stuff that Ecosystem Tests Use',
-    install_requires=['testtools']
+    install_requires=[
+        'testtools',
+        'cloudify-rest-client>=3.4.1'
+    ]
 )

@@ -31,7 +31,7 @@ class PasswordFilter(object):
     """
     def __init__(self, strings_to_filter, stream):
         if not isinstance(strings_to_filter, list):
-            raise
+            raise Exception('strings_to_filter must be a list.')
         self.stream = stream
         strings_to_filter.append(IP_ADDRESS_REGEX)
         self.strings_to_filter = strings_to_filter
