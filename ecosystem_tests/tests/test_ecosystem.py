@@ -135,7 +135,7 @@ class TestEcosytem(unittest.TestCase):
         self.assertEqual(self.wagon_path, wgn_path)
         self.addCleanup(os.remove, self.wagon_path)
 
-    def test_get_wagon_path(self):
+    def test_get_wagon_path_no_wagon(self):
         try:
             os.remove(self.wagon_path)
         except OSError:
