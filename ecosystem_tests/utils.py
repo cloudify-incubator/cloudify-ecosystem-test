@@ -413,20 +413,17 @@ def create_external_resource_blueprint(
         node_id = node['id'] if not isinstance(
             node['id'], unicode) else node['id'].encode('utf-8')
         node_definition = blueprint_yaml['node_templates'][node_id]
-        if node_id in nodes_to_keep_without_transform:
-            external_id = \
-                node['instances'][0]['runtime_properties'][resource_id_attr]
-            external_id = external_id if not isinstance(
-                external_id, unicode) else external_id.encode('utf-8')
-        elif node_id not in nodes_to_use:
+        if node_id not in nodes_to_use:
             continue
-        else:
-            external_id = \
-                node['instances'][0]['runtime_properties'][resource_id_attr]
-            external_id = external_id if not isinstance(
-                external_id, unicode) else external_id.encode('utf-8')
+        elif:
             node_definition = blueprint_yaml['node_templates'][node_id]
             node_definition['properties'][external_resource_key] = True
+        external_id = \
+            node['instances'][0]['runtime_properties'].get(
+                resource_id_attr,
+                node_definition['properties'][resource_id_prop])
+        external_id = external_id if not isinstance(
+            external_id, unicode) else external_id.encode('utf-8')
         node_definition['properties'][resource_id_prop] = external_id
         new_node_templates[node_id] = {
             'type': node_definition['type'],
