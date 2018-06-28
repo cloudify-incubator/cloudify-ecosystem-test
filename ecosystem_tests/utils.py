@@ -407,7 +407,7 @@ def create_external_resource_blueprint(
         node_id = node['id'] if not isinstance(
             node['id'], unicode) else node['id'].encode('utf-8')
         node_definition = blueprint_yaml['node_templates'][node_id]
-        if node_id not in nodes_to_use and not in \
+        if node_id not in nodes_to_use and node_id not in \
                 nodes_to_keep_without_transform:
             continue
         external_id = \
