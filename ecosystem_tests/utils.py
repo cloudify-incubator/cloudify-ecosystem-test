@@ -253,7 +253,7 @@ def get_deployment_resource_names(
             name = \
                 instance['runtime_properties'].get(name_property)
             if not name and node['properties'][external_resource_key]:
-                name = node['properties'][external_resource_key]
+                name = node['properties'][resource_id_key]
             names.append(name)
     return names
 
