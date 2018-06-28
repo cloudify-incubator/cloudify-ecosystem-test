@@ -323,7 +323,8 @@ def read_blueprint_yaml(yaml_path):
 
 def write_blueprint_yaml(new_yaml, yaml_path):
     with open(yaml_path, 'w') as outfile:
-        yaml.dump(new_yaml, outfile, default_flow_style=False)
+        yaml.dump(new_yaml, outfile, encoding=('utf-8'),
+                  default_flow_style=False, allow_unicode=True)
 
 
 def update_plugin_yaml(
@@ -409,17 +410,22 @@ def create_external_resource_blueprint(
     blueprint_yaml = read_blueprint_yaml(blueprint_path)
     new_node_templates = {}
     for node in deployment_nodes:
-        node_definition = blueprint_yaml['node_templates'][node['id']]
-        if node['id'] in nodes_to_keep_without_transform:
+        node_id = node['id'] if not isinstance(
+            node['id'], unicode) else node['id'].encode('utf-8')
+        node_definition = blueprint_yaml['node_templates'][node_id]
+        if node_id in nodes_to_keep_without_transform:
             pass
-        elif node['id'] not in nodes_to_use:
+        elif node_id not in nodes_to_use:
             continue
         else:
-            node_definition = blueprint_yaml['node_templates'][node['id']]
-            node_definition['properties'][external_resource_key] = True
-            node_definition['properties'][resource_id_prop] = \
+            external_id = \
                 node['instances'][0]['runtime_properties'][resource_id_attr]
-        new_node_templates[node['id']] = {
+            external_id = external_id if not isinstance(
+                external_id, unicode) else external_id.encode('utf-8')
+            node_definition = blueprint_yaml['node_templates'][node_id]
+            node_definition['properties'][external_resource_key] = True
+            node_definition['properties'][resource_id_prop] = external_id
+        new_node_templates[node_id] = {
             'type': node_definition['type'],
             'properties': node_definition['properties']
         }
@@ -429,8 +435,5 @@ def create_external_resource_blueprint(
             del blueprint_yaml[unneeded]
     new_blueprint_path = '{0}-external.yaml'.format(
         blueprint_path.split('.yaml')[0])
-    print yaml.dump(
-        blueprint_yaml, encoding=('utf-8'),
-        default_flow_style=False, allow_unicode=True)
     write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
     return new_blueprint_path
