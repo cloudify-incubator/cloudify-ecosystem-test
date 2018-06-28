@@ -1,13 +1,20 @@
+
+# Standard Imports
 import os
-import tempfile
-import testtools
-import re
 import sys
-from utils import initialize_cfy_profile, \
-    create_password, create_blueprint
+import re
+import tempfile
+
+# Third Parties Imports
+import testtools
 from cloudify.workflows.local import init_env, load_env, FileStorage
 from cloudify.test_utils.local_workflow_decorator \
     import IGNORED_LOCAL_WORKFLOW_MODULES
+
+# Local Imports
+from utils import initialize_cfy_profile, \
+    create_password, create_blueprint
+
 
 IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
 DIAMOND_WAGON = 'https://github.com/cloudify-cosmo/' \
@@ -45,7 +52,7 @@ class PasswordFilter(object):
 
 class TestLocal(testtools.TestCase):
 
-    def inputs():
+    def inputs(self):
         raise NotImplementedError(
             'Class create_inputs implemented by subclass.')
 
