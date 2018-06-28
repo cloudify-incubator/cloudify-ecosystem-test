@@ -4,12 +4,9 @@ from random import randint, choice
 import string
 import subprocess
 import sys
-import tempfile
 import time
 import yaml
 import zipfile
-
-from fabric import api as fabric_api
 
 from cloudify_rest_client.client import CloudifyClient
 from cloudify_rest_client.exceptions import CloudifyClientError
@@ -17,42 +14,6 @@ from cloudify_rest_client.exceptions import CloudifyClientError
 NODECELLAR = 'https://github.com/cloudify-examples/' \
              'nodecellar-auto-scale-auto-heal-blueprint' \
              '/archive/master.zip'
-
-
-def execute_command_remotely(command,
-                             host_string, user, key_filename,
-                             use_sudo=False):
-    print "Executing command `{0}`".format(command)
-    connection = {
-        'host_string': host_string,
-        'user': user,
-        'key_filename': key_filename
-    }
-    with fabric_api.settings(**connection):
-        with fabric_api.cd('/tmp'):
-            if use_sudo:
-                result = fabric_api.sudo(command)
-            else:
-                result = fabric_api.run(command)
-            if result.failed:
-                raise Exception(result)
-
-
-def put_file_remotely(filename, host_string, user, key_filename):
-    print "Putting file `{0}`".format(filename)
-    connection = {
-        'host_string': host_string,
-        'user': user,
-        'key_filename': key_filename
-    }
-    with fabric_api.settings(**connection):
-        with fabric_api.cd('/tmp'):
-            result = fabric_api.put(filename, '/tmp')
-            if result.failed:
-                raise Exception(result)
-            elif len(result) != 1:
-                raise Exception('Something wrong with {0}.'.format(result))
-            return result[0]
 
 
 def execute_command(command, return_output=False, use_sudo=False):
@@ -341,12 +302,14 @@ def update_plugin_yaml(
 
 
 def get_wagon_path(workspace_path):
+    workspace_file_list = [file for file in os.listdir(workspace_path)
+                           if file.endswith('.wgn')]
     try:
-        filename = \
-            [file for file in os.listdir(workspace_path)
-             if file.endswith('.wgn')][0]
+        filename = workspace_file_list[0]
     except IndexError:
-        raise Exception('Wagon does not exist.')
+        print 'Wagon does not exist in files: {0}'.format(
+            workspace_file_list)
+        raise
     return os.path.join(workspace_path, filename)
 
 
@@ -378,18 +341,6 @@ def check_deployment(blueprint_path,
         raise Exception(
             'Uninstall {0} failed.'.format(blueprint_id))
     check_nodes_uninstalled(deployment_nodes, nodes_to_check)
-
-
-def download_blueprint(blueprint_id):
-    blueprint_dir = tempfile.gettempdir()
-    blueprint_zip = os.path.join(blueprint_dir, 'file.zip')
-    get_client_response('blueprints', 'download',
-                        {
-                            'blueprint_id': blueprint_id,
-                            'output_file': blueprint_zip
-                        })
-    unzip_file(blueprint_zip, blueprint_dir)
-    return blueprint_dir
 
 
 def create_external_resource_blueprint(
