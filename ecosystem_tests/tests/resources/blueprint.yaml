@@ -8,23 +8,40 @@ inputs:
   input1:
     type: string
 
+node_types:
+
+  node2_type:
+    derived_from: cloudify.nodes.Root
+    properties:
+      property1:
+        type: string
+
 node_templates:
 
   node1:
     type: cloudify.nodes.Compute
+    properties:
+      agent_config:
+        install_method: none
 
   node2:
-    type: cloudify.nodes.Root
-    properties: {}
+    type: node2_type
+    properties:
+      property1: property1
     relationships:
     - type: cloudify.relationships.depends_on
       target: node1
 
   node3:
-    type: cloudify.nodes.Container
+    type: cloudify.nodes.Root
     properties: {}
     relationships:
     - type: cloudify.relationships.depends_on
       target: node2
     - type: cloudify.relationships.contained_in
       target: node1
+
+outputs:
+
+  output1:
+    value: output1

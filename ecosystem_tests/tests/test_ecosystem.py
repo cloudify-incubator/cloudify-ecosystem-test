@@ -3,20 +3,32 @@ import unittest
 
 from .. import utils
 
+PROFILE = 'localhost -u admin -p admin -t default_tenant'
+FAILED = 1  # Bash return code. Easier to read.
+SUCCEED = 0  # Bash return code. Easier to read.
+REPO_ARCHIVE = 'https://github.com/cloudify-incubator/' \
+               'cloudify-ecosystem-test/archive/master.zip'
+
 
 class TestEcosytem(unittest.TestCase):
+
+    maxDiff = None  # This is for blueprint comparison.
 
     def setUp(self):
         def create_environment_variables(additional_kvs=None):
             environment_vars = {
                 'ECOSYSTEM_SESSION_MANAGER_IP': 'localhost',
-                'ECOSYSTEM_SESSION_PASSWORD': 'password',
+                'ECOSYSTEM_SESSION_PASSWORD': 'admin',
             }
             if additional_kvs:
                 environment_vars.update(additional_kvs)
             for k, v in environment_vars.items():
                 os.environ[k] = v
         create_environment_variables()
+        try:
+            utils.initialize_cfy_profile(PROFILE)
+        except:
+            pass
 
     @property
     def test_nodes(self):
@@ -26,20 +38,28 @@ class TestEcosytem(unittest.TestCase):
     def deployment_nodes(self):
         data = [
             {
-                'id': 'node2',
+                'id': 'node1',
                 'type': 'cloudify.nodes.Compute',
+                'properties': {
+                    'agent_config': {
+                        'install_method': 'none'
+                    }
+                },
                 'instances': [
                     {
-                        'id': 'node2-1',
+                        'id': 'node1-1',
                         'runtime_properties': {
-                            'external_id': 'node2-1'
+                            'external_id': 'node1-1'
                         }
                     }
                 ]
             },
             {
                 'id': 'node2',
-                'type': 'cloudify.nodes.Root',
+                'type': 'node2_type',
+                'properties': {
+                    'property1': 'property1'
+                },
                 'instances': [
                     {
                         'id': 'node2-1',
@@ -57,7 +77,8 @@ class TestEcosytem(unittest.TestCase):
             },
             {
                 'id': 'node3',
-                'type': 'cloudify.nodes.Container',
+                'type': 'cloudify.nodes.Root',
+                'properties': {},
                 'instances': [
                     {
                         'id': 'node3-1',
@@ -78,25 +99,46 @@ class TestEcosytem(unittest.TestCase):
             'imports': [
                 'http://www.getcloudify.org/spec/cloudify/4.3.1/types.yaml'
             ],
+            'node_types': {
+                'node2_type': {
+                    'derived_from': 'cloudify.nodes.Root',
+                    'properties': {
+                        'property1': {
+                            'type': 'string'
+                        }
+                    }
+                }
+            },
             'inputs': {
                 'input1': {
                     'type': 'string'
                 },
             },
             'node_templates': {
+                'node1': {
+                    'properties': {
+                        'resource_id': 'node1-1',
+                        'use_external_resource': True,
+                        'agent_config': {
+                            'install_method': 'none'
+                        }
+                    },
+                    'type': 'cloudify.nodes.Compute'
+                },
                 'node2': {
                     'properties': {
+                        'property1': 'property1',
                         'resource_id': 'node2-1',
                         'use_external_resource': True,
                     },
-                    'type': 'cloudify.nodes.Root'
+                    'type': 'node2_type'
                 },
                 'node3': {
                     'properties': {
                         'resource_id': 'node3-1',
                         'use_external_resource': True,
                     },
-                    'type': 'cloudify.nodes.Container'
+                    'type': 'cloudify.nodes.Root'
                 },
             },
         }
@@ -110,11 +152,24 @@ class TestEcosytem(unittest.TestCase):
     @property
     def build_dir(self):
         workspace_dir = os.path.join(os.path.dirname(__file__), 'workspace')
-        return os.path.join(workspace_dir, 'build')
+        if not os.path.exists(workspace_dir):
+            os.mkdir(workspace_dir)
+        build_dir = os.path.join(workspace_dir, 'build')
+        if not os.path.exists(build_dir):
+            os.mkdir(build_dir)
+        return build_dir
 
     @property
     def wagon_path(self):
-        return os.path.join(self.build_dir, 'file.wgn')
+        wagon_path = os.path.join(self.build_dir, 'file.wgn')
+        if not os.path.exists(wagon_path):
+            f = open(wagon_path, 'w')
+            f.close()
+        return wagon_path
+
+    @property
+    def deployment_outputs(self):
+        return {'output1': 'output1'}
 
     def test_create_external_resource_blueprint(self):
         self.addCleanup(
@@ -130,15 +185,94 @@ class TestEcosytem(unittest.TestCase):
             self.existing_blueprint_yaml)
 
     def test_get_wagon_path(self):
-        open(self.wagon_path, 'w')
-        wgn_path = utils.get_wagon_path(self.build_dir)
-        self.assertEqual(self.wagon_path, wgn_path)
-        self.addCleanup(os.remove, self.wagon_path)
+        if not os.path.exists(self.wagon_path):
+            f = open(self.wagon_path, 'w')
+            f.close()
+        wagon_path = utils.get_wagon_path(self.build_dir)
+        self.assertEqual(self.wagon_path, wagon_path)
 
-    def test_get_wagon_path(self):
+    def test_get_wagon_path_no_wagon(self):
         try:
             os.remove(self.wagon_path)
         except OSError:
             pass
-        with self.assertRaises(Exception):
+        with self.assertRaises(IndexError):
             utils.get_wagon_path(self.build_dir)
+
+    def check_get_node_instances(self,
+                                 deployment_id='blueprint',
+                                 node_id='node1',
+                                 expected=1):
+        response = utils.get_node_instances(node_id, deployment_id)
+        self.assertTrue(len(response) == expected)
+
+    def check_get_nodes(self,
+                        deployment_id='blueprint',
+                        expected=3):
+        response = utils.get_nodes(deployment_id)
+        self.assertTrue(len(response) == expected)
+
+    def check_deployment_outputs(self, deployment_id='blueprint'):
+        outputs = utils.get_deployment_outputs(deployment_id)
+        self.assertEqual(
+            self.deployment_outputs, outputs.get('outputs'))
+
+    def check_secrets(self, secret):
+        command = 'cfy secrets {0} -s {1}'.format(
+            secret['key'], secret['value'])
+        secret_create_failed = utils.execute_command(command)
+        self.assertEqual(SUCCEED, secret_create_failed)
+        response = utils.get_secrets(secret['key'])
+        self.assertNotNone(response)
+
+    def check_get_deployment_resources(self,
+                                       deployment,
+                                       substring,
+                                       exclusions,
+                                       expected=1):
+        nodes = utils.get_deployment_resources_by_node_type_substring(
+            deployment, substring, exclusions)
+        self.assertTrue(len(nodes) == expected)
+        self.assertTrue(len(nodes[0]['instances']) == expected)
+
+    def test_blueprint_and_deployment(self):
+
+        command = 'cfy blueprints upload {0} -b blueprint'.format(
+            self.blueprint_path)
+        blueprint_upload_failed = utils.execute_command(command)
+        self.assertEqual(SUCCEED, blueprint_upload_failed)
+
+        deployment_create_failed = utils.create_deployment(
+            'blueprint', inputs={'input1': 'input1'})
+        self.assertEqual(SUCCEED, deployment_create_failed)
+
+        execute_install_failed = utils.execute_install(
+            'blueprint')
+        self.assertEqual(SUCCEED, execute_install_failed)
+
+        self.check_deployment_outputs()
+        self.check_get_nodes()
+        self.check_get_node_instances()
+
+        execute_scale_failed = utils.execute_scale(
+            'blueprint', scalable_entity_name='node2')
+        self.assertEqual(SUCCEED, execute_scale_failed)
+
+        self.check_get_deployment_resources(
+            'blueprint',
+            'cloudify.nodes',
+            'cloudify.nodes.Compute')
+
+        execute_uninstall_failed = utils.execute_uninstall(
+            'blueprint')
+        self.assertEqual(SUCCEED, execute_uninstall_failed)
+
+    def test_create_password(self):
+        password = utils.create_password()
+        self.assertTrue(isinstance(password, basestring))
+
+    def test_blueprint_upload_url(self):
+        upload_blueprint_failed = utils.upload_blueprint(
+            REPO_ARCHIVE, 'blueprint-2',
+            'ecosystem_tests/tests/resources/blueprint.yaml')
+        self.assertEqual(SUCCEED, upload_blueprint_failed)
