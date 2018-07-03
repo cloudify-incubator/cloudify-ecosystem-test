@@ -132,13 +132,16 @@ def execute_uninstall(deployment_id):
     return execute_command(uninstall_command)
 
 
-def install_nodecellar(blueprint_file_name, inputs=None):
-    upload_blueprint(NODECELLAR, 'nc', blueprint_file_name)
+def install_nodecellar(blueprint_file_name,
+                       inputs=None,
+                       blueprint_archive=NODECELLAR,
+                       blueprint_id='nc'):
+    upload_blueprint(blueprint_archive, blueprint_id, blueprint_file_name)
     if not inputs:
-        create_deployment('nc')
+        create_deployment(blueprint_id)
     else:
-        create_deployment('nc', inputs=inputs)
-    return execute_install('nc')
+        create_deployment(blueprint_id, inputs=inputs)
+    return execute_install(blueprint_id)
 
 
 def get_node_instances(node_id, deployment_id):
@@ -232,8 +235,8 @@ def get_resource_ids_by_type(
         instances, node_type, get_function, id_property='name'):
     resources = []
     for instance in instances:
-        node = get_function(instance.node_id)
         print 'Getting resource: {0}'.format(instance.node_id)
+        node = get_function(instance.node_id)
         if node_type not in node.type:
             break
         resource_id = instance.runtime_properties.get(id_property)
@@ -260,19 +263,6 @@ def create_blueprint(
     download_file(blueprint_url, blueprint_zip)
     unzip_file(blueprint_zip, blueprint_dir)
     return blueprint_path
-
-
-def workflow_test_resources_to_copy(blueprint_dir):
-    blueprint_resource_list = [
-        (os.path.join(
-            blueprint_dir,
-            'cloudify-environment-setup-latest/imports/'
-            'manager-configuration.yaml'), 'imports/'),
-        (os.path.join(
-            blueprint_dir,
-            'cloudify-environment-setup-latest/scripts/manager/tasks.py'),
-            'scripts/manager/')]
-    return blueprint_resource_list
 
 
 def read_blueprint_yaml(yaml_path):
@@ -316,7 +306,7 @@ def get_wagon_path(workspace_path):
 def upload_plugin(wagon_path, plugin_yaml='plugin.yaml'):
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
         wagon_path, plugin_yaml)
-    execute_command(upload_command)
+    return execute_command(upload_command)
 
 
 def check_deployment(blueprint_path,

@@ -1,4 +1,6 @@
+import filecmp
 import os
+import tempfile
 import unittest
 
 from .. import utils
@@ -8,6 +10,12 @@ FAILED = 1  # Bash return code. Easier to read.
 SUCCEED = 0  # Bash return code. Easier to read.
 REPO_ARCHIVE = 'https://github.com/cloudify-incubator/' \
                'cloudify-ecosystem-test/archive/master.zip'
+WAGON_URL = 'http://repository.cloudifysource.org/' \
+            'cloudify/wagons/cloudify-openstack-plugin/2.9.2/' \
+            'cloudify_openstack_plugin-2.9.2-py27-none-linux_' \
+            'x86_64-centos-Core.wgn'
+WAGON_YAML = 'http://www.getcloudify.org/spec/openstack-plugin/' \
+             '2.9.2/plugin.yaml'
 
 
 class TestEcosytem(unittest.TestCase):
@@ -111,7 +119,8 @@ class TestEcosytem(unittest.TestCase):
             },
             'inputs': {
                 'input1': {
-                    'type': 'string'
+                    'type': 'string',
+                    'default': 'input1'
                 },
             },
             'node_templates': {
@@ -170,6 +179,21 @@ class TestEcosytem(unittest.TestCase):
     @property
     def deployment_outputs(self):
         return {'output1': 'output1'}
+
+    @property
+    def expected_plugin_yaml(self):
+        data = {
+            'plugins': {
+                'plugin': {
+                    'executor': 'central_deployment_agent',
+                    'source': 'https://github.com/cloudify-incubator/'
+                              'cloudify-ecosystem-tests/archive/1234.zip',
+                    'package_name': 'example-plugin',
+                    'package_version': '1'
+                }
+            }
+        }
+        return data
 
     def test_create_external_resource_blueprint(self):
         self.addCleanup(
@@ -276,3 +300,104 @@ class TestEcosytem(unittest.TestCase):
             REPO_ARCHIVE, 'blueprint-2',
             'ecosystem_tests/tests/resources/blueprint.yaml')
         self.assertEqual(SUCCEED, upload_blueprint_failed)
+
+    def test_install_nodecellar(self):
+        install_nodecellar = utils.install_nodecellar(
+            'ecosystem_tests/tests/resources/blueprint.yaml',
+            inputs={'input1': 'input1'},
+            blueprint_archive=REPO_ARCHIVE,
+            blueprint_id='blueprint-3')
+        self.assertEqual(SUCCEED, install_nodecellar)
+
+    def test_upload_plugin(self):
+        upload_plugin = utils.upload_plugin(
+            WAGON_URL, WAGON_YAML)
+        self.assertEqual(SUCCEED, upload_plugin)
+
+    def test_update_plugin_yaml(self):
+        utils.update_plugin_yaml(
+            '1234',
+            'plugin',
+            'ecosystem_tests/tests/resources/plugin.yaml')
+        self.assertEqual(
+            self.expected_plugin_yaml,
+            utils.read_blueprint_yaml(
+                'ecosystem_tests/tests/resources/plugin.yaml'))
+
+    def test_create_blueprint(self):
+        blueprint_dir = tempfile.mkdtemp()
+        blueprint_zip = os.path.join(blueprint_dir, 'blueprint.zip')
+        blueprint_archive = 'cloudify-ecosystem-test-master'
+        download_path = \
+            os.path.join(
+                blueprint_dir,
+                blueprint_archive,
+                'ecosystem_tests/tests/resources/blueprint.yaml')
+        blueprint_path = utils.create_blueprint(
+            REPO_ARCHIVE,
+            blueprint_zip,
+            blueprint_dir,
+            download_path)
+        self.assertTrue(os.path.isfile(blueprint_path))
+        self.assertTrue(filecmp.cmp(
+            blueprint_path,
+            'ecosystem_tests/tests/resources/blueprint.yaml'))
+
+    def test_get_resource_ids_by_type(self):
+
+        class test_get_resource_ids_by_type_instance(object):
+            def __init__(self):
+                self.node_id = 'instance'
+                self.type = 'type'
+                self.runtime_properties = {
+                    'name': 'instance'
+                }
+
+        mock_instance = test_get_resource_ids_by_type_instance()
+
+        def get_fn(_id):
+            return mock_instance
+        output = utils.get_resource_ids_by_type(
+            [mock_instance],
+            'type',
+            get_fn)
+        self.assertEqual(output, ['instance'])
+        setattr(mock_instance, 'type', 'other')
+        output = utils.get_resource_ids_by_type(
+            [mock_instance],
+            'type',
+            get_fn)
+        self.assertEqual(output, [])
+
+    def test_get_manager_ip(self):
+        class test_get_manager_ip_instance(object):
+            def __init__(self, name):
+                self.node_id = name
+                self.runtime_properties = {
+                    'public_ip': name
+                }
+        instances = [
+            test_get_manager_ip_instance('cloudify_host'),
+            test_get_manager_ip_instance('fail'),
+        ]
+        result = utils.get_manager_ip(instances)
+        self.assertEqual('cloudify_host', result)
+        instances = [
+            test_get_manager_ip_instance('fail1'),
+            test_get_manager_ip_instance('fail'),
+        ]
+        with self.assertRaises(Exception):
+            utils.get_manager_ip(instances)
+
+    def test_check_deployment(self):
+
+        def check_nodes(*_):
+            pass
+
+        utils.check_deployment(
+            'ecosystem_tests/tests/resources/blueprint.yaml',
+            'test-4',
+            'cloudify.nodes',
+            self.test_nodes,
+            check_nodes,
+            check_nodes)
