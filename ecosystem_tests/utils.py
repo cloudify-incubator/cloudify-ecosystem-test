@@ -319,7 +319,7 @@ def get_wagon_path(workspace_path):
 def upload_plugin(wagon_path, plugin_yaml='plugin.yaml'):
     upload_command = 'cfy plugins upload {0} -y {1}'.format(
         wagon_path, plugin_yaml)
-    execute_command(upload_command)
+    return execute_command(upload_command)
 
 
 def check_deployment(blueprint_path,

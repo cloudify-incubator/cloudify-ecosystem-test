@@ -8,6 +8,12 @@ FAILED = 1  # Bash return code. Easier to read.
 SUCCEED = 0  # Bash return code. Easier to read.
 REPO_ARCHIVE = 'https://github.com/cloudify-incubator/' \
                'cloudify-ecosystem-test/archive/master.zip'
+WAGON_URL = 'http://repository.cloudifysource.org/' \
+            'cloudify/wagons/cloudify-openstack-plugin/2.9.2/' \
+            'cloudify_openstack_plugin-2.9.2-py27-none-linux_' \
+            'x86_64-centos-Core.wgn'
+WAGON_YAML = 'http://www.getcloudify.org/spec/openstack-plugin/' \
+             '2.9.2/plugin.yaml'
 
 
 class TestEcosytem(unittest.TestCase):
@@ -171,6 +177,21 @@ class TestEcosytem(unittest.TestCase):
     def deployment_outputs(self):
         return {'output1': 'output1'}
 
+    @property
+    def expected_plugin_yaml(self):
+        data = {
+            'plugins': {
+                'plugin': {
+                    'executor': 'central_deployment_agent',
+                    'source': 'https://github.com/cloudify-incubator/'
+                              'cloudify-ecosystem-tests/archive/1234.zip',
+                    'package_name': 'example-plugin',
+                    'package_version': '1'
+                }
+            }
+        }
+        return data
+
     def test_create_external_resource_blueprint(self):
         self.addCleanup(
             os.remove,
@@ -284,3 +305,18 @@ class TestEcosytem(unittest.TestCase):
             blueprint_archive=REPO_ARCHIVE,
             blueprint_id='blueprint-3')
         self.assertEqual(SUCCEED, install_nodecellar)
+
+    def test_upload_plugin(self):
+        upload_plugin = utils.upload_plugin(
+            WAGON_URL, WAGON_YAML)
+        self.assertEqual(SUCCEED, upload_plugin)
+
+    def test_update_plugin_yaml(self):
+        utils.update_plugin_yaml(
+            '1234',
+            'plugin',
+            'ecosystem_tests/tests/resources/plugin.yaml')
+        self.assertEqual(
+            self.expected_plugin_yaml,
+            utils.read_blueprint_yaml(
+                'ecosystem_tests/tests/resources/plugin.yaml'))

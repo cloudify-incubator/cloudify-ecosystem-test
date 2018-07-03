@@ -1,0 +1,6 @@
+plugins:
+  plugin:
+    executor: central_deployment_agent
+    source: https://github.com/cloudify-incubator/cloudify-ecosystem-tests/archive/master.zip
+    package_name: example-plugin
+    package_version: '1'
