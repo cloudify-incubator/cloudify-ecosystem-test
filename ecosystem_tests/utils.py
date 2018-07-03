@@ -235,8 +235,8 @@ def get_resource_ids_by_type(
         instances, node_type, get_function, id_property='name'):
     resources = []
     for instance in instances:
-        node = get_function(instance.node_id)
         print 'Getting resource: {0}'.format(instance.node_id)
+        node = get_function(instance.node_id)
         if node_type not in node.type:
             break
         resource_id = instance.runtime_properties.get(id_property)

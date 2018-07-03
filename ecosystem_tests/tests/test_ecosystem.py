@@ -341,3 +341,49 @@ class TestEcosytem(unittest.TestCase):
         self.assertTrue(filecmp.cmp(
             blueprint_path,
             'ecosystem_tests/tests/resources/blueprint.yaml'))
+
+    def test_get_resource_ids_by_type(self):
+
+        class test_get_resource_ids_by_type_instance(object):
+            def __init__(self):
+                self.node_id = 'instance'
+                self.type = 'type'
+                self.runtime_properties = {
+                    'name': 'instance'
+                }
+
+        mock_instance = test_get_resource_ids_by_type_instance()
+
+        def get_fn(_id):
+            return mock_instance
+        output = utils.get_resource_ids_by_type(
+            [mock_instance],
+            'type',
+            get_fn)
+        self.assertEqual(output, ['instance'])
+        setattr(mock_instance, 'type', 'other')
+        output = utils.get_resource_ids_by_type(
+            [mock_instance],
+            'type',
+            get_fn)
+        self.assertEqual(output, [])
+
+    def test_get_manager_ip(self):
+        class test_get_manager_ip_instance(object):
+            def __init__(self, name):
+                self.node_id = name
+                self.runtime_properties = {
+                    'public_ip': name
+                }
+        instances = [
+            test_get_manager_ip_instance('cloudify_host'),
+            test_get_manager_ip_instance('fail'),
+        ]
+        result = utils.get_manager_ip(instances)
+        self.assertEqual('cloudify_host', result)
+        instances = [
+            test_get_manager_ip_instance('fail1'),
+            test_get_manager_ip_instance('fail'),
+        ]
+        with self.assertRaises(Exception):
+            utils.get_manager_ip(instances)
