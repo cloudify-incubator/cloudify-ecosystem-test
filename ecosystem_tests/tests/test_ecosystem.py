@@ -1,4 +1,6 @@
+import filecmp
 import os
+import tempfile
 import unittest
 
 from .. import utils
@@ -320,3 +322,22 @@ class TestEcosytem(unittest.TestCase):
             self.expected_plugin_yaml,
             utils.read_blueprint_yaml(
                 'ecosystem_tests/tests/resources/plugin.yaml'))
+
+    def test_create_blueprint(self):
+        blueprint_dir = tempfile.mkdtemp()
+        blueprint_zip = os.path.join(blueprint_dir, 'blueprint.zip')
+        blueprint_archive = 'cloudify-ecosystem-test-master'
+        download_path = \
+            os.path.join(
+                blueprint_dir,
+                blueprint_archive,
+                'ecosystem_tests/tests/resources/blueprint.yaml')
+        blueprint_path = utils.create_blueprint(
+            REPO_ARCHIVE,
+            blueprint_zip,
+            blueprint_dir,
+            download_path)
+        self.assertTrue(os.path.isfile(blueprint_path))
+        self.assertTrue(filecmp.cmp(
+            blueprint_path,
+            'ecosystem_tests/tests/resources/blueprint.yaml'))

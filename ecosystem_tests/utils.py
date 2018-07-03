@@ -265,19 +265,6 @@ def create_blueprint(
     return blueprint_path
 
 
-def workflow_test_resources_to_copy(blueprint_dir):
-    blueprint_resource_list = [
-        (os.path.join(
-            blueprint_dir,
-            'cloudify-environment-setup-latest/imports/'
-            'manager-configuration.yaml'), 'imports/'),
-        (os.path.join(
-            blueprint_dir,
-            'cloudify-environment-setup-latest/scripts/manager/tasks.py'),
-            'scripts/manager/')]
-    return blueprint_resource_list
-
-
 def read_blueprint_yaml(yaml_path):
     with open(yaml_path, 'r') as infile:
         return yaml.load(infile)
