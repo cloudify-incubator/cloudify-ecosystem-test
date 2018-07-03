@@ -276,3 +276,11 @@ class TestEcosytem(unittest.TestCase):
             REPO_ARCHIVE, 'blueprint-2',
             'ecosystem_tests/tests/resources/blueprint.yaml')
         self.assertEqual(SUCCEED, upload_blueprint_failed)
+
+    def test_install_nodecellar(self):
+        install_nodecellar = utils.install_nodecellar(
+            'ecosystem_tests/tests/resources/blueprint.yaml',
+            inputs={'input1': 'input1'},
+            blueprint_archive=REPO_ARCHIVE,
+            blueprint_id='blueprint-3')
+        self.assertEqual(SUCCEED, install_nodecellar)
