@@ -119,7 +119,8 @@ class TestEcosytem(unittest.TestCase):
             },
             'inputs': {
                 'input1': {
-                    'type': 'string'
+                    'type': 'string',
+                    'default': 'input1'
                 },
             },
             'node_templates': {
@@ -387,3 +388,16 @@ class TestEcosytem(unittest.TestCase):
         ]
         with self.assertRaises(Exception):
             utils.get_manager_ip(instances)
+
+    def test_check_deployment(self):
+
+        def check_nodes(*_):
+            pass
+
+        utils.check_deployment(
+            'ecosystem_tests/tests/resources/blueprint.yaml',
+            'test-4',
+            'cloudify.nodes',
+            self.test_nodes,
+            check_nodes,
+            check_nodes)
