@@ -118,6 +118,20 @@ class EcosystemTestBase(testtools.TestCase):
         return 'cloudify-environment-setup-latest'
 
     @property
+    def environment_name(self):
+        if 'ENVIRONMENT_NAME' not in os.environ:
+            return self.blueprint_archive
+        return os.environ['ENVIRONMENT_NAME']
+
+    @property
+    def storage_dir(self):
+        if 'CLOUDIFY_STORAGE_DIR' not in os.environ:
+            return os.path.join(
+                os.path.expanduser('~'),
+                '.cloudify/profiles/local')
+        return os.environ['CLOUDIFY_STORAGE_DIR']
+
+    @property
     def blueprinturl(self):
         """URL to manager blueprint"""
         url = 'https://github.com/cloudify-examples/' \
@@ -187,9 +201,9 @@ class EcosystemTestBase(testtools.TestCase):
         """
 
         cfy_storage = FileStorage()
-        cfy_storage.__init__(self.blueprint_dir)
+        cfy_storage.__init__(storage_dir=self.storage_dir)
         if os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
-            return load_env(cfy_storage)
+            return load_env(name=self.environment_name, storage=cfy_storage)
         else:
             cfy_local = init_env(
                 os.path.join(
@@ -233,7 +247,6 @@ class EcosystemTestBase(testtools.TestCase):
                 'uninstall',
                 task_retries=45,
                 task_retry_interval=10)
-        del os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
 
     def check_manager_resources(self,
                                 node_type_prefix=None,
@@ -292,7 +305,8 @@ class EcosystemTestBase(testtools.TestCase):
         """
 
         execute_command(
-            'cfy uninstall -p ignore_failure=true {0}'.format(
+            'cfy executions start uninstall '
+            '-p ignore_failure=true -d {0}'.format(
                 deployment_id))
 
     def get_manager_ip(self):
