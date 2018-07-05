@@ -118,17 +118,10 @@ class EcosystemTestBase(testtools.TestCase):
         return 'cloudify-environment-setup-latest'
 
     @property
-    def environment_name(self):
-        if 'ENVIRONMENT_NAME' not in os.environ:
-            return self.blueprint_archive
-        return os.environ['ENVIRONMENT_NAME']
-
-    @property
     def storage_dir(self):
         if 'CLOUDIFY_STORAGE_DIR' not in os.environ:
-            return os.path.join(
-                os.path.expanduser('~'),
-                '.cloudify/profiles/local')
+            cloudify_storage = tempfile.mkdtemp()
+            os.environ['CLOUDIFY_STORAGE_DIR'] = cloudify_storage
         return os.environ['CLOUDIFY_STORAGE_DIR']
 
     @property
@@ -200,11 +193,8 @@ class EcosystemTestBase(testtools.TestCase):
         :rtype: cloudify.workflows.local._Environment
         """
 
-        cfy_storage = FileStorage()
-        cfy_storage.__init__(storage_dir=self.storage_dir)
-        if os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
-            return load_env(name=self.environment_name, storage=cfy_storage)
-        else:
+        cfy_storage = FileStorage(storage_dir='test')
+        if not os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
             cfy_local = init_env(
                 os.path.join(
                     self.blueprint_dir,
@@ -215,6 +205,7 @@ class EcosystemTestBase(testtools.TestCase):
                 ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
             os.environ['ECOSYSTEM_SESSION_LOADED'] = 'true'
             return cfy_local
+        return load_env(storage=cfy_storage)
 
     def install_manager(self):
         """install a cloudify manager using local profile
