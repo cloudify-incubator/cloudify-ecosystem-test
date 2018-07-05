@@ -469,28 +469,6 @@ def get_deployment_resource_names(
     return names
 
 
-def get_manager_ip(instances,
-                   manager_vm_node_id='cloudify_host',
-                   manager_ip_prop_key='public_ip'):
-    """get some VM IP
-
-    :param instances: a list of instances to go through
-    :param manager_vm_node_id: the ID of some node
-    :param manager_ip_prop_key: the runtime property to return
-    :type instances: list
-    :type manager_vm_node_id: string
-    :type manager_ip_prop_key: string
-
-    :returns: returns some runtime property of some vm
-    :rtype: string
-    """
-
-    for instance in instances:
-        if manager_vm_node_id == instance.node_id:
-            return instance.runtime_properties[manager_ip_prop_key]
-    raise Exception('No manager IP found.')
-
-
 def get_resource_ids_by_type(
         instances, node_type, get_function, id_property='name'):
     """get resource IDs by node type
@@ -706,7 +684,7 @@ def check_deployment(blueprint_path,
     :rtype: None
     """
 
-    install_command = 'cfy install {0} -d {1}'.format(
+    install_command = 'cfy install {0} -b {1}'.format(
         blueprint_path, blueprint_id)
     failed = execute_command(install_command)
     if failed:

@@ -35,7 +35,7 @@ class TestEcosytem(unittest.TestCase):
         create_environment_variables()
         try:
             utils.initialize_cfy_profile(PROFILE)
-        except:
+        except Exception:
             pass
 
     @property
@@ -368,26 +368,6 @@ class TestEcosytem(unittest.TestCase):
             'type',
             get_fn)
         self.assertEqual(output, [])
-
-    def test_get_manager_ip(self):
-        class test_get_manager_ip_instance(object):
-            def __init__(self, name):
-                self.node_id = name
-                self.runtime_properties = {
-                    'public_ip': name
-                }
-        instances = [
-            test_get_manager_ip_instance('cloudify_host'),
-            test_get_manager_ip_instance('fail'),
-        ]
-        result = utils.get_manager_ip(instances)
-        self.assertEqual('cloudify_host', result)
-        instances = [
-            test_get_manager_ip_instance('fail1'),
-            test_get_manager_ip_instance('fail'),
-        ]
-        with self.assertRaises(Exception):
-            utils.get_manager_ip(instances)
 
     def test_check_deployment(self):
 
