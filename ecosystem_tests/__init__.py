@@ -187,7 +187,7 @@ class EcosystemTestBase(testtools.TestCase):
         """
 
         cfy_storage = FileStorage()
-        cfy_storage.__init__(self.blueprintdir)
+        cfy_storage.__init__(self.blueprint_dir)
         if os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
             return load_env(cfy_storage)
         else:
