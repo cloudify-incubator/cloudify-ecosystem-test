@@ -74,7 +74,7 @@ class EcosystemTestBase(testtools.TestCase):
             self.manager_ip = \
                 os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
         else:
-            self.setup_cfy_local()
+            self.cfy_local = self.setup_cfy_local()
             self.install_manager()
             self.initialize_manager_profile()
             self.upload_plugins()
@@ -171,7 +171,7 @@ class EcosystemTestBase(testtools.TestCase):
     def test_application_prefix(self):
         """some prefix for appending to resource names"""
         if 'CIRCLE_BUILD_NUM' in os.environ:
-            return os.environ['os.environ']
+            return os.environ['CIRCLE_BUILD_NUM']
         return os.environ.get('TEST_APPLICATION_PREFIX', '1234')
 
     def initialize_manager_profile(self, manager_ip=None, password=None):
@@ -195,7 +195,8 @@ class EcosystemTestBase(testtools.TestCase):
 
         cfy_storage = FileStorage(storage_dir='test')
         if not os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
-            cfy_local = init_env(
+            os.environ['ECOSYSTEM_SESSION_LOADED'] = 'true'
+            return init_env(
                 os.path.join(
                     self.blueprint_dir,
                     self.blueprint_archive,
@@ -203,9 +204,7 @@ class EcosystemTestBase(testtools.TestCase):
                 inputs=self.inputs,
                 storage=cfy_storage,
                 ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
-            os.environ['ECOSYSTEM_SESSION_LOADED'] = 'true'
-            return cfy_local
-        return load_env(storage=cfy_storage)
+        return load_env(name='local', storage=cfy_storage)
 
     def install_manager(self):
         """install a cloudify manager using local profile
@@ -253,7 +252,7 @@ class EcosystemTestBase(testtools.TestCase):
         """
 
         node_type_prefix = node_type_prefix or self.node_type_prefix
-        id_property = id_property or self.id_property
+        id_property = id_property or self.server_ip_property
         check_resource_method = \
             check_resource_method or self.check_resource_method
 
