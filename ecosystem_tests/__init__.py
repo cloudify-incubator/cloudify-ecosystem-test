@@ -74,8 +74,11 @@ class EcosystemTestBase(unittest.TestCase):
         cls.uninstall_manager(cfy_local)
         shutil.rmtree(CFY_LOCAL_FILE)
         try:
-            os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
-            os.environ['ECOSYSTEM_SESSION_LOADED']
+            del os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
+            del os.environ['ECOSYSTEM_SESSION_LOADED']
+            del os.environ['ECOSYSTEM_SESSION_PASSWORD']
+            del os.environ['CLOUDIFY_STORAGE_DIR']
+            del os.environ['ECOSYSTEM_SESSION_BLUEPRINT_DIR']
         except KeyError:
             pass
 
@@ -226,7 +229,8 @@ class EcosystemTestBase(unittest.TestCase):
         """
 
         cfy_storage = FileStorage(storage_dir=CFY_LOCAL_FILE)
-        if not os.environ.get('ECOSYSTEM_SESSION_LOADED', False):
+        if not os.environ.get('ECOSYSTEM_SESSION_LOADED', False) or not \
+                os.path.exists(os.path.join(CFY_LOCAL_FILE, 'local/data')):
             os.environ['ECOSYSTEM_SESSION_LOADED'] = 'true'
             return init_env(
                 os.path.join(
