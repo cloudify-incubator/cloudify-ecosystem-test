@@ -75,6 +75,7 @@ class EcosystemTestBase(unittest.TestCase):
         shutil.rmtree(CFY_LOCAL_FILE)
         try:
             os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
+            os.environ['ECOSYSTEM_SESSION_LOADED']
         except KeyError:
             pass
 
