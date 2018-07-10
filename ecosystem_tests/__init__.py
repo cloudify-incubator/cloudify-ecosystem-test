@@ -140,7 +140,8 @@ class EcosystemTestBase(unittest.TestCase):
     @property
     def blueprint_archive(self):
         """name of the manager blueprint extracted file"""
-        return 'cloudify-environment-setup-latest'
+        return 'cloudify-environment-setup-{0}'.format(
+            self.manager_blueprint_version)
 
     @property
     def storage_dir(self):
@@ -150,10 +151,15 @@ class EcosystemTestBase(unittest.TestCase):
         return os.environ['CLOUDIFY_STORAGE_DIR']
 
     @property
+    def manager_blueprint_version(self):
+        return 'latest'
+
+    @property
     def blueprinturl(self):
         """URL to manager blueprint"""
         url = 'https://github.com/cloudify-examples/' \
-              'cloudify-environment-setup/archive/latest.zip'
+              'cloudify-environment-setup/archive/{0}.zip'.format(
+                  self.manager_blueprint_version)
         return url
 
     @property
