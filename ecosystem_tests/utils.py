@@ -702,6 +702,10 @@ def check_deployment(blueprint_path,
     check_nodes_uninstalled(deployment_nodes, nodes_to_check)
 
 
+def get_data_as_unicode(data):
+    return data if not isinstance(data, unicode) else data.encode('utf-8')
+
+
 def create_external_resource_blueprint(
         blueprint_path,
         nodes_to_use,
@@ -741,26 +745,44 @@ def create_external_resource_blueprint(
     blueprint_yaml = read_blueprint_yaml(blueprint_path)
     new_node_templates = {}
     for node in deployment_nodes:
-        node_id = node['id'] if not isinstance(
-            node['id'], unicode) else node['id'].encode('utf-8')
+        node_id = get_data_as_unicode(node['id'])
         node_definition = blueprint_yaml['node_templates'][node_id]
-        if node_id not in nodes_to_use and node_id not in \
-                nodes_to_keep_without_transform:
+        target_nodes = nodes_to_use + nodes_to_keep_without_transform
+
+        if node_id not in target_nodes:
             continue
         external_id = \
             node['instances'][0]['runtime_properties'].get(
                 resource_id_attr,
                 node_definition['properties'].get(resource_id_prop))
-        external_id = external_id if not isinstance(
-            external_id, unicode) else external_id.encode('utf-8')
+        external_id = get_data_as_unicode(external_id)
         if node_id not in nodes_to_keep_without_transform:
             node_definition = blueprint_yaml['node_templates'][node_id]
             node_definition['properties'][external_resource_key] = True
             node_definition['properties'][resource_id_prop] = external_id
-        new_node_templates[node_id] = {
+
+        # Basic node template data
+        node_template = {
             'type': node_definition['type'],
-            'properties': node_definition['properties']
+            'properties': node_definition['properties'],
         }
+
+        # Check if the node has relationships or not
+        if node.get('relationships'):
+            node_relationships = []
+            for relationship in node['relationships']:
+                rel_type = get_data_as_unicode(relationship.get('type'))
+                if rel_type in target_nodes:
+                    node_rel = {
+                        'type': rel_type,
+                        'target':
+                            get_data_as_unicode(relationship.get('target_id'))
+                    }
+                    node_relationships.append(node_rel)
+
+            node_template['relationships'] = node_relationships
+
+        new_node_templates[node_id] = node_template
     blueprint_yaml['node_templates'] = new_node_templates
     for unneeded in ['outputs', 'groups', 'policies', 'description']:
         if unneeded in blueprint_yaml:
