@@ -402,6 +402,7 @@ def get_deployment_resources_by_node_type_substring(
             'id': node_id,
             'node_type': node_type,
             'properties': node.get('properties'),
+            'relationships': node.get('relationships'),
             'instances': []
         }
         for node_instance in get_node_instances(
