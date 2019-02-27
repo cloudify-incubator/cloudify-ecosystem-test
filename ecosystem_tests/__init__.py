@@ -21,7 +21,8 @@ from utils import (
     get_wagon_path,
     update_plugin_yaml,
     upload_plugin,
-    execute_command)
+    execute_command,
+    upload_plugins_utility)
 
 
 IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
@@ -256,7 +257,10 @@ class EcosystemTestBase(unittest.TestCase):
         os.environ['ECOSYSTEM_SESSION_MANAGER_IP'] = ip
         self.manager_ip = ip
 
-    def upload_plugins(self, plugin_mapping=None):
+    def upload_plugins(self,
+                       plugin_mapping=None,
+                       application_prefix=None,
+                       plugins_to_upload=None):
         """upload plugins after manager install
 
         :param plugin_mapping: the plugin mapping in plugin yaml
@@ -265,19 +269,10 @@ class EcosystemTestBase(unittest.TestCase):
         """
 
         plugin_mapping = plugin_mapping or self.plugin_mapping
+        application_prefix = application_prefix or self.application_prefix
+        plugins_to_upload = plugins_to_upload or self.plugins_to_upload
 
-        update_plugin_yaml(
-            self.application_prefix,
-            plugin_mapping)
-
-        workspace_path = os.path.join(
-            os.path.abspath('workspace'),
-            'build')
-
-        upload_plugin(get_wagon_path(workspace_path))
-
-        for plugin in self.plugins_to_upload:
-            upload_plugin(plugin[0], plugin[1])
+        upload_plugins_utility(plugin_mapping, application_prefix, plugins_to_upload)
 
     def cleanup_deployment(self, deployment_id):
         """force uninstall deployment

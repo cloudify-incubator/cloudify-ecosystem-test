@@ -792,3 +792,21 @@ def create_external_resource_blueprint(
     print "NEW YAML:\n{0}".format(blueprint_yaml)
     write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
     return new_blueprint_path
+
+
+def upload_plugins_utility(application_prefix,
+                           plugin_mapping,
+                           plugins_to_upload):
+
+    update_plugin_yaml(
+        application_prefix,
+        plugin_mapping)
+
+    workspace_path = os.path.join(
+        os.path.abspath('workspace'),
+        'build')
+
+    upload_plugin(get_wagon_path(workspace_path))
+
+    for plugin in plugins_to_upload:
+        upload_plugin(plugin[0], plugin[1])
