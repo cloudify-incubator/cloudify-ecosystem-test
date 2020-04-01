@@ -110,7 +110,3 @@ def update_latest_release_resources(most_recent_release, name='latest'):
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
             upload_asset(asset.name, asset_file)
-
-
-def get_local_version(package_name):
-    return pkg_resources.require(package_name)[0].version
