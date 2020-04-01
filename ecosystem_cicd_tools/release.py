@@ -20,6 +20,7 @@ from os import environ
 from tempfile import NamedTemporaryFile
 
 from github import Github
+from github.GithubException import UnknownObjectException
 
 logging.basicConfig(level=logging.INFO)
 VERSION_STRING_RE = \
@@ -55,11 +56,13 @@ def create_release(name, version, message, commit, repo=None):
 
 
 def get_release(name, repo=None):
+    repo = repo or get_repository()
     logging.info('Attempting to get release {name} from repo {repo}.'.format(
         name=name, repo=repo.name))
-    repo = repo or get_repository()
-    release = repo.get_release(name)
-    return release
+    try:
+        return repo.get_release(name)
+    except UnknownObjectException:
+        return
 
 
 def get_assets(release_name):
@@ -80,12 +83,12 @@ def upload_asset(release_name, asset_path, asset_label):
 
 
 def get_most_recent_release(version_family=None, repo=None):
+    repo = repo or get_repository()
     logging.info('Attempting to get most recent '
                  'release for version family {version} '
                  'from repo {repo}.'.format(
                      version=version_family,
                      repo=repo.name))
-    repo = repo or get_repository()
     releases = repo.get_releases()
     for release in releases:
         if version_family and not release.title.startswith(version_family):
@@ -94,9 +97,9 @@ def get_most_recent_release(version_family=None, repo=None):
 
 
 def update_release(name, message, prerelease=False, repo=None):
+    repo = repo or get_repository()
     logging.info('Attempting to update release {name} for repo {repo}.'.format(
         name=name, repo=repo.name))
-    repo = repo or get_repository()
     release = repo.get_release(name)
     return release.update_release(
         name, message, draft=False, prerelease=prerelease)
@@ -111,7 +114,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
         with open(NamedTemporaryFile().name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
-            upload_asset(asset.name, asset_file)
+            upload_asset(most_recent_release.name, asset.name, asset_file)
 
 
 def find_version(setup_py):
@@ -120,7 +123,9 @@ def find_version(setup_py):
     logging.info('versions {0} '.format(versions))
     if versions:
         v = versions[0].split('=')[1]
+        logging.info('v {0} '.format(v))
         if v.endswith(','):
+            logging.info('enwith {0} '.format(versions))
             return v.split(',')[0]
         return v
     raise RuntimeError("Unable to find version string.")
