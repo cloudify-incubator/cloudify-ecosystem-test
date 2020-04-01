@@ -117,6 +117,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
 def find_version(setup_py):
     with open(setup_py, 'r') as infile:
         versions = re.findall(VERSION_STRING_RE, infile.read())
+    logging.info('versions {0} '.format(versions))
     if versions:
         v = versions[0].split('=')[1]
         if v.endswith(','):
