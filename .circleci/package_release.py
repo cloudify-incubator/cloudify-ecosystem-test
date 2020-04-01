@@ -1,11 +1,14 @@
 
-import ecosystem_cicd_tools
+import os
 from ecosystem_cicd_tools import release
 
 
 if __name__ == '__main__':
 
-    version = ecosystem_cicd_tools.__version__
+    setup_py = os.path.join(
+        os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+        'setup.py')
+    version = release.find_version(setup_py)
     current_repo = release.get_repository()
     version_release = release.get_release(version)
     commit = release.get_commit()

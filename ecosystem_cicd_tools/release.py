@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+import codecs
 import logging
 import requests
-import pkg_resources
 from os import environ
 from tempfile import NamedTemporaryFile
 
@@ -110,3 +111,14 @@ def update_latest_release_resources(most_recent_release, name='latest'):
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
             upload_asset(asset.name, asset_file)
+
+
+def find_version(setup_py):
+    with codecs.open(setup_py, 'r') as version_file:
+        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                                  version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
