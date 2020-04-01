@@ -119,16 +119,15 @@ def update_latest_release_resources(most_recent_release, name='latest'):
 
 def find_version(setup_py):
     with open(setup_py, 'r') as infile:
-        versions = re.findall(VERSION_STRING_RE, infile.read())
-    logging.info('versions {0} '.format(versions))
-    if versions:
-        v = versions[0].split('=')[1]
-        logging.info('v {0} '.format(v))
-        if v.endswith(','):
-            logging.info('enwith {0} '.format(versions))
-            v = v.split(',')[0]
-        v.replace('\'', '')
-        return v
+        version_string = re.findall(VERSION_STRING_RE, infile.read())
+    if version_string:
+        version = version_string[0].split('=')[1]
+        logging.info('Found version {0}.'.format(version))
+        if version.endswith(','):
+            version = version.split(',')[0]
+        if version.startswith("'") and version.endswith("'"):
+            version = version[1:-1]
+        return version
     raise RuntimeError("Unable to find version string.")
 
 
