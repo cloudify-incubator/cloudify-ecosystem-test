@@ -11,8 +11,8 @@ if __name__ == '__main__':
     version = release.find_version(setup_py)
     current_repo = release.get_repository()
     version_release = release.get_release(version)
+    commit = release.get_commit()
     if not version_release:
-        commit = release.get_commit()
         release.create_release(
             version, version, "cloudify-ecosystem-tests-v{0}".format(version),
             commit)
