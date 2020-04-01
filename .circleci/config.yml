@@ -68,6 +68,9 @@ jobs:
       - run:
           name: install tox
           command: pip install --user pygithub pyyaml==3.10
+      - run:
+          name: install local project
+          command: pip install .
       - run: python .circleci/package_release.py
 
 workflows:

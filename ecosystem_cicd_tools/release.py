@@ -113,5 +113,4 @@ def update_latest_release_resources(most_recent_release, name='latest'):
 
 
 def get_local_version(package_name):
-
     return pkg_resources.require(package_name)[0].version
