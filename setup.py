@@ -6,7 +6,7 @@ setup(
     version='2.2.0',
     license='LICENSE',
     packages=[
-        'ecosystem_tests'
+        'ecosystem_tests',
         'ecosystem_cicd_tools',
     ],
     description='Stuff that Ecosystem Tests Use',
