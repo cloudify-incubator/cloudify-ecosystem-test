@@ -126,7 +126,8 @@ def find_version(setup_py):
         logging.info('v {0} '.format(v))
         if v.endswith(','):
             logging.info('enwith {0} '.format(versions))
-            return v.split(',')[0]
+            v = v.split(',')[0]
+        v.replace('\'', '')
         return v
     raise RuntimeError("Unable to find version string.")
 
