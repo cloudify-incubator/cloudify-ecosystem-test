@@ -1,12 +1,12 @@
 
-import ecosystem_cicd_tools
-
+from ecosystem_cicd_tools import (
+    __version__ as version,
+    release
+)
 
 if __name__ == '__main__':
 
-    release = ecosystem_cicd_tools.release
     current_repo = release.get_repository()
-    version = ecosystem_cicd_tools.__version__
     version_release = release.get_release(version)
     commit = release.get_commit()
     if not version_release:
