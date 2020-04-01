@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import re
-import codecs
 import logging
 import requests
 from os import environ
@@ -23,6 +22,8 @@ from tempfile import NamedTemporaryFile
 from github import Github
 
 logging.basicConfig(level=logging.INFO)
+VERSION_STRING_RE = \
+    r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
 
 
 def get_client(github_token=None):
@@ -114,11 +115,13 @@ def update_latest_release_resources(most_recent_release, name='latest'):
 
 
 def find_version(setup_py):
-    with codecs.open(setup_py, 'r') as version_file:
-        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
-                                  version_file, re.M)
-    if version_match:
-        return version_match.group(1)
+    with open(setup_py, 'r') as infile:
+        versions = re.findall(VERSION_STRING_RE, infile.read())
+    if versions:
+        v = versions[0].split('=')[1]
+        if v.endswith(','):
+            return v.split(',')[0]
+        return v
     raise RuntimeError("Unable to find version string.")
 
 
