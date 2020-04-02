@@ -121,7 +121,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
         with open(tmp.name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
-            upload_asset(most_recent_release.title, tmp.name, asset.name)
+            upload_asset(name, tmp.name, asset.name)
 
 
 def find_version(setup_py):
