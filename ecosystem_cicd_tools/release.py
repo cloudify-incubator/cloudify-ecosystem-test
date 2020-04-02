@@ -93,7 +93,7 @@ def get_most_recent_release(version_family=None, repo=None):
                      repo=repo.name))
     releases = repo.get_releases()
     for release in releases:
-        if "latest" not in release.title:
+        if "latest" in release.title:
             continue
         if version_family and not release.title.startswith(version_family):
             continue
@@ -120,7 +120,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
         with open(NamedTemporaryFile().name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
-            upload_asset(most_recent_release.name, asset.name, asset_file)
+            upload_asset(most_recent_release.title, asset.name, asset_file)
 
 
 def find_version(setup_py):
