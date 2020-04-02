@@ -100,8 +100,8 @@ def get_most_recent_release(version_family=None, repo=None):
 
 def update_release(name, message, commit, prerelease=False, repo=None):
     repo = repo or get_repository()
-    logging.info('Attempting to update release {name} for repo {repo}.'.format(
-        name=name, repo=repo.name))
+    logging.info('Attempting to update release {name} for repo {repo} {commit}.'.format(
+        name=name, repo=repo.name, commit=commit))
     release = repo.get_release(name)
     return release.update_release(
         name, message, draft=False, prerelease=prerelease, target_commitish=commit)
