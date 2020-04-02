@@ -1,9 +1,9 @@
 from os import path, pardir
-from ecosystem_cicd_tools.release import plugin_release_with_latest, get_plugin_version
+from ecosystem_cicd_tools.release import plugin_release_with_latest, find_version
 
-# setup_py = path.join(
-#     path.abspath(path.join(path.dirname(__file__), pardir)),
-#     'setup.py')
-#
+setup_py = path.join(
+    path.abspath(path.join(path.dirname(__file__), pardir)),
+    'setup.py')
+
 if __name__ == '__main__':
-    plugin_release_with_latest('cloudify-ecosystem-tests', get_plugin_version())
+    plugin_release_with_latest('cloudify-ecosystem-tests', find_version())
