@@ -117,10 +117,12 @@ def update_latest_release_resources(most_recent_release, name='latest'):
     for asset in get_assets(name):
         asset.delete_asset()
     for asset in get_assets(most_recent_release.title):
-        with open(NamedTemporaryFile().name, 'wb') as asset_file:
+        tmp = NamedTemporaryFile(delete=False)
+        with open(tmp.name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
-            upload_asset(most_recent_release.title, asset.name, asset_file)
+        tmp.close()
+        upload_asset(most_recent_release.title, asset.name, asset_file)
 
 
 def find_version(setup_py):
