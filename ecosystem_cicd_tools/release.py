@@ -93,6 +93,8 @@ def get_most_recent_release(version_family=None, repo=None):
                      repo=repo.name))
     releases = repo.get_releases()
     for release in releases:
+        if "latest" not in release.title:
+            continue
         if version_family and not release.title.startswith(version_family):
             continue
         return release
