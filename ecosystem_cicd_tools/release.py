@@ -98,13 +98,13 @@ def get_most_recent_release(version_family=None, repo=None):
         return release
 
 
-def update_release(name, message, prerelease=False, repo=None):
+def update_release(name, message, commit, prerelease=False, repo=None):
     repo = repo or get_repository()
     logging.info('Attempting to update release {name} for repo {repo}.'.format(
         name=name, repo=repo.name))
     release = repo.get_release(name)
     return release.update_release(
-        release.title, message, draft=False, prerelease=prerelease)
+        name, message, draft=False, prerelease=prerelease, target_commitish=commit)
 
 
 def update_latest_release_resources(most_recent_release, name='latest'):
@@ -165,6 +165,7 @@ def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=No
         update_release(
             "latest",
             plugin_release_name,
+            version_release.target_commitish
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
