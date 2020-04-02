@@ -98,13 +98,13 @@ def get_most_recent_release(version_family=None, repo=None):
         return release
 
 
-def update_release(name, message, commit, prerelease=False, repo=None):
+def update_release(name, message, prerelease=False, repo=None):
     repo = repo or get_repository()
-    logging.info('Attempting to update release {name} for repo {repo} {commit}.'.format(
-        name=name, repo=repo.name, commit=commit))
+    logging.info('Attempting to update release {name} for repo {repo} {message}.'.format(
+        name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
     return release.update_release(
-        name, message, draft=False, prerelease=prerelease, tag_name=name)
+        name, message, draft=False, prerelease=prerelease)
 
 
 def update_latest_release_resources(most_recent_release, name='latest'):
