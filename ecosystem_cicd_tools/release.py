@@ -104,7 +104,7 @@ def update_release(name, message, prerelease=False, repo=None):
         name=name, repo=repo.name))
     release = repo.get_release(name)
     return release.update_release(
-        name, message, draft=False, prerelease=prerelease)
+        release.title, message, draft=False, prerelease=prerelease)
 
 
 def update_latest_release_resources(most_recent_release, name='latest'):
