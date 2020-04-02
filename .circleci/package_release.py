@@ -6,4 +6,4 @@ setup_py = path.join(
     'setup.py')
 
 if __name__ == '__main__':
-    plugin_release_with_latest('cloudify-ecosystem-tests', find_version())
+    plugin_release_with_latest('cloudify-ecosystem-tests', find_version(setup_py))
