@@ -33,6 +33,9 @@ jobs:
           name: start docker container
           command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host docker-cfy-manager:latest
       - run:
+          name: upgrade setuptools
+          command: pip install --upgrade setuptools
+      - run:
           name: Install tox
           command: pip install tox
       - run:
