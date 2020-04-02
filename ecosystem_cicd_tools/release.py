@@ -139,7 +139,6 @@ def get_plugin_version():
 
 
 def plugin_release(plugin_name, version=None, plugin_release_name=None):
-    version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
