@@ -22,6 +22,8 @@ from tempfile import NamedTemporaryFile
 from github import Github
 from github.GithubException import UnknownObjectException
 
+from packaging import package_blueprint
+
 logging.basicConfig(level=logging.INFO)
 VERSION_STRING_RE = \
     r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
@@ -138,25 +140,27 @@ def get_plugin_version():
     return find_version(setup_py)
 
 
-def plugin_release(plugin_name, version=None, plugin_release_name=None):
+def plugin_release(plugin_name, version=None, plugin_release_name=None, plugins=None):
+    plugins = plugins or {}
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
     commit = get_commit()
     if not version_release:
-        create_release(
+        version_release = create_release(
             version, version, plugin_release_name,
             commit)
-    return commit, plugin_release_name
+    # TODO: ADD Plugin Packaging and Upload.
+    return version_release
 
 
-def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=None):
-    commit, plugin_release_name = plugin_release(plugin_name, version, plugin_release_name)
+def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=None, plugins=None):
+    version_release = plugin_release(plugin_name, version, plugin_release_name, plugins)
     if not get_release("latest"):
         create_release(
             "latest", "latest", plugin_release_name,
-            commit)
+            version_release.commit)
     else:
         update_release(
             "latest",
@@ -164,3 +168,36 @@ def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=No
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
+
+
+def blueprint_release(blueprint_name, version, blueprint_release_name=None, blueprints=None):
+    blueprints = blueprints or {}
+    blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
+        blueprint_name, version)
+    version_release = get_release(version)
+    commit = get_commit()
+    if not version_release:
+        version_release = create_release(
+            version, version, blueprint_release_name,
+            commit)
+    for blueprint_id, blueprint_path in blueprints.items():
+        blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
+        version_release.upload_asset(version_release.title, blueprint_id, blueprint_archive)
+    return version_release
+
+
+def blueprint_release_with_latest(plugin_name, version=None, blueprint_release_name=None, blueprints=None):
+    version_release = blueprint_release(plugin_name, version, blueprint_release_name, )
+    if not get_release("latest"):
+        create_release(
+            "latest", "latest", blueprint_release_name,
+            version_release.commit)
+    else:
+        update_release(
+            "latest",
+            blueprint_release_name,
+        )
+    latest_release = get_most_recent_release()
+    update_latest_release_resources(latest_release)
+
+
