@@ -17,22 +17,12 @@ from utils import (
     initialize_cfy_profile,
     create_password,
     create_blueprint,
-    get_resource_ids_by_type,
-    get_wagon_path,
-    update_plugin_yaml,
-    upload_plugin,
     execute_command,
     upload_plugins_utility)
 
 
-IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
-DIAMOND_WAGON = 'https://github.com/cloudify-cosmo/' \
-                'cloudify-diamond-plugin/releases/' \
-                'download/1.3.8/cloudify_diamond_plugin-' \
-                '1.3.8-py27-none-linux_x86_64-centos-Core.wgn'
-DIAMOND_YAML = 'https://github.com/cloudify-cosmo/' \
-               'cloudify-diamond-plugin/releases/' \
-               'download/1.3.8/plugin.yaml'
+IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}"
+
 CFY_LOCAL_FILE = 'test'
 
 
@@ -116,7 +106,7 @@ class EcosystemTestBase(unittest.TestCase):
     @property
     def plugins_to_upload(self):
         """plugin yamls to upload to manager"""
-        return [(DIAMOND_WAGON, DIAMOND_YAML)]
+        return []
 
     @property
     def sensitive_data(self):
@@ -272,7 +262,8 @@ class EcosystemTestBase(unittest.TestCase):
         application_prefix = application_prefix or self.application_prefix
         plugins_to_upload = plugins_to_upload or self.plugins_to_upload
 
-        upload_plugins_utility(plugin_mapping, application_prefix, plugins_to_upload)
+        upload_plugins_utility(
+            plugin_mapping, application_prefix, plugins_to_upload)
 
     def cleanup_deployment(self, deployment_id):
         """force uninstall deployment

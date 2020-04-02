@@ -3,10 +3,11 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.1.2',
+    version='2.2.0',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
+        'ecosystem_cicd_tools',
     ],
     description='Stuff that Ecosystem Tests Use',
     install_requires=[
