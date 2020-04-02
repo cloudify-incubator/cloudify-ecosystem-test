@@ -16,7 +16,7 @@
 import re
 import logging
 import requests
-from os import environ
+from os import environ, path, pardir
 from tempfile import NamedTemporaryFile
 
 from github import Github
@@ -131,7 +131,15 @@ def find_version(setup_py):
     raise RuntimeError("Unable to find version string.")
 
 
-def plugin_release(plugin_name, version, plugin_release_name=None):
+def get_plugin_version():
+    setup_py = path.join(
+        path.abspath(path.join(path.dirname(__file__), pardir)),
+        'setup.py')
+    return find_version(setup_py)
+
+
+def plugin_release(plugin_name, version=None, plugin_release_name=None):
+    version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
@@ -143,8 +151,8 @@ def plugin_release(plugin_name, version, plugin_release_name=None):
     return commit, plugin_release_name
 
 
-def plugin_release_with_latest(plugin_name):
-    commit, plugin_release_name = plugin_release(plugin_name)
+def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=None):
+    commit, plugin_release_name = plugin_release(plugin_name, version, plugin_release_name)
     if not get_release("latest"):
         create_release(
             "latest", "latest", plugin_release_name,
