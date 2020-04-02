@@ -141,7 +141,7 @@ def get_plugin_version():
 
 
 def plugin_release(plugin_name, version=None, plugin_release_name=None, plugins=None):
-    plugins = plugins or {}
+    # plugins = plugins or {}
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -160,7 +160,7 @@ def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=No
     if not get_release("latest"):
         create_release(
             "latest", "latest", plugin_release_name,
-            version_release.commit)
+            version_release.target_commitish)
     else:
         update_release(
             "latest",
