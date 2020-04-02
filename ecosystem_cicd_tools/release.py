@@ -100,8 +100,10 @@ def get_most_recent_release(version_family=None, repo=None):
 
 def update_release(name, message, prerelease=False, repo=None):
     repo = repo or get_repository()
-    logging.info('Attempting to update release {name} for repo {repo} {message}.'.format(
-        name=name, repo=repo.name, message=message))
+    logging.info(
+        'Attempting to update release {name} '
+        'for repo {repo} {message}.'.format(
+            name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
     return release.update_release(
         name, message, draft=False, prerelease=prerelease)
@@ -140,7 +142,11 @@ def get_plugin_version():
     return find_version(setup_py)
 
 
-def plugin_release(plugin_name, version=None, plugin_release_name=None, plugins=None):
+def plugin_release(plugin_name,
+                   version=None,
+                   plugin_release_name=None,
+                   plugins=None):
+
     # plugins = plugins or {}
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
@@ -155,8 +161,15 @@ def plugin_release(plugin_name, version=None, plugin_release_name=None, plugins=
     return version_release
 
 
-def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=None, plugins=None):
-    version_release = plugin_release(plugin_name, version, plugin_release_name, plugins)
+def plugin_release_with_latest(plugin_name,
+                               version=None,
+                               plugin_release_name=None,
+                               plugins=None):
+
+    plugin_release_name = plugin_release_name or "{0}-v{1}".format(
+        plugin_name, version)
+    version_release = plugin_release(
+        plugin_name, version, plugin_release_name, plugins)
     if not get_release("latest"):
         create_release(
             "latest", "latest", plugin_release_name,
@@ -165,13 +178,16 @@ def plugin_release_with_latest(plugin_name, version=None, plugin_release_name=No
         update_release(
             "latest",
             plugin_release_name,
-            version_release.target_commitish
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
 
 
-def blueprint_release(blueprint_name, version, blueprint_release_name=None, blueprints=None):
+def blueprint_release(blueprint_name,
+                      version,
+                      blueprint_release_name=None,
+                      blueprints=None):
+
     blueprints = blueprints or {}
     blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
         blueprint_name, version)
@@ -183,12 +199,19 @@ def blueprint_release(blueprint_name, version, blueprint_release_name=None, blue
             commit)
     for blueprint_id, blueprint_path in blueprints.items():
         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
-        version_release.upload_asset(version_release.title, blueprint_id, blueprint_archive)
+        version_release.upload_asset(
+            version_release.title, blueprint_id, blueprint_archive)
     return version_release
 
 
-def blueprint_release_with_latest(plugin_name, version=None, blueprint_release_name=None, blueprints=None):
-    version_release = blueprint_release(plugin_name, version, blueprint_release_name, )
+def blueprint_release_with_latest(plugin_name,
+                                  version=None,
+                                  blueprint_release_name=None,
+                                  blueprints=None):
+
+    version_release = blueprint_release(
+        plugin_name, version, blueprint_release_name)
+
     if not get_release("latest"):
         create_release(
             "latest", "latest", blueprint_release_name,
@@ -200,5 +223,3 @@ def blueprint_release_with_latest(plugin_name, version=None, blueprint_release_n
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
-
-

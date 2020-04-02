@@ -21,7 +21,7 @@ from utils import (
     upload_plugins_utility)
 
 
-IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+IP_ADDRESS_REGEX = "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}"
 
 CFY_LOCAL_FILE = 'test'
 
