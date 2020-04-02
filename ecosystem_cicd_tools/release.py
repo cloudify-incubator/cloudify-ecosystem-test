@@ -117,7 +117,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
     for asset in get_assets(name):
         asset.delete_asset()
     for asset in get_assets(most_recent_release.title):
-        logging.info('ASSET: {0}'.format(asset))
+        logging.info('ASSET: {0} {1} {2}'.format(asset.label, asset.id, asset.name))
         tmp = NamedTemporaryFile(delete=False)
         with open(tmp.name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
