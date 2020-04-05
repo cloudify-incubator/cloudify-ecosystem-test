@@ -61,7 +61,13 @@ def get_release(name, repo=None):
     repo = repo or get_repository()
     logging.info('Attempting to get release {name} from repo {repo}.'.format(
         name=name, repo=repo.name))
-    return repo.get_release(name)
+    try:
+        return repo.get_release(name)
+    except UnknownObjectException:
+        logging.info(
+            'Failed to get release {name} from repo {repo}.'.format(
+                name=name, repo=repo.name))
+        return
 
 
 def get_assets(release_name):
