@@ -224,7 +224,7 @@ def blueprint_release_with_latest(plugin_name,
                                   blueprints=None):
 
     version_release = blueprint_release(
-        plugin_name, version, blueprint_release_name)
+        plugin_name, version, blueprint_release_name, blueprints)
 
     if not get_release("latest"):
         create_release(
