@@ -44,8 +44,8 @@ def get_repository(client=None, org=None, repo_name=None):
 
 
 def get_commit(commit_id=None, repo=None):
-    logging.info('Attempting to get commit {name}.'.format(name=commit_id))
     commit_id = commit_id or environ['CIRCLE_SHA1']
+    logging.info('Attempting to get commit {name}.'.format(name=commit_id))
     repo = repo or get_repository()
     return repo.get_commit(commit_id)
 
@@ -175,6 +175,27 @@ def plugin_release(plugin_name,
     return version_release
 
 
+def blueprint_release(blueprint_name,
+                      version,
+                      blueprint_release_name=None,
+                      blueprints=None):
+
+    blueprints = blueprints or {}
+    blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
+        blueprint_name, version)
+    version_release = get_release(version)
+    commit = get_commit()
+    if not version_release:
+        version_release = create_release(
+            version, version, blueprint_release_name,
+            commit)
+    for blueprint_id, blueprint_path in blueprints.items():
+        blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
+        version_release.upload_asset(
+            version_release.title, blueprint_id, blueprint_archive)
+    return version_release
+
+
 def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None,
@@ -195,27 +216,6 @@ def plugin_release_with_latest(plugin_name,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
-
-
-def blueprint_release(blueprint_name,
-                      version,
-                      blueprint_release_name=None,
-                      blueprints=None):
-
-    blueprints = blueprints or {}
-    blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
-        blueprint_name, version)
-    version_release = get_release(version)
-    commit = get_commit()
-    if not version_release:
-        version_release = create_release(
-            version, version, blueprint_release_name,
-            commit)
-    for blueprint_id, blueprint_path in blueprints.items():
-        blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
-        version_release.upload_asset(
-            version_release.title, blueprint_id, blueprint_archive)
-    return version_release
 
 
 def blueprint_release_with_latest(plugin_name,

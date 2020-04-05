@@ -46,7 +46,7 @@ def package_blueprint(name, source_directory):
 def create_archive(source_directory, destination):
     logging.info(
         'Packaging archive from source: {0} to destination: {1}.'.format(
-            source_directory, destination.name))
+            source_directory, destination))
     zip_file = zipfile.ZipFile(destination, 'w')
     for root, _, files in walk(source_directory):
         for filename in files:
