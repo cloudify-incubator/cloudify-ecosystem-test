@@ -230,7 +230,7 @@ def blueprint_release_with_latest(plugin_name,
     if not get_release("latest"):
         create_release(
             "latest", "latest", blueprint_release_name,
-            version_release.commit)
+            version_release.target_commitish)
     else:
         update_release(
             "latest",
