@@ -111,7 +111,7 @@ def get_most_recent_release(version_family=None, repo=None):
         return release
 
 
-def update_release(name, message, prerelease=False, repo=None):
+def update_release(name, message, commit, prerelease=False, repo=None):
     repo = repo or get_repository()
     logging.info(
         'Attempting to update release {name} '
@@ -119,7 +119,8 @@ def update_release(name, message, prerelease=False, repo=None):
             name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
     return release.update_release(
-        name, message, draft=False, prerelease=prerelease)
+        name, message, draft=False, prerelease=prerelease,
+        target_commitish=commit)
 
 
 def update_latest_release_resources(most_recent_release, name='latest'):
@@ -213,6 +214,7 @@ def plugin_release_with_latest(plugin_name,
         update_release(
             "latest",
             plugin_release_name,
+            commit=version_release.commit,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
@@ -225,7 +227,6 @@ def blueprint_release_with_latest(plugin_name,
 
     version_release = blueprint_release(
         plugin_name, version, blueprint_release_name, blueprints)
-
     if not get_release("latest"):
         create_release(
             "latest", "latest", blueprint_release_name,
@@ -234,6 +235,7 @@ def blueprint_release_with_latest(plugin_name,
         update_release(
             "latest",
             blueprint_release_name,
+            commit=version_release.commit,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
