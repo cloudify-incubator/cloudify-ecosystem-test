@@ -35,6 +35,9 @@ def get_workspace_files():
 
 def package_blueprint(name, source_directory):
     archive_temp = NamedTemporaryFile(delete=False)
+    if '/' in name:
+        name = name.replace('/', '-')
+        name = name.strip('-')
     destination = path.join(
         path.dirname(archive_temp.name), '{0}.zip'.format(name))
     create_archive(source_directory, archive_temp.name)
