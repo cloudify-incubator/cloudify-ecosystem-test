@@ -192,7 +192,8 @@ def blueprint_release(blueprint_name,
             commit)
     for blueprint_id, blueprint_path in blueprints.items():
         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
-        upload_asset(version_release.title, blueprint_archive, blueprint_archive)
+        version_release.upload_asset(
+            blueprint_archive, blueprint_archive, 'application/zip')
     return version_release
 
 
