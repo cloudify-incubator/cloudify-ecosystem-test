@@ -20,7 +20,7 @@ from os import environ, path, pardir
 from tempfile import NamedTemporaryFile
 
 from github import Github
-from github.GithubException import UnknownObjectException
+from github.GithubException import UnknownObjectException, GithubException
 
 from packaging import package_blueprint
 
@@ -61,10 +61,7 @@ def get_release(name, repo=None):
     repo = repo or get_repository()
     logging.info('Attempting to get release {name} from repo {repo}.'.format(
         name=name, repo=repo.name))
-    try:
-        return repo.get_release(name)
-    except UnknownObjectException:
-        return
+    return repo.get_release(name)
 
 
 def get_assets(release_name):
@@ -81,7 +78,15 @@ def upload_asset(release_name, asset_path, asset_label):
                      label=asset_label,
                      name=release_name))
     release = get_release(release_name)
-    release.upload_asset(asset_path, asset_label)
+    try:
+        release.upload_asset(asset_path, asset_label)
+    except GithubException:
+        logging.info('Failed to upload new asset: '
+                     '{path}:{label} to release {name}.'.format(
+                         path=asset_path,
+                         label=asset_label,
+                         name=release_name))
+        raise
 
 
 def get_most_recent_release(version_family=None, repo=None):
@@ -121,7 +126,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
         with open(tmp.name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
-            upload_asset(name, tmp.name, asset.label or asset.name)
+        upload_asset(name, tmp.name, asset.label or asset.name)
 
 
 def find_version(setup_py):
