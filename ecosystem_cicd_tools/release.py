@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import re
+import shutil
 import logging
 import requests
 from os import environ, path, pardir
@@ -133,6 +134,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
         with open(tmp.name, 'wb') as asset_file:
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
+        shutil.move(tmp.name, asset.name)
         upload_asset(name, tmp.name, asset.label or asset.name)
 
 
