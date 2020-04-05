@@ -214,7 +214,7 @@ def plugin_release_with_latest(plugin_name,
         update_release(
             "latest",
             plugin_release_name,
-            commit=version_release.commit,
+            commit=version_release.target_commitish,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
@@ -235,7 +235,7 @@ def blueprint_release_with_latest(plugin_name,
         update_release(
             "latest",
             blueprint_release_name,
-            commit=version_release.commit,
+            commit=version_release.target_commitish,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
