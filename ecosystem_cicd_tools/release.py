@@ -193,7 +193,9 @@ def blueprint_release(blueprint_name,
     for blueprint_id, blueprint_path in blueprints.items():
         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
         version_release.upload_asset(
-            blueprint_archive, blueprint_archive, 'application/zip')
+            blueprint_archive,
+            path.basename(blueprint_archive),
+            'application/zip')
     return version_release
 
 
