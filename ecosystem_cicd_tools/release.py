@@ -135,7 +135,7 @@ def update_latest_release_resources(most_recent_release, name='latest'):
             r = requests.get(asset.browser_download_url, stream=True)
             asset_file.write(r.content)
         shutil.move(tmp.name, asset.name)
-        upload_asset(name, tmp.name, asset.label or asset.name)
+        upload_asset(name, asset.name, asset.label or asset.name)
 
 
 def find_version(setup_py):
