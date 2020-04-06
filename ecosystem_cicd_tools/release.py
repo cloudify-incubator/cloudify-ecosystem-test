@@ -194,9 +194,13 @@ def blueprint_release(blueprint_name,
             commit)
     for blueprint_id, blueprint_path in blueprints.items():
         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
+        file_wo_ext, ext = path.splitext(blueprint_archive)
+        new_archive_name = path.basename(
+            '{file_wo_ext}-{version}{ext}'.format(
+                file_wo_ext=file_wo_ext, version=version, ext=ext))
         version_release.upload_asset(
             blueprint_archive,
-            path.basename(blueprint_archive),
+            new_archive_name,
             'application/zip')
     return version_release
 
