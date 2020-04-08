@@ -66,7 +66,7 @@ def create_release(name, version, message, commit, repo=None):
         return repo.create_git_release(
             tag=version, name=name, message=message,
             target_commitish=commit)
-    except AssertionError:
+    except (GithubException, AssertionError):
         return repo.create_git_release(tag=version, name=name, message=message)
 
 
@@ -137,7 +137,7 @@ def update_release(name, message, commit, prerelease=False, repo=None):
         return release.update_release(
             name, message, draft=False, prerelease=prerelease,
             target_commitish=commit)
-    except AssertionError:
+    except (GithubException, AssertionError):
         return release.update_release(
             name, message, draft=False, prerelease=prerelease)
 
