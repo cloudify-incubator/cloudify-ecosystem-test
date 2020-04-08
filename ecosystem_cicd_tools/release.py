@@ -124,10 +124,14 @@ def update_release(name, message, commit, prerelease=False, repo=None):
         'for repo {repo} {message}.'.format(
             name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
+    logging.info('This is what we are sending: {0}'.format(
+        (name, message, False, prerelease, commit)))
     if commit:
         return release.update_release(
             name, message, draft=False, prerelease=prerelease,
             target_commitish=commit)
+    logging.info('This is what we are sending: {0}'.format(
+        (name, message, False, prerelease)))
     return release.update_release(
         name, message, draft=False, prerelease=prerelease)
 
