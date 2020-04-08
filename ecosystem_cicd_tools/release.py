@@ -20,7 +20,7 @@ import requests
 from os import environ, path, pardir
 from tempfile import NamedTemporaryFile
 
-from github import Github
+from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
 
 from packaging import package_blueprint
@@ -48,6 +48,8 @@ def get_commit(commit_id=None, repo=None):
     commit_id = commit_id or environ['CIRCLE_SHA1']
     logging.info('Attempting to get commit {name}.'.format(name=commit_id))
     repo = repo or get_repository()
+    if isinstance(commit_id, Commit):
+        commit_id = commit_id.commit
     try:
         return repo.get_commit(commit_id)
     except GithubException:
