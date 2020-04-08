@@ -53,7 +53,8 @@ def get_commit(commit_id=None, repo=None):
     try:
         return repo.get_commit(commit_id)
     except (GithubException, AssertionError):
-        return
+        logging.info('Commit {commit_id} not found.'.format(
+            commit_id=commit_id))
 
 
 def create_release(name, version, message, commit, repo=None):
