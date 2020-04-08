@@ -57,8 +57,10 @@ def get_commit(commit_id=None, repo=None):
 def create_release(name, version, message, commit, repo=None):
     logging.info('Attempting to create new release {name}.'.format(name=name))
     repo = repo or get_repository()
-    return repo.create_git_release(
-        tag=version, name=name, message=message, target_commitish=commit)
+    if commit:
+        return repo.create_git_release(
+            tag=version, name=name, message=message, target_commitish=commit)
+    return repo.create_git_release(tag=version, name=name, message=message)
 
 
 def get_release(name, repo=None):
@@ -122,9 +124,12 @@ def update_release(name, message, commit, prerelease=False, repo=None):
         'for repo {repo} {message}.'.format(
             name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
+    if commit:
+        return release.update_release(
+            name, message, draft=False, prerelease=prerelease,
+            target_commitish=commit)
     return release.update_release(
-        name, message, draft=False, prerelease=prerelease,
-        target_commitish=commit)
+        name, message, draft=False, prerelease=prerelease)
 
 
 def update_latest_release_resources(most_recent_release, name='latest'):
