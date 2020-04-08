@@ -61,6 +61,8 @@ def create_release(name, version, message, commit, repo=None):
     logging.info('Attempting to create new release {name}.'.format(name=name))
     repo = repo or get_repository()
     commit = get_commit(commit)
+    if not commit:
+        return repo.create_git_release(tag=version, name=name, message=message)
     return repo.create_git_release(
         tag=version, name=name, message=message, target_commitish=commit)
 
@@ -127,6 +129,9 @@ def update_release(name, message, commit, prerelease=False, repo=None):
             name=name, repo=repo.name, message=message))
     release = repo.get_release(name)
     commit = get_commit(commit)
+    if not commit:
+        return repo.update_release(
+            name, message, draft=False, prerelease=prerelease)
     return release.update_release(
         name, message, draft=False, prerelease=prerelease,
         target_commitish=commit)
