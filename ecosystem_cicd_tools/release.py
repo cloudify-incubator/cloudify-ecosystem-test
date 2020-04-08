@@ -50,11 +50,9 @@ def get_commit(commit_id=None, repo=None):
     repo = repo or get_repository()
     if isinstance(commit_id, Commit.Commit):
         commit_id = commit_id.commit
-    if not commit_id:
-        return
     try:
         return repo.get_commit(commit_id)
-    except GithubException:
+    except (GithubException, AssertionError):
         return
 
 
