@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.2.13.1',
+    version='2.2.14',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
