@@ -48,7 +48,10 @@ def get_commit(commit_id=None, repo=None):
     commit_id = commit_id or environ['CIRCLE_SHA1']
     logging.info('Attempting to get commit {name}.'.format(name=commit_id))
     repo = repo or get_repository()
-    return repo.get_commit(commit_id)
+    try:
+        return repo.get_commit(commit_id)
+    except GithubException:
+        return
 
 
 def create_release(name, version, message, commit, repo=None):
@@ -219,6 +222,7 @@ def plugin_release_with_latest(plugin_name,
             "latest", "latest", plugin_release_name,
             version_release.target_commitish)
     else:
+
         update_release(
             "latest",
             plugin_release_name,
