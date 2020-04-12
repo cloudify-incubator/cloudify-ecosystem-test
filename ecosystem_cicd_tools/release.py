@@ -255,12 +255,12 @@ def plugin_release_with_latest(plugin_name,
         latest_release = get_release_by_name("latest")
         if latest_release:
             logging.info(
-                'Attempting to update release with name latest to name with name {name}'.format(
+                'Attempting to update release with name latest to name with '
+                'name {name}'.format(
                     name=latest_release.tag_name))
             latest_release.update_release(name=latest_release.tag_name,
                                           message=latest_release.body)
 
-        # if the jenkins already created release so i can only update release name and dont need to handle assets
         plugin_create_latest_release(plugin_name=plugin_name, version=version,
                                      plugin_release_name=plugin_release_name)
 
