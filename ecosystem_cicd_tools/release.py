@@ -179,7 +179,6 @@ def blueprint_release(blueprint_name,
                       version,
                       blueprint_release_name=None,
                       blueprints=None):
-
     blueprints = blueprints or {}
     blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
         blueprint_name, version)
@@ -229,7 +228,6 @@ def blueprint_release_with_latest(plugin_name,
                                   version=None,
                                   blueprint_release_name=None,
                                   blueprints=None):
-
     version_release = blueprint_release(
         plugin_name, version, blueprint_release_name, blueprints)
     if not get_release("latest"):
@@ -244,6 +242,7 @@ def blueprint_release_with_latest(plugin_name,
         )
     latest_release = get_most_recent_release()
     update_latest_release_resources(latest_release)
+
 
 def plugin_release_with_latest(plugin_name,
                                version=None,
@@ -274,7 +273,8 @@ def delete_latest_tag_if_exists():
     repo = get_repository()
     try:
         logging.info(
-            'Attempting  to delete Tag with name "latest" in repository {repo}.'.format(
+            'Attempting  to delete Tag with name "latest" in '
+            'repository {repo}.'.format(
                 repo=repo.name))
         latest_tag_ref = repo.get_git_ref('tags/latest')
     except UnknownObjectException:
