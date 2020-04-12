@@ -81,18 +81,18 @@ def get_assets(release_name):
 def upload_asset(release_name, asset_path, asset_label):
     logging.info('Attempting upload new asset '
                  '{path}:{label} to release {name}.'.format(
-                     path=asset_path,
-                     label=asset_label,
-                     name=release_name))
+        path=asset_path,
+        label=asset_label,
+        name=release_name))
     release = get_release(release_name)
     try:
         release.upload_asset(asset_path, asset_label)
     except GithubException:
         logging.info('Failed to upload new asset: '
                      '{path}:{label} to release {name}.'.format(
-                         path=asset_path,
-                         label=asset_label,
-                         name=release_name))
+            path=asset_path,
+            label=asset_label,
+            name=release_name))
         raise
 
 
@@ -101,8 +101,8 @@ def get_most_recent_release(version_family=None, repo=None):
     logging.info('Attempting to get most recent '
                  'release for version family {version} '
                  'from repo {repo}.'.format(
-                     version=version_family,
-                     repo=repo.name))
+        version=version_family,
+        repo=repo.name))
     releases = repo.get_releases()
     for release in releases:
         if "latest" in release.title:
@@ -163,7 +163,6 @@ def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
                    plugins=None):
-
     # plugins = plugins or {}
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
@@ -178,72 +177,120 @@ def plugin_release(plugin_name,
     return version_release
 
 
-def blueprint_release(blueprint_name,
-                      version,
-                      blueprint_release_name=None,
-                      blueprints=None):
+# def blueprint_release(blueprint_name,
+#                       version,
+#                       blueprint_release_name=None,
+#                       blueprints=None):
+#
+#     blueprints = blueprints or {}
+#     blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
+#         blueprint_name, version)
+#     version_release = get_release(version)
+#     commit = get_commit()
+#     if not version_release:
+#         version_release = create_release(
+#             version, version, blueprint_release_name,
+#             commit)
+#     for blueprint_id, blueprint_path in blueprints.items():
+#         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
+#         file_wo_ext, ext = path.splitext(blueprint_archive)
+#         new_archive_name = path.basename(
+#             '{file_wo_ext}-{version}{ext}'.format(
+#                 file_wo_ext=file_wo_ext, version=version, ext=ext))
+#         version_release.upload_asset(
+#             blueprint_archive,
+#             new_archive_name,
+#             'application/zip')
+#     return version_release
 
-    blueprints = blueprints or {}
-    blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
-        blueprint_name, version)
-    version_release = get_release(version)
-    commit = get_commit()
-    if not version_release:
-        version_release = create_release(
-            version, version, blueprint_release_name,
-            commit)
-    for blueprint_id, blueprint_path in blueprints.items():
-        blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
-        file_wo_ext, ext = path.splitext(blueprint_archive)
-        new_archive_name = path.basename(
-            '{file_wo_ext}-{version}{ext}'.format(
-                file_wo_ext=file_wo_ext, version=version, ext=ext))
-        version_release.upload_asset(
-            blueprint_archive,
-            new_archive_name,
-            'application/zip')
-    return version_release
+
+# def plugin_release_with_latest(plugin_name,
+#                                version=None,
+#                                plugin_release_name=None,
+#                                plugins=None):
+#
+#     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
+#         plugin_name, version)
+#     version_release = plugin_release(
+#         plugin_name, version, plugin_release_name, plugins)
+#     if not get_release("latest"):
+#         create_release(
+#             "latest", "latest", plugin_release_name,
+#             version_release.target_commitish)
+#     else:
+#         update_release(
+#             "latest",
+#             plugin_release_name,
+#             commit=version_release.target_commitish,
+#         )
+#     latest_release = get_most_recent_release()
+#     update_latest_release_resources(latest_release)
 
 
+# def blueprint_release_with_latest(plugin_name,
+#                                   version=None,
+#                                   blueprint_release_name=None,
+#                                   blueprints=None):
+#
+#     version_release = blueprint_release(
+#         plugin_name, version, blueprint_release_name, blueprints)
+#     if not get_release("latest"):
+#         create_release(
+#             "latest", "latest", blueprint_release_name,
+#             version_release.target_commitish)
+#     else:
+#         update_release(
+#             "latest",
+#             blueprint_release_name,
+#             commit=version_release.target_commitish,
+#         )
+#     latest_release = get_most_recent_release()
+#     update_latest_release_resources(latest_release)
 def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None,
                                plugins=None):
+    # if we have release for this version we dont want to update nothing
+    if not get_release(version):
+        latest_release = get_release_by_name("latest")
+        if latest_release:
+            logging.info(
+                'Attempting to update release with name latest to name with name {name}'.format(
+                    name=latest_release.tag_name))
+            latest_release.update_release(name=latest_release.tag_name,
+                                          message=latest_release.body)
 
+        # if the jenkins already created release so i can only update release name and dont need to handle assets
+        plugin_create_latest_release(plugin_name=plugin_name, version=version,
+                                     plugin_release_name=plugin_release_name)
+
+
+def plugin_create_latest_release(plugin_name, version=None,
+                                 plugin_release_name=None):
+    version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
-    version_release = plugin_release(
-        plugin_name, version, plugin_release_name, plugins)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", plugin_release_name,
-            version_release.target_commitish)
-    else:
-        update_release(
-            "latest",
-            plugin_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
+    version_release = create_release(
+        "latest", version, plugin_release_name,
+        commit="master")
+    # TODO: ADD Plugin Packaging and Upload.
+
+    return version_release
 
 
-def blueprint_release_with_latest(plugin_name,
-                                  version=None,
-                                  blueprint_release_name=None,
-                                  blueprints=None):
+def get_release_by_name(release_name):
+    repo = get_repository()
+    logging.info('Attempting to get release with name {release_name}'.format(
+        release_name=release_name))
+    releases = repo.get_releases()
+    for release in releases:
+        if release_name == release.title:
+            return release
 
-    version_release = blueprint_release(
-        plugin_name, version, blueprint_release_name, blueprints)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", blueprint_release_name,
-            version_release.target_commitish)
-    else:
-        update_release(
-            "latest",
-            blueprint_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
+
+if __name__ == '__main__':
+    environ['CIRCLE_PROJECT_USERNAME'] = 'AdarShaked'
+    environ['CIRCLE_PROJECT_REPONAME'] = 'git-relaease-tut'
+    environ['RELEASE_BUILD_TOKEN'] = ''
+    plugin_release_with_latest(
+        'cloudify-utilities-plugin', '1.9')
