@@ -177,31 +177,30 @@ def plugin_release(plugin_name,
     return version_release
 
 
-# def blueprint_release(blueprint_name,
-#                       version,
-#                       blueprint_release_name=None,
-#                       blueprints=None):
-#
-#     blueprints = blueprints or {}
-#     blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
-#         blueprint_name, version)
-#     version_release = get_release(version)
-#     commit = get_commit()
-#     if not version_release:
-#         version_release = create_release(
-#             version, version, blueprint_release_name,
-#             commit)
-#     for blueprint_id, blueprint_path in blueprints.items():
-#         blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
-#         file_wo_ext, ext = path.splitext(blueprint_archive)
-#         new_archive_name = path.basename(
-#             '{file_wo_ext}-{version}{ext}'.format(
-#                 file_wo_ext=file_wo_ext, version=version, ext=ext))
-#         version_release.upload_asset(
-#             blueprint_archive,
-#             new_archive_name,
-#             'application/zip')
-#     return version_release
+def blueprint_release(blueprint_name,
+                      version,
+                      blueprint_release_name=None,
+                      blueprints=None):
+    blueprints = blueprints or {}
+    blueprint_release_name = blueprint_release_name or "{0}-v{1}".format(
+        blueprint_name, version)
+    version_release = get_release(version)
+    commit = get_commit()
+    if not version_release:
+        version_release = create_release(
+            version, version, blueprint_release_name,
+            commit)
+    for blueprint_id, blueprint_path in blueprints.items():
+        blueprint_archive = package_blueprint(blueprint_id, blueprint_path)
+        file_wo_ext, ext = path.splitext(blueprint_archive)
+        new_archive_name = path.basename(
+            '{file_wo_ext}-{version}{ext}'.format(
+                file_wo_ext=file_wo_ext, version=version, ext=ext))
+        version_release.upload_asset(
+            blueprint_archive,
+            new_archive_name,
+            'application/zip')
+    return version_release
 
 
 # def plugin_release_with_latest(plugin_name,
@@ -227,25 +226,26 @@ def plugin_release(plugin_name,
 #     update_latest_release_resources(latest_release)
 
 
-# def blueprint_release_with_latest(plugin_name,
-#                                   version=None,
-#                                   blueprint_release_name=None,
-#                                   blueprints=None):
-#
-#     version_release = blueprint_release(
-#         plugin_name, version, blueprint_release_name, blueprints)
-#     if not get_release("latest"):
-#         create_release(
-#             "latest", "latest", blueprint_release_name,
-#             version_release.target_commitish)
-#     else:
-#         update_release(
-#             "latest",
-#             blueprint_release_name,
-#             commit=version_release.target_commitish,
-#         )
-#     latest_release = get_most_recent_release()
-#     update_latest_release_resources(latest_release)
+def blueprint_release_with_latest(plugin_name,
+                                  version=None,
+                                  blueprint_release_name=None,
+                                  blueprints=None):
+    version_release = blueprint_release(
+        plugin_name, version, blueprint_release_name, blueprints)
+    if not get_release("latest"):
+        create_release(
+            "latest", "latest", blueprint_release_name,
+            version_release.target_commitish)
+    else:
+        update_release(
+            "latest",
+            blueprint_release_name,
+            commit=version_release.target_commitish,
+        )
+    latest_release = get_most_recent_release()
+    update_latest_release_resources(latest_release)
+
+
 def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None,
