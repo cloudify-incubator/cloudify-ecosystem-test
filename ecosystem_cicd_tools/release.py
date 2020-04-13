@@ -180,7 +180,9 @@ def get_plugin_version():
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
+                   plugins=None,
                    release_name=None):
+    # plugins = plugins or {}
     version = version or get_plugin_version()
     release_name = release_name or version
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
@@ -224,7 +226,8 @@ def blueprint_release(blueprint_name,
 
 def plugin_release_with_latest(plugin_name,
                                version=None,
-                               plugin_release_name=None):
+                               plugin_release_name=None,
+                               plugins=None):
     # if we have release for this version we dont want to update nothing
     if not get_release(version):
         latest_release = get_release_by_name("latest")
@@ -237,7 +240,7 @@ def plugin_release_with_latest(plugin_name,
                                           message=latest_release.body)
 
         plugin_release(plugin_name=plugin_name, version=version,
-                       plugin_release_name=plugin_release_name,
+                       plugin_release_name=plugin_release_name, plugins=plugins,
                        release_name="latest")
 
         # TODO:handle assets!
