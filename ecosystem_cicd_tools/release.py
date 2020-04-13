@@ -51,7 +51,7 @@ def get_commit(commit_id=None, repo=None):
     return repo.get_commit(commit_id)
 
 
-def create_release(name, version, message, commit="master", repo=None):
+def create_release(name, version, message, commit, repo=None):
     logging.info('Attempting to create new release {name}.'.format(name=name))
     repo = repo or get_repository()
     return repo.create_git_release(
@@ -168,9 +168,10 @@ def plugin_release(plugin_name,
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
+    commit = get_commit()
     if not version_release:
         version_release = create_release(
-            version, version, plugin_release_name)
+            version, version, plugin_release_name, commit)
     # TODO: ADD Plugin Packaging and Upload.
     return version_release
 
@@ -201,27 +202,6 @@ def blueprint_release(blueprint_name,
     return version_release
 
 
-# def plugin_release_with_latest(plugin_name,
-#                                version=None,
-#                                plugin_release_name=None,
-#                                plugins=None):
-#
-#     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
-#         plugin_name, version)
-#     version_release = plugin_release(
-#         plugin_name, version, plugin_release_name, plugins)
-#     if not get_release("latest"):
-#         create_release(
-#             "latest", "latest", plugin_release_name,
-#             version_release.target_commitish)
-#     else:
-#         update_release(
-#             "latest",
-#             plugin_release_name,
-#             commit=version_release.target_commitish,
-#         )
-#     latest_release = get_most_recent_release()
-#     update_latest_release_resources(latest_release)
 
 
 def blueprint_release_with_latest(plugin_name,
@@ -267,15 +247,15 @@ def plugin_release_with_latest(plugin_name,
         plugin_release(plugin_name, "latest",
                        plugin_release_name=version_release.body)
         # TODO:handle assets!
-
+        
 
 def delete_latest_tag_if_exists():
     repo = get_repository()
+    logging.info(
+        'Attempting  to delete Tag with name "latest" in '
+        'repository {repo}.'.format(
+            repo=repo.name))
     try:
-        logging.info(
-            'Attempting  to delete Tag with name "latest" in '
-            'repository {repo}.'.format(
-                repo=repo.name))
         latest_tag_ref = repo.get_git_ref('tags/latest')
     except UnknownObjectException:
         logging.info(
