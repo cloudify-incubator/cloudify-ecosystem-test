@@ -194,8 +194,7 @@ def plugin_release_with_latest(plugin_name,
 
         # create latest release
         logging.info(
-            'Create release with name latest and tag latest'.format(
-                name=latest_release.tag_name))
+            'Create release with name latest and tag latest')
         plugin_release(plugin_name, "latest",
                        plugin_release_name=version_release.body)
         # TODO:handle assets!
