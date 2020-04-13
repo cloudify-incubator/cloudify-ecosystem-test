@@ -176,6 +176,31 @@ def plugin_release(plugin_name,
     return version_release
 
 
+def plugin_release_with_latest(plugin_name,
+                               version=None,
+                               plugin_release_name=None,
+                               plugins=None):
+    # if we have release for this version we do not want update nothing
+    if not get_release(version):
+        # Create release for the new version if not exists
+        version_release = plugin_release(plugin_name, version,
+                                         plugin_release_name)
+        latest_release = get_release("latest")
+        if latest_release:
+            # We have latest tag and release so we need to delete
+            # them and recreate.
+            latest_release.delete_release()
+            delete_latest_tag_if_exists()
+
+        # create latest release
+        logging.info(
+            'Create release with name latest and tag latest'.format(
+                name=latest_release.tag_name))
+        plugin_release(plugin_name, "latest",
+                       plugin_release_name=version_release.body)
+        # TODO:handle assets!
+
+
 def blueprint_release(blueprint_name,
                       version,
                       blueprint_release_name=None,
@@ -202,8 +227,6 @@ def blueprint_release(blueprint_name,
     return version_release
 
 
-
-
 def blueprint_release_with_latest(plugin_name,
                                   version=None,
                                   blueprint_release_name=None,
@@ -224,31 +247,6 @@ def blueprint_release_with_latest(plugin_name,
     update_latest_release_resources(latest_release)
 
 
-def plugin_release_with_latest(plugin_name,
-                               version=None,
-                               plugin_release_name=None,
-                               plugins=None):
-    # if we have release for this version we do not want update nothing
-    if not get_release(version):
-        # Create release for the new version if not exists
-        version_release = plugin_release(plugin_name, version,
-                                         plugin_release_name)
-        latest_release = get_release("latest")
-        if latest_release:
-            # We have latest tag and release so we need to delete
-            # them and recreate.
-            latest_release.delete_release()
-            delete_latest_tag_if_exists()
-
-        # create latest release
-        logging.info(
-            'Create release with name latest and tag latest'.format(
-                name=latest_release.tag_name))
-        plugin_release(plugin_name, "latest",
-                       plugin_release_name=version_release.body)
-        # TODO:handle assets!
-        
-
 def delete_latest_tag_if_exists():
     repo = get_repository()
     logging.info(
@@ -263,10 +261,3 @@ def delete_latest_tag_if_exists():
         return
     latest_tag_ref.delete()
 
-
-if __name__ == '__main__':
-    environ['CIRCLE_PROJECT_USERNAME'] = 'AdarShaked'
-    environ['CIRCLE_PROJECT_REPONAME'] = 'git-relaease-tut'
-    environ['RELEASE_BUILD_TOKEN'] = ''
-    plugin_release_with_latest(
-        'cloudify-utilities-plugin', '2.6')
