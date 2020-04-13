@@ -162,16 +162,16 @@ def get_plugin_version():
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
-                   plugins=None):
-    # plugins = plugins or {}
+                   release_name=None):
     version = version or get_plugin_version()
+    release_name = release_name or version
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
     commit = get_commit()
     if not version_release:
         version_release = create_release(
-            version, version, plugin_release_name,
+            release_name, version, plugin_release_name,
             commit)
     # TODO: ADD Plugin Packaging and Upload.
     return version_release
@@ -203,29 +203,6 @@ def blueprint_release(blueprint_name,
     return version_release
 
 
-# def plugin_release_with_latest(plugin_name,
-#                                version=None,
-#                                plugin_release_name=None,
-#                                plugins=None):
-#
-#     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
-#         plugin_name, version)
-#     version_release = plugin_release(
-#         plugin_name, version, plugin_release_name, plugins)
-#     if not get_release("latest"):
-#         create_release(
-#             "latest", "latest", plugin_release_name,
-#             version_release.target_commitish)
-#     else:
-#         update_release(
-#             "latest",
-#             plugin_release_name,
-#             commit=version_release.target_commitish,
-#         )
-#     latest_release = get_most_recent_release()
-#     update_latest_release_resources(latest_release)
-
-
 def blueprint_release_with_latest(plugin_name,
                                   version=None,
                                   blueprint_release_name=None,
@@ -248,8 +225,7 @@ def blueprint_release_with_latest(plugin_name,
 
 def plugin_release_with_latest(plugin_name,
                                version=None,
-                               plugin_release_name=None,
-                               plugins=None):
+                               plugin_release_name=None):
     # if we have release for this version we dont want to update nothing
     if not get_release(version):
         latest_release = get_release_by_name("latest")
@@ -261,21 +237,11 @@ def plugin_release_with_latest(plugin_name,
             latest_release.update_release(name=latest_release.tag_name,
                                           message=latest_release.body)
 
-        plugin_create_latest_release(plugin_name=plugin_name, version=version,
-                                     plugin_release_name=plugin_release_name)
+        plugin_release(plugin_name=plugin_name, version=version,
+                       plugin_release_name=plugin_release_name,
+                       release_name="latest")
 
-
-def plugin_create_latest_release(plugin_name, version=None,
-                                 plugin_release_name=None):
-    version = version or get_plugin_version()
-    plugin_release_name = plugin_release_name or "{0}-v{1}".format(
-        plugin_name, version)
-    version_release = create_release(
-        "latest", version, plugin_release_name,
-        commit="master")
-    # TODO: ADD Plugin Packaging and Upload.
-
-    return version_release
+        # TODO:handle assets!
 
 
 def get_release_by_name(release_name):
@@ -286,11 +252,3 @@ def get_release_by_name(release_name):
     for release in releases:
         if release_name == release.title:
             return release
-
-
-if __name__ == '__main__':
-    environ['CIRCLE_PROJECT_USERNAME'] = 'AdarShaked'
-    environ['CIRCLE_PROJECT_REPONAME'] = 'git-relaease-tut'
-    environ['RELEASE_BUILD_TOKEN'] = ''
-    plugin_release_with_latest(
-        'cloudify-utilities-plugin', '1.9')
