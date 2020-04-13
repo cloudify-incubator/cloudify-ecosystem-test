@@ -203,26 +203,6 @@ def blueprint_release(blueprint_name,
     return version_release
 
 
-def blueprint_release_with_latest(plugin_name,
-                                  version=None,
-                                  blueprint_release_name=None,
-                                  blueprints=None):
-    version_release = blueprint_release(
-        plugin_name, version, blueprint_release_name, blueprints)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", blueprint_release_name,
-            version_release.target_commitish)
-    else:
-        update_release(
-            "latest",
-            blueprint_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
-
-
 def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None):
@@ -242,6 +222,26 @@ def plugin_release_with_latest(plugin_name,
                        release_name="latest")
 
         # TODO:handle assets!
+
+
+def blueprint_release_with_latest(plugin_name,
+                                  version=None,
+                                  blueprint_release_name=None,
+                                  blueprints=None):
+    version_release = blueprint_release(
+        plugin_name, version, blueprint_release_name, blueprints)
+    if not get_release("latest"):
+        create_release(
+            "latest", "latest", blueprint_release_name,
+            version_release.target_commitish)
+    else:
+        update_release(
+            "latest",
+            blueprint_release_name,
+            commit=version_release.target_commitish,
+        )
+    latest_release = get_most_recent_release()
+    update_latest_release_resources(latest_release)
 
 
 def get_release_by_name(release_name):
