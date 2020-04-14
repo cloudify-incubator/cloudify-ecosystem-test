@@ -265,22 +265,21 @@ def plugin_release_with_latest(plugin_name,
     # update_latest_release_resources(latest_release)
 
 
-def blueprint_release_with_latest(plugin_name,
+def blueprint_release_with_latest(blueprint_name,
                                   version=None,
                                   blueprint_release_name=None,
                                   blueprints=None):
+    if not get_release(version):
+        version_release = blueprint_release(
+            blueprint_name, version, blueprint_release_name, blueprints)
+        latest_release = get_release("latest")
+        if latest_release:
+            # We have latest tag and release so we need to delete
+            # them and recreate.
+            latest_release.delete_release()
+            delete_latest_tag_if_exists()
 
-    version_release = blueprint_release(
-        plugin_name, version, blueprint_release_name, blueprints)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", blueprint_release_name,
-            version_release.target_commitish)
-    else:
-        update_release(
-            "latest",
-            blueprint_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
+        logging.info(
+            'Create release with name latest and tag latest')
+        blueprint_release(
+            blueprint_name, "latest", blueprint_release_name, blueprints)
