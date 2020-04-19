@@ -142,7 +142,7 @@ def update_release(name, message, commit, prerelease=False, repo=None):
             name, message, draft=False, prerelease=prerelease)
 
 
-def update_latest_release_resources(most_recent_release, name='latest'):
+def update_latest_release_resources(most_recent_release, name):
     logging.info('Attempting to update release {name} assets.'.format(
         name=most_recent_release.title))
     for asset in get_assets(name):
@@ -259,10 +259,7 @@ def plugin_release_with_latest(plugin_name,
             'Create release with name latest and tag latest')
         plugin_release(plugin_name, "latest",
                        plugin_release_name=version_release.body)
-        # TODO:handle assets!
-
-    # latest_release = get_most_recent_release()
-    # update_latest_release_resources(latest_release)
+    update_latest_release_resources(version_release, latest_release.title)
 
 
 def blueprint_release_with_latest(blueprint_name,
@@ -283,3 +280,4 @@ def blueprint_release_with_latest(blueprint_name,
             'Create release with name latest and tag latest')
         blueprint_release(
             blueprint_name, "latest", blueprint_release_name, blueprints)
+    update_latest_release_resources(version_release, latest_release.title)
