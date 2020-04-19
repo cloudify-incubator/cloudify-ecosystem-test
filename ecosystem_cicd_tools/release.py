@@ -258,9 +258,9 @@ def plugin_release_with_latest(plugin_name,
         # create latest release
         logging.info(
             'Create release with name latest and tag latest')
-        plugin_release(plugin_name, "latest",
-                       plugin_release_name=version_release.body)
-    update_latest_release_resources(version_release, latest_release.title)
+        latest_release = plugin_release(plugin_name, "latest",
+            plugin_release_name=version_release.body)
+        update_latest_release_resources(version_release, latest_release.title)
 
 
 def blueprint_release_with_latest(blueprint_name,
@@ -279,6 +279,6 @@ def blueprint_release_with_latest(blueprint_name,
 
         logging.info(
             'Create release with name latest and tag latest')
-        blueprint_release(
+        latest_release = blueprint_release(
             blueprint_name, "latest", blueprint_release_name, blueprints)
-    update_latest_release_resources(version_release, latest_release.title)
+        update_latest_release_resources(version_release, latest_release.title)
