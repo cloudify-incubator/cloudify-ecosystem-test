@@ -100,6 +100,8 @@ def upload_asset(release_name, asset_path, asset_label):
     try:
         release.upload_asset(asset_path, asset_label)
     except GithubException as e:
+        logging.info('e status: {0} {1}'.format(e.status, type(e.status)))
+        logging.info('e data: {0} {1}'.format(e.data, type(e.data)))
         if e.status is not 422:
             logging.info('Failed to upload new asset: '
                          '{path}:{label} to release {name}.'.format(
