@@ -100,8 +100,6 @@ def upload_asset(release_name, asset_path, asset_label):
     try:
         release.upload_asset(asset_path, asset_label)
     except GithubException as e:
-        logging.info('e status: {0} {1}'.format(e.status, type(e.status)))
-        logging.info('e data: {0} {1}'.format(e.data, type(e.data)))
         if e.status is not 422:
             logging.info('Failed to upload new asset: '
                          '{path}:{label} to release {name}.'.format(
@@ -264,9 +262,8 @@ def plugin_release_with_latest(plugin_name,
         # create latest release
         logging.info(
             'Create release with name latest and tag latest')
-        latest_release = plugin_release(plugin_name, "latest",
+        plugin_release(plugin_name, "latest",
             plugin_release_name=version_release.body)
-        update_latest_release_resources(version_release, latest_release.title)
 
 
 def blueprint_release_with_latest(blueprint_name,
@@ -285,6 +282,5 @@ def blueprint_release_with_latest(blueprint_name,
 
         logging.info(
             'Create release with name latest and tag latest')
-        latest_release = blueprint_release(
-            blueprint_name, "latest", blueprint_release_name, blueprints)
-        update_latest_release_resources(version_release, latest_release.title)
+        blueprint_release(
+            blueprint_name, "latest", version_release.title, blueprints)
