@@ -100,13 +100,17 @@ def upload_asset(release_name, asset_path, asset_label):
     try:
         release.upload_asset(asset_path, asset_label)
     except GithubException as e:
-        if 'already_exists' not in e.message:
+        if e.status not in '422':
             logging.info('Failed to upload new asset: '
                          '{path}:{label} to release {name}.'.format(
                              path=asset_path,
                              label=asset_label,
                              name=release_name))
             raise
+        for asset in get_assets(release.title):
+            if asset.label == asset_label:
+                asset.delete_asset()
+                release.upload_asset(asset_path, asset_label)
 
 
 def get_most_recent_release(version_family=None, repo=None):
