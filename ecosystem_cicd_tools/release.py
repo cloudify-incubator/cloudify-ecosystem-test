@@ -99,13 +99,14 @@ def upload_asset(release_name, asset_path, asset_label):
     release = get_release(release_name)
     try:
         release.upload_asset(asset_path, asset_label)
-    except GithubException:
-        logging.info('Failed to upload new asset: '
-                     '{path}:{label} to release {name}.'.format(
-                         path=asset_path,
-                         label=asset_label,
-                         name=release_name))
-        raise
+    except GithubException as e:
+        if '422' not in e.message:
+            logging.info('Failed to upload new asset: '
+                         '{path}:{label} to release {name}.'.format(
+                             path=asset_path,
+                             label=asset_label,
+                             name=release_name))
+            raise
 
 
 def get_most_recent_release(version_family=None, repo=None):
