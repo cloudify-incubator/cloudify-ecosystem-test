@@ -99,13 +99,18 @@ def upload_asset(release_name, asset_path, asset_label):
     release = get_release(release_name)
     try:
         release.upload_asset(asset_path, asset_label)
-    except GithubException:
-        logging.info('Failed to upload new asset: '
-                     '{path}:{label} to release {name}.'.format(
-                         path=asset_path,
-                         label=asset_label,
-                         name=release_name))
-        raise
+    except GithubException as e:
+        if e.status is not 422:
+            logging.info('Failed to upload new asset: '
+                         '{path}:{label} to release {name}.'.format(
+                             path=asset_path,
+                             label=asset_label,
+                             name=release_name))
+            raise
+        for asset in get_assets(release.title):
+            if asset.label == asset_label:
+                asset.delete_asset()
+                release.upload_asset(asset_path, asset_label)
 
 
 def get_most_recent_release(version_family=None, repo=None):
@@ -142,7 +147,7 @@ def update_release(name, message, commit, prerelease=False, repo=None):
             name, message, draft=False, prerelease=prerelease)
 
 
-def update_latest_release_resources(most_recent_release, name='latest'):
+def update_latest_release_resources(most_recent_release, name):
     logging.info('Attempting to update release {name} assets.'.format(
         name=most_recent_release.title))
     for asset in get_assets(name):
@@ -154,6 +159,21 @@ def update_latest_release_resources(most_recent_release, name='latest'):
             asset_file.write(r.content)
         shutil.move(tmp.name, asset.name)
         upload_asset(name, asset.name, asset.label or asset.name)
+
+
+def delete_latest_tag_if_exists():
+    repo = get_repository()
+    logging.info(
+        'Attempting  to delete Tag with name "latest" in '
+        'repository {repo}.'.format(
+            repo=repo.name))
+    try:
+        latest_tag_ref = repo.get_git_ref('tags/latest')
+    except UnknownObjectException:
+        logging.info(
+            'Tag with name "latest" doesnt exists.'.format(repo=repo.name))
+        return
+    latest_tag_ref.delete()
 
 
 def find_version(setup_py):
@@ -227,42 +247,40 @@ def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None,
                                plugins=None):
+    # if we have release for this version we do not want update nothing
+    if not get_release(version):
+        # Create release for the new version if not exists
+        version_release = plugin_release(plugin_name, version,
+                                         plugin_release_name)
+        latest_release = get_release("latest")
+        if latest_release:
+            # We have latest tag and release so we need to delete
+            # them and recreate.
+            latest_release.delete_release()
+            delete_latest_tag_if_exists()
 
-    plugin_release_name = plugin_release_name or "{0}-v{1}".format(
-        plugin_name, version)
-    version_release = plugin_release(
-        plugin_name, version, plugin_release_name, plugins)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", plugin_release_name,
-            version_release.target_commitish)
-    else:
-
-        update_release(
-            "latest",
-            plugin_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
+        # create latest release
+        logging.info(
+            'Create release with name latest and tag latest')
+        plugin_release(plugin_name, "latest",
+            plugin_release_name=version_release.body)
 
 
-def blueprint_release_with_latest(plugin_name,
+def blueprint_release_with_latest(blueprint_name,
                                   version=None,
                                   blueprint_release_name=None,
                                   blueprints=None):
+    if not get_release(version):
+        version_release = blueprint_release(
+            blueprint_name, version, blueprint_release_name, blueprints)
+        latest_release = get_release("latest")
+        if latest_release:
+            # We have latest tag and release so we need to delete
+            # them and recreate.
+            latest_release.delete_release()
+            delete_latest_tag_if_exists()
 
-    version_release = blueprint_release(
-        plugin_name, version, blueprint_release_name, blueprints)
-    if not get_release("latest"):
-        create_release(
-            "latest", "latest", blueprint_release_name,
-            version_release.target_commitish)
-    else:
-        update_release(
-            "latest",
-            blueprint_release_name,
-            commit=version_release.target_commitish,
-        )
-    latest_release = get_most_recent_release()
-    update_latest_release_resources(latest_release)
+        logging.info(
+            'Create release with name latest and tag latest')
+        blueprint_release(
+            blueprint_name, "latest", version_release.title, blueprints)
