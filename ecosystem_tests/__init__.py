@@ -53,55 +53,22 @@ class PasswordFilter(object):
 
 class EcosystemTestBase(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        if 'ECOSYSTEM_SESSION_PASSWORD' not in os.environ:
-            os.environ['ECOSYSTEM_SESSION_PASSWORD'] = create_password()
-
-    @classmethod
-    def tearDownClass(cls):
-        cfy_storage = FileStorage(storage_dir=CFY_LOCAL_FILE)
-        cfy_local = cls.load_cfy_local(cfy_storage)
-        cls.uninstall_manager(cfy_local)
-        shutil.rmtree(CFY_LOCAL_FILE)
-        try:
-            del os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
-            del os.environ['ECOSYSTEM_SESSION_LOADED']
-            del os.environ['ECOSYSTEM_SESSION_PASSWORD']
-            del os.environ['CLOUDIFY_STORAGE_DIR']
-            del os.environ['ECOSYSTEM_SESSION_BLUEPRINT_DIR']
-        except KeyError:
-            pass
-
     def setUp(self):
         super(EcosystemTestBase, self).setUp()
         if self.password not in self.sensitive_data:
             self.sensitive_data.append(self.password)
         sys.stdout = PasswordFilter(self.sensitive_data, sys.stdout)
         sys.stderr = PasswordFilter(self.sensitive_data, sys.stderr)
-        self.cfy_local = self.setup_cfy_local()
-        if 'ECOSYSTEM_SESSION_MANAGER_IP' in os.environ:
-            self.manager_ip = \
-                os.environ['ECOSYSTEM_SESSION_MANAGER_IP']
-        else:
-            self.install_manager()
-            self.initialize_manager_profile()
-            self.upload_plugins()
-
-    @staticmethod
-    def load_cfy_local(_storage):
-        return load_env(name='local', storage=_storage)
-
-    @staticmethod
-    def uninstall_manager(cfy_local):
-        cfy_local.execute(
-            'uninstall',
-            task_retry_interval=15,
-            parameters={'ignore_failure': 'true'})
+        self.manager_ip = \
+            os.environ.get('ECOSYSTEM_SESSION_MANAGER_IP', 'localhost')
+        if self.password not in self.sensitive_data:
+            self.sensitive_data.append(self.manager_ip)
+        self.initialize_manager_profile()
+        self.upload_plugins()
 
     @property
     def password(self):
-        return os.environ['ECOSYSTEM_SESSION_PASSWORD']
+        return os.environ.get('ECOSYSTEM_SESSION_PASSWORD', 'admin')
 
     @property
     def plugins_to_upload(self):

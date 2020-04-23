@@ -23,12 +23,13 @@ def md5sum(filename, buf_size=8192):
     return md5_filename
 
 
-def get_workspace_files():
+def get_workspace_files(file_type=None):
+    file_type = file_type or '.wgn'
     workspace_path = path.join(path.abspath('workspace'), 'build')
     files = []
     for f in listdir(workspace_path):
         files.append(f)
-        if f.endswith('.wgn'):
+        if f.endswith(file_type):
             files.append(md5sum(f))
     return [f for f in listdir(workspace_path)]
 
