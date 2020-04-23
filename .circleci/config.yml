@@ -87,4 +87,7 @@ workflows:
   tests:
     jobs:
       - unittests
-      - release
+      - release:
+          filters:
+            branches:
+              only: master
