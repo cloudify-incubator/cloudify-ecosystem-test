@@ -30,6 +30,10 @@ MANAGER_CONTAINER_NAME = 'cfy_manager'
 TIMEOUT = 1800
 
 
+SOURCE = '/opt/manager/env/lib/python2.7/' \
+         'site-packages/pip/_internal/distributions/source'
+
+
 class EcosystemTestException(Exception):
     pass
 
@@ -173,8 +177,8 @@ def create_test_secrets(secrets=None):
 
 def prepare_test(plugins=None, secrets=None):
     docker_exec('yum install -y python-netaddr git')
-    docker_exec('source /opt/mgmtworker/env/bin/activate && '
-                'pip install netaddr ipaddr')
+    docker_exec('{0} /opt/mgmtworker/env/bin/activate && '
+                'pip install netaddr ipaddr'.format(SOURCE))
     use_cfy()
     license_upload()
     upload_test_plugins(plugins)
@@ -289,7 +293,7 @@ def basic_blueprint_test(blueprint_file_name,
     inputs = inputs or os.path.join(
         os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
     blueprints_upload(blueprint_file_name, test_name)
-    docker_exec('ls -al /opt/manager/resources/blueprints/default_tenant')
+    docker_exec('ls -alR /opt/manager/resources/blueprints/default_tenant')
     deployments_create(test_name, inputs)
     sleep(5)
     logging.info('Installing...')
