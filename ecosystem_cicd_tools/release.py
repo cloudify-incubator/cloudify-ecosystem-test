@@ -23,7 +23,7 @@ from tempfile import NamedTemporaryFile
 from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
 
-from packaging import package_blueprint
+from packaging import package_blueprint, get_workspace_files
 
 logging.basicConfig(level=logging.INFO)
 VERSION_STRING_RE = \
@@ -100,7 +100,7 @@ def upload_asset(release_name, asset_path, asset_label):
     try:
         release.upload_asset(asset_path, asset_label)
     except GithubException as e:
-        if e.status is not 422:
+        if e.status != 422:
             logging.info('Failed to upload new asset: '
                          '{path}:{label} to release {name}.'.format(
                              path=asset_path,
@@ -202,7 +202,7 @@ def plugin_release(plugin_name,
                    plugin_release_name=None,
                    plugins=None):
 
-    # plugins = plugins or {}
+    plugins = plugins or get_workspace_files()
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -212,7 +212,11 @@ def plugin_release(plugin_name,
         version_release = create_release(
             version, version, plugin_release_name,
             commit)
-    # TODO: ADD Plugin Packaging and Upload.
+    for plugin in plugins:
+        version_release.upload_asset(
+            plugin,
+            plugin,
+            'application/zip')
     return version_release
 
 
@@ -251,7 +255,7 @@ def plugin_release_with_latest(plugin_name,
     if not get_release(version):
         # Create release for the new version if not exists
         version_release = plugin_release(plugin_name, version,
-                                         plugin_release_name)
+                                         plugin_release_name, plugins)
         latest_release = get_release("latest")
         if latest_release:
             # We have latest tag and release so we need to delete
@@ -263,7 +267,8 @@ def plugin_release_with_latest(plugin_name,
         logging.info(
             'Create release with name latest and tag latest')
         plugin_release(plugin_name, "latest",
-            plugin_release_name=version_release.body)
+                       plugin_release_name=version_release.body,
+                       plugins=plugins)
 
 
 def blueprint_release_with_latest(blueprint_name,
