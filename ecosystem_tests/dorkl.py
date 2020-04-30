@@ -177,8 +177,7 @@ def prepare_test(plugins=None, secrets=None):
     upload_test_plugins(plugins)
     create_test_secrets(secrets)
     docker_exec('yum install -y python-netaddr git')
-    docker_exec('/opt/mgmtworker/env/bin/activate && '
-                'pip install netaddr ipaddr')
+    docker_exec('/opt/mgmtworker/env/bin/pip install netaddr ipaddr')
 
 
 def secrets_create(name, is_file=False):
