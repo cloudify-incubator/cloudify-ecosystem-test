@@ -212,7 +212,7 @@ def plugin_release(plugin_name,
         version_release = create_release(
             version, version, plugin_release_name,
             commit)
-    logging.info('Uploading plugin YAML {0}'.format(plugin.yaml))
+    logging.info('Uploading plugin YAML {0}'.format('plugin.yaml'))
     version_release.upload_asset(
         'plugin.yaml', 'plugin.yaml' 'application/zip')
     for plugin in plugins:
@@ -264,6 +264,8 @@ def plugin_release_with_latest(plugin_name,
         if latest_release:
             # We have latest tag and release so we need to delete
             # them and recreate.
+            logging.info('Deleting latest release '
+                         'before creating again.')
             latest_release.delete_release()
             delete_latest_tag_if_exists()
 
@@ -286,6 +288,8 @@ def blueprint_release_with_latest(blueprint_name,
         if latest_release:
             # We have latest tag and release so we need to delete
             # them and recreate.
+            logging.info('Deleting latest release '
+                         'before creating again.')
             latest_release.delete_release()
             delete_latest_tag_if_exists()
 
