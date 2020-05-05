@@ -212,7 +212,11 @@ def plugin_release(plugin_name,
         version_release = create_release(
             version, version, plugin_release_name,
             commit)
+    logging.info('Uploading plugin YAML {0}'.format(plugin.yaml))
+    version_release.upload_asset(
+        'plugin.yaml', 'plugin.yaml' 'application/zip')
     for plugin in plugins:
+        logging.info('Uploading plugin {0}'.format(plugin))
         version_release.upload_asset(
             plugin,
             plugin,
