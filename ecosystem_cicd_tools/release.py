@@ -256,7 +256,10 @@ def plugin_release_with_latest(plugin_name,
                                plugin_release_name=None,
                                plugins=None):
     # if we have release for this version we do not want update nothing
-    if not get_release(version):
+    if get_release(version):
+        logging.warn('Found existing release for {0}. '
+                     'No new build.'.format(version))
+    else:
         # Create release for the new version if not exists
         version_release = plugin_release(plugin_name, version,
                                          plugin_release_name, plugins)
@@ -281,7 +284,10 @@ def blueprint_release_with_latest(blueprint_name,
                                   version=None,
                                   blueprint_release_name=None,
                                   blueprints=None):
-    if not get_release(version):
+    if get_release(version):
+        logging.warn('Found existing release for {0}. '
+                     'No new build.'.format(version))
+    else:
         version_release = blueprint_release(
             blueprint_name, version, blueprint_release_name, blueprints)
         latest_release = get_release("latest")
