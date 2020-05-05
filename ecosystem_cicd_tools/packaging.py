@@ -23,6 +23,8 @@ def get_workspace_files(file_type=None):
                 os.path.basename(f).split(file_type)[0])
             os.system('md5sum {0} > {1}'.format(f, f_md5))
             files.append(f_md5)
+    logging.info('These are the workspace files: {0}'.format(
+        files))
     return files
 
 
