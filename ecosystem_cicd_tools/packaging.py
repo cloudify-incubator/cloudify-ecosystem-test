@@ -18,9 +18,7 @@ def get_workspace_files(file_type=None):
         f = os.path.join(workspace_path, f)
         files.append(f)
         if f.endswith(file_type):
-            f_md5 = os.path.join(
-                workspace_path,
-                os.path.basename(f).split(file_type)[0])
+            f_md5 = os.path.join(f, '.md5')
             os.system('md5sum {0} > {1}'.format(f, f_md5))
             files.append(f_md5)
     logging.info('These are the workspace files: {0}'.format(

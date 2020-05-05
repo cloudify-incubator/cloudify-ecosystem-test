@@ -218,10 +218,13 @@ def plugin_release(plugin_name,
             'plugin.yaml', 'plugin.yaml', 'application/zip')
     for plugin in plugins:
         logging.info('Uploading plugin {0}'.format(plugin))
-        version_release.upload_asset(
-            plugin,
-            plugin,
-            'application/zip')
+        try:
+            version_release.upload_asset(
+                plugin,
+                path.basename(plugin),
+                'application/zip')
+        except GithubException:
+            logging.warn('Failed to upload {0}'.format(plugin))
     return version_release
 
 
