@@ -150,7 +150,7 @@ def plugins_upload(wagon_path, yaml_path):
 
 def get_test_plugins():
     plugin_yaml = copy_file_to_docker('plugin.yaml')
-    return [(f, plugin_yaml) for f in
+    return [(copy_file_to_docker(f), plugin_yaml) for f in
             get_workspace_files() if f.endswith('.wgn')]
 
 
