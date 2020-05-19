@@ -154,7 +154,6 @@ def get_test_plugins():
             get_workspace_files() if f.endswith('.wgn')]
 
 
-# comment
 def upload_test_plugins(plugins):
     plugins = plugins or []
     for plugin_pair in get_test_plugins():
