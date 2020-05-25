@@ -91,3 +91,5 @@ workflows:
           filters:
             branches:
               only: master
+          requires:
+          - unittests
