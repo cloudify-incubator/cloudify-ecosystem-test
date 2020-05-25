@@ -38,52 +38,69 @@ class EcosystemTimeout(Exception):
     pass
 
 
-def run_process(cmd, suppress_error=False):
+def dump_command_output(stdout_file, stderr_file):
+    with open(stdout_file, 'r') as fout:
+        for stdout_line in fout.readlines():
+            logging.debug('STDOUT: {0}'.format(stdout_line))
+    with open(stderr_file, 'r') as fout:
+        for stderr_line in fout.readlines():
+            logging.debug('STDERR: {0}'.format(stderr_line))
 
-    if suppress_error:
-        stderr = open(os.devnull, 'w')
-    else:
-        stderr = subprocess.PIPE
+
+def return_parsable_output(stdout_file):
+    with open(stdout_file, 'r') as fout:
+        return '\n'.join(fout.readlines())
+
+
+def handle_process(command, timeout=None):
+
+    file_obj_stdout = NamedTemporaryFile(delete=False)
+    file_obj_stderr = NamedTemporaryFile(delete=False)
 
     popen_args = {
-        'args': cmd.split(),
-        'stdout': subprocess.PIPE,
-        'stderr': stderr,
+        'args': command.split(),
+        'stdout': open(file_obj_stdout.name, 'w'),
+        'stderr': open(file_obj_stderr.name, 'w'),
     }
 
-    return subprocess.Popen(**popen_args)
+    logging.info('Executing command {0}...'.format(command))
+    time_started = datetime.now()
+    p = subprocess.Popen(**popen_args)
 
-
-def read_process_output(p, wait, timeout):
-    start = datetime.now()
-    output_list = []
-    for stdout_line in iter(p.stdout.readline, b''):
-        if stdout_line:
-            output_list.append(stdout_line)
-            logging.info(stdout_line)
-        if not wait:
-            return '\n'.join(output_list)
-        elif datetime.now() - start > timedelta(seconds=timeout):
-            logging.warn('Program timeout.')
+    while not p.poll():
+        logging.info('Command {0} still executing...'.format(command))
+        if datetime.now() - time_started > timedelta(seconds=timeout):
+            p.terminate()
+            p.stdout.close()
+            p.stderr.close()
+            dump_command_output(file_obj_stdout.name,
+                                file_obj_stderr.name)
             raise EcosystemTimeout('The timeout was reached.')
-        sleep(2)
-    output = '\n'.join(output_list)
-    p.stdout.close()
-    p.wait()
-    return output
+        sleep(5)
+
+    logging.info('Command finished {0}...'.format(command))
+
+    if p.returncode:
+        dump_command_output(file_obj_stdout.name,
+                            file_obj_stderr.name)
+        raise EcosystemTestException('Command failed.'.format(p.returncode))
+
+    logging.info('Command succeeded {0}...'.format(command))
+
+    return return_parsable_output(file_obj_stdout.name)
 
 
-def docker_exec(cmd, wait=True, timeout=TIMEOUT):
+def docker_exec(cmd, timeout=TIMEOUT):
     container_name = os.environ.get(
         'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
-    return read_process_output(run_process(
+    return handle_process(
         'docker exec {container_name} {cmd}'.format(
-            container_name=container_name, cmd=cmd)), wait, timeout)
+            container_name=container_name, cmd=cmd), timeout)
 
 
 def copy_file_to_docker(local_file_path):
     docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
-    run_process(
+    handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
                                        MANAGER_CONTAINER_NAME,
                                        docker_path))
@@ -95,7 +112,7 @@ def copy_directory_to_docker(local_file_path):
     dir_name = os.path.basename(local_dir)
     remote_dir = os.path.join('/tmp', dir_name)
     try:
-        run_process(
+        handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,
                                             MANAGER_CONTAINER_NAME))
     except subprocess.CalledProcessError:
@@ -103,15 +120,15 @@ def copy_directory_to_docker(local_file_path):
     return remote_dir
 
 
-def cloudify_exec(cmd, get_json=True, wait=True, timeout=TIMEOUT):
+def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT):
     if get_json:
-        json_output = docker_exec('{0} --json'.format(cmd), wait, timeout)
+        json_output = docker_exec('{0} --json'.format(cmd), timeout)
         try:
             return json.loads(json_output)
         except (TypeError, ValueError):
             logging.error('JSON failed here: {0}'.format(json_output))
             return
-    return docker_exec(cmd, wait, timeout)
+    return docker_exec(cmd, timeout)
 
 
 def use_cfy(timeout=60):
@@ -222,7 +239,7 @@ def executions_start(workflow_id, deployment_id, timeout):
     return cloudify_exec(
         'cfy executions start --timeout {0} -d {1} {2}'.format(
             timeout, deployment_id, workflow_id),
-        get_json=False, wait=True, timeout=timeout)
+        get_json=False, timeout=timeout)
 
 
 def executions_list(deployment_id):
