@@ -42,7 +42,7 @@ class EcosystemTimeout(Exception):
     pass
 
 
-def handle_process(command, timeout=TIMEOUT):
+def handle_process(command, timeout=TIMEOUT, log=True):
 
     file_obj_stdout = NamedTemporaryFile(delete=False)
     file_obj_stderr = NamedTemporaryFile(delete=False)
@@ -56,48 +56,53 @@ def handle_process(command, timeout=TIMEOUT):
     }
 
     def dump_command_output():
-        stdout_file.flush()
-        with open(file_obj_stdout.name, 'r') as fout:
-            for stdout_line in fout.readlines():
-                logger.debug('STDOUT: {0}'.format(stdout_line))
-        stderr_file.flush()
-        with open(file_obj_stderr.name, 'r') as fout:
-            for stderr_line in fout.readlines():
-                logger.error('STDERR: {0}'.format(stderr_line))
+        if log:
+            stdout_file.flush()
+            with open(file_obj_stdout.name, 'r') as fout:
+                for stdout_line in fout.readlines():
+                    logger.debug('STDOUT: {0}'.format(stdout_line))
+            stderr_file.flush()
+            with open(file_obj_stderr.name, 'r') as fout:
+                for stderr_line in fout.readlines():
+                    logger.error('STDERR: {0}'.format(stderr_line))
 
     def return_parsable_output():
         stdout_file.flush()
         with open(file_obj_stdout.name, 'r') as fout:
             return '\n'.join(fout.readlines())
 
-    logger.info('Executing command {0}...'.format(command))
+    if log:
+        logger.info('Executing command {0}...'.format(command))
     time_started = datetime.now()
     p = subprocess.Popen(**popen_args)
 
     while p.poll() is None:
-        logger.info('Command {0} still executing...'.format(command))
+        if log:
+            logger.info('Command {0} still executing...'.format(command))
         if datetime.now() - time_started > timedelta(seconds=timeout):
             dump_command_output()
             raise EcosystemTimeout('The timeout was reached.')
         sleep(10)
 
-    logger.info('Command finished {0}...'.format(command))
+    if log:
+        logger.info('Command finished {0}...'.format(command))
 
     if p.returncode:
         dump_command_output()
         raise EcosystemTestException('Command failed.'.format(p.returncode))
 
-    logger.info('Command succeeded {0}...'.format(command))
+    if log:
+        logger.info('Command succeeded {0}...'.format(command))
 
     return return_parsable_output()
 
 
-def docker_exec(cmd, timeout=TIMEOUT):
+def docker_exec(cmd, timeout=TIMEOUT, log=True):
     container_name = os.environ.get(
         'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     return handle_process(
         'docker exec {container_name} {cmd}'.format(
-            container_name=container_name, cmd=cmd), timeout)
+            container_name=container_name, cmd=cmd), timeout, log)
 
 
 def copy_file_to_docker(local_file_path):
@@ -122,15 +127,16 @@ def copy_directory_to_docker(local_file_path):
     return remote_dir
 
 
-def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT):
+def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
     if get_json:
         json_output = docker_exec('{0} --json'.format(cmd), timeout)
         try:
             return json.loads(json_output)
         except (TypeError, ValueError):
-            logger.error('JSON failed here: {0}'.format(json_output))
+            if log:
+                logger.error('JSON failed here: {0}'.format(json_output))
             return
-    return docker_exec(cmd, timeout)
+    return docker_exec(cmd, timeout, log)
 
 
 def use_cfy(timeout=60):
@@ -214,7 +220,7 @@ def secrets_create(name, is_file=False):
         return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
             name, copy_file_to_docker(file_temp.name)), get_json=False)
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
-        name, value), get_json=False)
+        name, value), get_json=False, log=False)
 
 
 def blueprints_upload(blueprint_file_name, blueprint_id):
