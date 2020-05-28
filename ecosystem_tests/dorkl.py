@@ -169,8 +169,13 @@ def license_upload():
 
 def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
-    return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
-        wagon_path, yaml_path), get_json=False)
+    try:
+        return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
+            wagon_path, yaml_path), get_json=False)
+    except EcosystemTestException as e:
+        if '409' not in e:
+            raise
+        logger.warn('Upload plugin failed: {0}'.format(e))
 
 
 def get_test_plugins():
@@ -187,14 +192,8 @@ def upload_test_plugins(plugins, plugin_test):
     cloudify_exec('cfy plugins bundle-upload', get_json=False)
     for plugin in plugins:
         sleep(2)
-        try:
-            output = plugins_upload(plugin[0], plugin[1])
-        except EcosystemTestException as e:
-            if '409' not in e:
-                raise
-            logger.warn('Upload plugin failed: {0}'.format(e))
-        else:
-            logger.info('Uploaded plugin: {0}'.format(output))
+        output = plugins_upload(plugin[0], plugin[1])
+        logger.info('Uploaded plugin: {0}'.format(output))
     logger.info('Plugins list: {0}'.format(
         cloudify_exec('cfy plugins list')))
 
