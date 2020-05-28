@@ -167,15 +167,28 @@ def license_upload():
         copy_file_to_docker(file_temp.name)), get_json=False)
 
 
+def check_if_plugin_uploaded(plugin_name,
+                             plugin_version,
+                             plugin_distribution):
+
+    for plugin in cloudify_exec('cfy plugins list'):
+        if plugin_name in plugin['package_name'] and \
+                plugin_version in plugin['package_version'] and \
+                plugin_distribution in plugin['distribution']:
+            return True
+    return False
+
+
 def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
-    try:
+    wagon_name = os.path.basename(wagon_path)
+    wagon_parts = wagon_name.split('-')
+    if not check_if_plugin_uploaded(wagon_parts[0],
+                                    wagon_parts[1],
+                                    wagon_parts[-2]):
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
-    except EcosystemTestException as e:
-        if '409' not in e:
-            raise
-        logger.warn('Upload plugin failed: {0}'.format(e))
+    return 'Skipped plugin because it is already uploaded.'
 
 
 def get_test_plugins():
@@ -190,8 +203,6 @@ def upload_test_plugins(plugins, plugin_test):
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
     cloudify_exec('cfy plugins bundle-upload', get_json=False)
-    logger.info('After Bundle list: {0}'.format(
-        cloudify_exec('cfy plugins list')))
     for plugin in plugins:
         sleep(2)
         output = plugins_upload(plugin[0], plugin[1])
