@@ -187,16 +187,24 @@ def upload_test_plugins(plugins, plugin_test):
     cloudify_exec('cfy plugins bundle-upload', get_json=False)
     for plugin in plugins:
         sleep(2)
-        output = plugins_upload(plugin[0], plugin[1])
-        logger.info('Uploaded plugin: {0}'.format(output))
-    cloudify_exec('cfy plugins list', get_json=False)
+        try:
+            output = plugins_upload(plugin[0], plugin[1])
+        except EcosystemTestException as e:
+            if '409' not in e:
+                raise
+            logger.warn('Upload plugin failed: {0}'.format(e))
+        else:
+            logger.info('Uploaded plugin: {0}'.format(output))
+    logger.info('Plugins list: {0}'.format(
+        cloudify_exec('cfy plugins list')))
 
 
 def create_test_secrets(secrets=None):
     secrets = secrets or {}
     for secret, f in secrets.items():
         secrets_create(secret, f)
-    cloudify_exec('cfy secrets list', get_json=False)
+    logger.info('Secrets list: {0}'.format(
+        cloudify_exec('cfy secrets list')))
 
 
 def prepare_test(plugins=None, secrets=None, plugin_test=True):
@@ -316,9 +324,11 @@ def basic_blueprint_test(blueprint_file_name,
     timeout = timeout or TIMEOUT
     inputs = inputs or os.path.join(
         os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
-    cloudify_exec('cfy blueprints list', get_json=False)
+    logger.info('Blueprints list: {0}'.format(
+        cloudify_exec('cfy blueprints list')))
     blueprints_upload(blueprint_file_name, test_name)
-    cloudify_exec('cfy deployments list', get_json=False)
+    logger.info('Deployments list: {0}'.format(
+        cloudify_exec('cfy deployments list')))
     deployments_create(test_name, inputs)
     sleep(5)
     logger.info('Installing...')
