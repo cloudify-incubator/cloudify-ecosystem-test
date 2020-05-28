@@ -178,7 +178,8 @@ def plugin_already_uploaded(plugin_name,
             plugin_distribution,
             plugin))
         if plugin_name.lower() in plugin['package_name'].lower() and \
-                plugin_version.lower() in plugin['package_version'] and \
+                plugin_version.replace('-', '_') in \
+                plugin['package_version'] and \
                 plugin_distribution.lower() in plugin['distribution'].lower():
             return True
 
