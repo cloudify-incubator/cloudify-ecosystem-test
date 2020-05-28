@@ -171,11 +171,12 @@ def plugin_already_uploaded(plugin_name,
                             plugin_version,
                             plugin_distribution):
 
-    logger.info('Checking if {0} {1} {2} already uploaded'.format(
-        plugin_name,
-        plugin_version,
-        plugin_distribution))
     for plugin in cloudify_exec('cfy plugins list'):
+        logger.info('CHECKING if {0} {1} {2} in {3}'.format(
+            plugin_name,
+            plugin_version,
+            plugin_distribution,
+            plugin))
         if plugin_name.lower() in plugin['package_name'].lower() and \
                 plugin_version.lower() in plugin['package_version'] and \
                 plugin_distribution.lower() in plugin['distribution'].lower():
