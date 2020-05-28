@@ -190,6 +190,8 @@ def upload_test_plugins(plugins, plugin_test):
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
     cloudify_exec('cfy plugins bundle-upload', get_json=False)
+    logger.info('After Bundle list: {0}'.format(
+        cloudify_exec('cfy plugins list')))
     for plugin in plugins:
         sleep(2)
         output = plugins_upload(plugin[0], plugin[1])
