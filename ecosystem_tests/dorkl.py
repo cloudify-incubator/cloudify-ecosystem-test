@@ -170,28 +170,27 @@ def license_upload():
 def plugin_already_uploaded(plugin_name,
                             plugin_version,
                             plugin_distribution):
+
     logger.info('Checking if {0} {1} {2} already uploaded'.format(
         plugin_name,
         plugin_version,
         plugin_distribution))
     for plugin in cloudify_exec('cfy plugins list'):
-        if plugin_name in plugin['package_name'] and \
-                plugin_version in plugin['package_version'] and \
-                plugin_distribution in plugin['distribution']:
+        if plugin_name.lower() in plugin['package_name'].lower() and \
+                plugin_version.lower() in plugin['package_version'] and \
+                plugin_distribution.lower() in plugin['distribution'].lower():
             return True
-    return False
 
 
 def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
     wagon_name = os.path.basename(wagon_path)
     wagon_parts = wagon_name.split('-')
-    if plugin_already_uploaded(wagon_parts[0],
-                               wagon_parts[1],
-                               wagon_parts[-2]):
-        return 'Skipped plugin because it is already uploaded.'
-    return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
-        wagon_path, yaml_path), get_json=False)
+    if not plugin_already_uploaded(wagon_parts[0],
+                                   wagon_parts[1],
+                                   wagon_parts[-2]):
+        return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
+            wagon_path, yaml_path), get_json=False)
 
 
 def get_test_plugins():
