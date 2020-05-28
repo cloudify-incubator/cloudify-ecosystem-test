@@ -183,12 +183,12 @@ def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
     wagon_name = os.path.basename(wagon_path)
     wagon_parts = wagon_name.split('-')
-    if not check_if_plugin_uploaded(wagon_parts[0],
-                                    wagon_parts[1],
-                                    wagon_parts[-2]):
-        return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
-            wagon_path, yaml_path), get_json=False)
-    return 'Skipped plugin because it is already uploaded.'
+    if check_if_plugin_uploaded(wagon_parts[0],
+                                wagon_parts[1],
+                                wagon_parts[-2]):
+        return 'Skipped plugin because it is already uploaded.'
+    return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
+        wagon_path, yaml_path), get_json=False)
 
 
 def get_test_plugins():
