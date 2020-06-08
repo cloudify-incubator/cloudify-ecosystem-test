@@ -172,14 +172,17 @@ def create_test_secrets(secrets=None):
 
 
 def prepare_test(plugins=None, secrets=None,
-                 packages_to_install=['netaddr', 'ipaddr']):
+                 pip_packages=[], yum_packages=[]):
     use_cfy()
     license_upload()
     upload_test_plugins(plugins)
     create_test_secrets(secrets)
     docker_exec('yum install -y python-netaddr git')
-    packages_str = ' '.join(packages_to_install)
-    docker_exec('/opt/mgmtworker/env/bin/pip install ' + packages_str)
+    docker_exec('/opt/mgmtworker/env/bin/pip install netaddr ipaddr')
+    yum_packages_str = ' '.join(yum_packages)
+    docker_exec('yum install -y ' + yum_packages_str)
+    pip_packages_str = ' '.join(pip_packages)
+    docker_exec('/opt/mgmtworker/env/bin/pip install ' + pip_packages_str)
 
 
 def secrets_create(name, is_file=False):
