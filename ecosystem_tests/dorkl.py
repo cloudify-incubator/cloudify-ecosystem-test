@@ -222,13 +222,20 @@ def create_test_secrets(secrets=None):
         cloudify_exec('cfy secrets list')))
 
 
-def prepare_test(plugins=None, secrets=None, plugin_test=True):
+def prepare_test(plugins=None, secrets=None, plugin_test=True,
+                 pip_packages=[], yum_packages=[]):
     use_cfy()
     license_upload()
     upload_test_plugins(plugins, plugin_test)
     create_test_secrets(secrets)
-    docker_exec('yum install -y python-netaddr git')
-    docker_exec('/opt/mgmtworker/env/bin/pip install netaddr ipaddr')
+    yum_command = 'yum install -y python-netaddr git '
+    if yum_packages:
+        yum_command = yum_command + ' '.join(yum_packages)
+    docker_exec(yum_command)
+    pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
+    if pip_packages:
+        pip_command = pip_command + ' '.join(pip_packages)
+    docker_exec(pip_command)
 
 
 def secrets_create(name, is_file=False):
