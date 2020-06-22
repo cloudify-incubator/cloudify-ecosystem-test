@@ -88,8 +88,8 @@ workflows:
     jobs:
       - unittests
       - release:
-#          filters:
-#            branches:
-#              only: master
+          filters:
+            branches:
+              only: master
           requires:
           - unittests
