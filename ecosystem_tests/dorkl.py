@@ -200,12 +200,13 @@ def get_test_plugins():
             get_workspace_files() if f.endswith('.wgn')]
 
 
-def upload_test_plugins(plugins, plugin_test):
+def upload_test_plugins(plugins, plugin_test, execute_bundle_upload=True):
     plugins = plugins or []
     if plugin_test:
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
-    cloudify_exec('cfy plugins bundle-upload', get_json=False)
+    if execute_bundle_upload:
+        cloudify_exec('cfy plugins bundle-upload', get_json=False)
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
@@ -223,10 +224,10 @@ def create_test_secrets(secrets=None):
 
 
 def prepare_test(plugins=None, secrets=None, plugin_test=True,
-                 pip_packages=[], yum_packages=[]):
+                 pip_packages=[], yum_packages=[], execute_bundle_upload=True):
     use_cfy()
     license_upload()
-    upload_test_plugins(plugins, plugin_test)
+    upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
     create_test_secrets(secrets)
     yum_command = 'yum install -y python-netaddr git '
     if yum_packages:
