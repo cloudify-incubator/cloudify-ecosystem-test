@@ -33,7 +33,7 @@ logger.setLevel(logging.DEBUG)
 
 MANAGER_CONTAINER_NAME = 'cfy_manager'
 TIMEOUT = 1800
-CONFIG_PATH = '/tmp/vpn.conf'
+VPN_CONFIG_PATH = '/tmp/vpn.conf'
 
 
 class EcosystemTestException(Exception):
@@ -228,8 +228,15 @@ def create_test_secrets(secrets=None):
         cloudify_exec('cfy secrets list')))
 
 
-def prepare_test(plugins=None, secrets=None, plugin_test=True,
-                 pip_packages=[], yum_packages=[], execute_bundle_upload=True):
+def prepare_test(plugins=None,
+                 secrets=None,
+                 plugin_test=True,
+                 pip_packages=None,
+                 yum_packages=None,
+                 execute_bundle_upload=True,
+                 use_vpn=False):
+    pip_packages = pip_packages or []
+    yum_packages = yum_packages or []
     use_cfy()
     license_upload()
     upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
@@ -242,6 +249,12 @@ def prepare_test(plugins=None, secrets=None, plugin_test=True,
     if pip_packages:
         pip_command = pip_command + ' '.join(pip_packages)
     docker_exec(pip_command)
+    if use_vpn:
+        value = base64.b64decode(os.environ['vpn_config'])
+        file_temp = NamedTemporaryFile(delete=False)
+        with open(file_temp.name, 'w') as outfile:
+            outfile.write(value)
+        os.rename(file_temp.name, VPN_CONFIG_PATH)
 
 
 def secrets_create(name, is_file=False):
@@ -345,10 +358,10 @@ def cleanup_on_failure(deployment_id):
                 deployment_id))
 
 
-def basic_blueprint_test(blueprint_file_name,
-                         test_name,
-                         inputs=None,
-                         timeout=None):
+def _basic_blueprint_test(blueprint_file_name,
+                          test_name,
+                          inputs=None,
+                          timeout=None):
 
     timeout = timeout or TIMEOUT
     inputs = inputs or os.path.join(
@@ -379,8 +392,8 @@ def basic_blueprint_test(blueprint_file_name,
 def vpn():
     """Run tests while VPN is executing."""
     logger.info('Starting VPN...')
-    proc = handle_process(
-        'openvpn {config_path}'.format(config_path=CONFIG_PATH), detach=True)
+    proc = handle_process('openvpn {config_path}'.format(
+        config_path=VPN_CONFIG_PATH), detach=True)
     # TODO: Find a way to poll the VPN without killing it. :(
     sleep(10)
     logger.info('VPN is supposed to be running...')
@@ -392,3 +405,21 @@ def vpn():
     finally:
         logger.info('Stopping VPN...')
         proc.terminate()
+
+
+def basic_blueprint_test(blueprint_file_name,
+                         test_name,
+                         inputs=None,
+                         timeout=None,
+                         use_vpn=False):
+    if use_vpn:
+        with vpn():
+            _basic_blueprint_test(blueprint_file_name,
+                                  test_name,
+                                  inputs,
+                                  timeout)
+    else:
+        _basic_blueprint_test(blueprint_file_name,
+                              test_name,
+                              inputs,
+                              timeout)
