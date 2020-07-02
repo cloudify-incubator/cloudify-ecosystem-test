@@ -205,12 +205,13 @@ def get_test_plugins():
             get_workspace_files() if f.endswith('.wgn')]
 
 
-def upload_test_plugins(plugins, plugin_test):
+def upload_test_plugins(plugins, plugin_test, execute_bundle_upload=True):
     plugins = plugins or []
     if plugin_test:
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
-    cloudify_exec('cfy plugins bundle-upload', get_json=False)
+    if execute_bundle_upload:
+        cloudify_exec('cfy plugins bundle-upload', get_json=False)
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
@@ -227,13 +228,20 @@ def create_test_secrets(secrets=None):
         cloudify_exec('cfy secrets list')))
 
 
-def prepare_test(plugins=None, secrets=None, plugin_test=True):
+def prepare_test(plugins=None, secrets=None, plugin_test=True,
+                 pip_packages=[], yum_packages=[], execute_bundle_upload=True):
     use_cfy()
     license_upload()
-    upload_test_plugins(plugins, plugin_test)
+    upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
     create_test_secrets(secrets)
-    docker_exec('yum install -y python-netaddr git')
-    docker_exec('/opt/mgmtworker/env/bin/pip install netaddr ipaddr')
+    yum_command = 'yum install -y python-netaddr git '
+    if yum_packages:
+        yum_command = yum_command + ' '.join(yum_packages)
+    docker_exec(yum_command)
+    pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
+    if pip_packages:
+        pip_command = pip_command + ' '.join(pip_packages)
+    docker_exec(pip_command)
 
 
 def secrets_create(name, is_file=False):
