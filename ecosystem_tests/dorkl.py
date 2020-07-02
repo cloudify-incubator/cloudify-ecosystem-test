@@ -21,6 +21,7 @@ import logging
 import subprocess
 from time import sleep
 from shlex import split
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
 
@@ -32,6 +33,7 @@ logger.setLevel(logging.DEBUG)
 
 MANAGER_CONTAINER_NAME = 'cfy_manager'
 TIMEOUT = 1800
+CONFIG_PATH = '/tmp/vpn.conf'
 
 
 class EcosystemTestException(Exception):
@@ -42,7 +44,7 @@ class EcosystemTimeout(Exception):
     pass
 
 
-def handle_process(command, timeout=TIMEOUT, log=True):
+def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
 
     file_obj_stdout = NamedTemporaryFile(delete=False)
     file_obj_stderr = NamedTemporaryFile(delete=False)
@@ -75,6 +77,9 @@ def handle_process(command, timeout=TIMEOUT, log=True):
         logger.info('Executing command {0}...'.format(command))
     time_started = datetime.now()
     p = subprocess.Popen(**popen_args)
+
+    if detach:
+        return p
 
     while p.poll() is None:
         if log:
@@ -344,6 +349,7 @@ def basic_blueprint_test(blueprint_file_name,
                          test_name,
                          inputs=None,
                          timeout=None):
+
     timeout = timeout or TIMEOUT
     inputs = inputs or os.path.join(
         os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
@@ -367,3 +373,22 @@ def basic_blueprint_test(blueprint_file_name,
     logger.info('Uninstalling...')
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
+
+
+@contextmanager
+def vpn():
+    """Run tests while VPN is executing."""
+    logger.info('Starting VPN...')
+    proc = handle_process(
+        'openvpn {config_path}'.format(config_path=CONFIG_PATH), detach=True)
+    # TODO: Find a way to poll the VPN without killing it. :(
+    sleep(10)
+    logger.info('VPN is supposed to be running...')
+    try:
+        yield proc
+    except Exception as e:
+        # TODO: Learn about potential Exceptions here.
+        logger.info('VPN error {0}'.format(e))
+    finally:
+        logger.info('Stopping VPN...')
+        proc.terminate()
