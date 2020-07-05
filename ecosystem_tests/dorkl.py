@@ -256,7 +256,8 @@ def prepare_test(plugins=None,
         file_temp = NamedTemporaryFile(delete=False)
         with open(file_temp.name, 'w') as outfile:
             outfile.write(value)
-        os.rename(file_temp.name, VPN_CONFIG_PATH)
+        docker_path = copy_file_to_docker(file_temp.name)
+        docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
 
 
 def secrets_create(name, is_file=False):
