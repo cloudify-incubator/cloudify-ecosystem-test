@@ -242,6 +242,8 @@ def prepare_test(plugins=None,
     upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
     create_test_secrets(secrets)
     yum_command = 'yum install -y python-netaddr git '
+    if use_vpn:
+        yum_packages.append('openvpn')
     if yum_packages:
         yum_command = yum_command + ' '.join(yum_packages)
     docker_exec(yum_command)
