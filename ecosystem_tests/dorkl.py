@@ -102,12 +102,12 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
     return return_parsable_output()
 
 
-def docker_exec(cmd, timeout=TIMEOUT, log=True):
+def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
     container_name = os.environ.get(
         'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     return handle_process(
         'docker exec {container_name} {cmd}'.format(
-            container_name=container_name, cmd=cmd), timeout, log)
+            container_name=container_name, cmd=cmd), timeout, log, detach)
 
 
 def copy_file_to_docker(local_file_path):
@@ -395,7 +395,7 @@ def _basic_blueprint_test(blueprint_file_name,
 def vpn():
     """Run tests while VPN is executing."""
     logger.info('Starting VPN...')
-    proc = handle_process('openvpn {config_path}'.format(
+    proc = docker_exec('openvpn {config_path}'.format(
         config_path=VPN_CONFIG_PATH), detach=True)
     # TODO: Find a way to poll the VPN without killing it. :(
     sleep(10)
