@@ -145,18 +145,23 @@ def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
 
 
 def use_cfy(timeout=60):
-    logger.info('Checking manager status.')
-    start = datetime.now()
-    while True:
-        if datetime.now() - start > timedelta(seconds=timeout):
-            raise EcosystemTestException('Fn use_cfy timed out.')
-        try:
-            output = cloudify_exec('cfy status', get_json=False)
-            logger.info(output)
-        except EcosystemTestException:
-            sleep(10)
-        logger.info('Manager is ready.')
-        break
+    logger.info('Waiting for container to boot cfy.')
+    try:
+        cloudify_exec('cfy_manager wait-for-starter', get_json=False)
+    except EcosystemTestException:
+        logger.info('im in exeception!')
+        logger.info('Checking manager status.')
+        start = datetime.now()
+        while True:
+            if datetime.now() - start > timedelta(seconds=timeout):
+                raise EcosystemTestException('Fn use_cfy timed out.')
+            try:
+                output = cloudify_exec('cfy status', get_json=False)
+                logger.info(output)
+            except EcosystemTestException:
+                sleep(10)
+            logger.info('Manager is ready.')
+            break
 
 
 def license_upload():
