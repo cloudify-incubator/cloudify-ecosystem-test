@@ -147,7 +147,7 @@ def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
 def use_cfy(timeout=60):
     logger.info('Checking manager status.')
     start = datetime.now()
-    # give 10 sec of mercy for the container to boot
+    # Give 10 sec of mercy for the container to boot
     sleep(10)
     while True:
         if datetime.now() - start > timedelta(seconds=timeout):
