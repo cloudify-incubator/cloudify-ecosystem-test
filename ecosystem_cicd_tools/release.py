@@ -46,6 +46,8 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
                                plugin_name,
                                plugin_version,
                                os.path.basename(local_path))
+    logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
+        plugin_name=plugin_name, plugin_version=plugin_version))
     upload_to_s3(local_path, bucket_path)
 
 
