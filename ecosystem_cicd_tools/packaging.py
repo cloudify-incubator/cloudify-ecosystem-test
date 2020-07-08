@@ -15,7 +15,7 @@ BUCKET_NAME = 'cloudify-release-eu'
 
 
 @contextmanager
-def with_aws(aws_secrets=None, **_):
+def aws(aws_secrets=None, **_):
     aws_secrets = aws_secrets or ['aws_access_key_id', 'aws_secret_access_key']
     try:
         for envvar in aws_secrets:
@@ -28,12 +28,12 @@ def with_aws(aws_secrets=None, **_):
             del os.environ[envvar.upper()]
 
 
-@with_aws()
 def upload_to_s3(local_path, bucket_path, bucket_name=None, **_):
-    bucket_name = bucket_name or BUCKET_NAME
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(bucket_name)
-    bucket.upload_file(local_path, bucket_path)
+    with aws():
+        bucket_name = bucket_name or BUCKET_NAME
+        s3 = boto3.resource('s3')
+        bucket = s3.Bucket(bucket_name)
+        bucket.upload_file(local_path, bucket_path)
 
 
 def get_workspace_files(file_type=None):
