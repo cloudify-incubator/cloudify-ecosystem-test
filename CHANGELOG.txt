@@ -1,3 +1,4 @@
+2.2.67: Add S3 Upload.
 2.2.66: get plugin information from wagon metadata.
 2.2.65: Give 10 seconds of mercy for the container to boot.
 2.2.59: Add the ability choose not to run bundle-upload on prepare test.

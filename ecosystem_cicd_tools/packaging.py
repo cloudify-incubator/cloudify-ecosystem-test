@@ -2,10 +2,37 @@
 from __future__ import with_statement
 
 import os
+import base64
 import shutil
 import logging
 import zipfile
+from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+
+import boto3
+
+BUCKET_NAME = 'cloudify-release-eu'
+
+
+@contextmanager
+def aws(aws_secrets=None, **_):
+    aws_secrets = aws_secrets or ['aws_access_key_id', 'aws_secret_access_key']
+    try:
+        for envvar in aws_secrets:
+            secret = base64.b64decode(os.environ[envvar])
+            os.environ[envvar.upper()] = secret.rstrip('\n')
+        yield
+    finally:
+        for envvar in ['aws_access_key_id', 'aws_secret_access_key']:
+            del os.environ[envvar.upper()]
+
+
+def upload_to_s3(local_path, bucket_path, bucket_name=None, **_):
+    with aws():
+        bucket_name = bucket_name or BUCKET_NAME
+        s3 = boto3.resource('s3')
+        bucket = s3.Bucket(bucket_name)
+        bucket.upload_file(local_path, bucket_path)
 
 
 def get_workspace_files(file_type=None):
