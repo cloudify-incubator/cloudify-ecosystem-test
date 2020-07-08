@@ -27,6 +27,8 @@ from tempfile import NamedTemporaryFile
 
 from ecosystem_cicd_tools.packaging import get_workspace_files
 
+from wagon import show
+
 logging.basicConfig()
 logger = logging.getLogger('logger')
 logger.setLevel(logging.DEBUG)
@@ -174,17 +176,19 @@ def license_upload():
         copy_file_to_docker(file_temp.name)), get_json=False)
 
 
-def plugin_already_uploaded(plugin_name,
-                            plugin_version,
-                            plugin_distribution):
-
+def plugin_already_uploaded(wagon_path):
+    wagon_metadata = show(wagon_path)
+    plugin_name = wagon_metadata["package_name"]
+    plugin_version = wagon_metadata["package_version"]
+    plugin_distribution = wagon_metadata["build_server_os_properties"][
+        "distribution"]
     for plugin in cloudify_exec('cfy plugins list'):
         logger.info('CHECKING if {0} {1} {2} in {3}'.format(
             plugin_name,
             plugin_version,
             plugin_distribution,
             plugin))
-        if plugin_name.replace('_', '-')in plugin['package_name'] and \
+        if plugin_name.replace('_', '-') in plugin['package_name'] and \
                 plugin_version in plugin['package_version'] and \
                 plugin_distribution.lower() in plugin['distribution'].lower():
             return True
@@ -194,9 +198,7 @@ def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
     wagon_name = os.path.basename(wagon_path)
     wagon_parts = wagon_name.split('-')
-    if not plugin_already_uploaded(wagon_parts[0],
-                                   wagon_parts[1],
-                                   wagon_parts[2]):
+    if not plugin_already_uploaded(wagon_path):
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
 

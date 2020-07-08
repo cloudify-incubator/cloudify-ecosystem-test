@@ -13,6 +13,7 @@ setup(
     install_requires=[
         'testtools',
         'cloudify-common',
-        'PyGithub'
+        'PyGithub',
+        'wagon==0.10.0'
     ]
 )
