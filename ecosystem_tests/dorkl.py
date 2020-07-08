@@ -196,7 +196,7 @@ def plugins_upload(wagon_path, yaml_path):
     wagon_parts = wagon_name.split('-')
     if not plugin_already_uploaded(wagon_parts[0],
                                    wagon_parts[1],
-                                   wagon_parts[-2]):
+                                   wagon_parts[2]):
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
 
