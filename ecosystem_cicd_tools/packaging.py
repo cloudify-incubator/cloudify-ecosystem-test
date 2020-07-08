@@ -21,10 +21,9 @@ def aws(aws_secrets=None, **_):
         for envvar in aws_secrets:
             secret = base64.b64decode(os.environ[envvar])
             os.environ[envvar.upper()] = secret.rstrip('\n')
-            yield
+        yield
     finally:
         for envvar in ['aws_access_key_id', 'aws_secret_access_key']:
-            del os.environ[envvar.upper()]
             del os.environ[envvar.upper()]
 
 
