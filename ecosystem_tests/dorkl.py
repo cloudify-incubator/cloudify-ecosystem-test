@@ -176,8 +176,18 @@ def license_upload():
         copy_file_to_docker(file_temp.name)), get_json=False)
 
 
+def find_wagon_local_path(docker_path):
+    for f in get_workspace_files():
+        if os.path.basename(docker_path) in f:
+            return f
+
+
 def plugin_already_uploaded(wagon_path):
-    wagon_metadata = show(wagon_path)
+    # It`s url
+    if '://' in wagon_path:
+        wagon_metadata = show(wagon_path)
+    else:
+        wagon_metadata = show(find_wagon_local_path(wagon_path))
     plugin_name = wagon_metadata["package_name"]
     plugin_version = wagon_metadata["package_version"]
     plugin_distribution = wagon_metadata["build_server_os_properties"][
