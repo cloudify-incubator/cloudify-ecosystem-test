@@ -190,8 +190,8 @@ def plugin_already_uploaded(wagon_path):
         wagon_metadata = show(find_wagon_local_path(wagon_path))
     plugin_name = wagon_metadata["package_name"]
     plugin_version = wagon_metadata["package_version"]
-    plugin_distribution = wagon_metadata["build_server_os_properties"][
-        "distribution"]
+    plugin_distribution = \
+        wagon_metadata["build_server_os_properties"]["distribution"]
     for plugin in cloudify_exec('cfy plugins list'):
         logger.info('CHECKING if {0} {1} {2} in {3}'.format(
             plugin_name,
