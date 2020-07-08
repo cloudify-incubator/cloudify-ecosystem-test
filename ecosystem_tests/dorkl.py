@@ -178,7 +178,7 @@ def license_upload():
 
 def find_wagon_local_path(docker_path):
     for f in get_workspace_files():
-        if os.path.basename(docker_path) in f:
+        if os.path.basename(docker_path) in f and f.endswith('.wgn'):
             return f
 
 
