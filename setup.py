@@ -14,6 +14,7 @@ setup(
         'testtools',
         'cloudify-common',
         'PyGithub',
-        'wagon==0.10.0'
+        'wagon==0.10.0',
+        'boto3'
     ]
 )
