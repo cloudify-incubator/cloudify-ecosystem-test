@@ -216,6 +216,9 @@ def build_plugins_bundle():
 
     bundle_archive = create_plugin_bundle_archive(mapping)
     print bundle_archive
+    # TODO: Before we test this,
+    # we need to update all of the plugins to be in s3.
+    # (This can be done in a script.) And we need to update the JSON.
     # upload_to_s3(bundle_archive,
     #              os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
 
