@@ -1,20 +1,41 @@
 
 import os
 import json
+import yaml
 import base64
 import shutil
 import logging
+import tarfile
 import zipfile
+import requests
 from contextlib import contextmanager
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkdtemp
 
 import boto3
 
 logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
+BUCKET_FOLDER = 'cloudify/wagons'
+PLUGINS_JSON_PATH = os.path.join(BUCKET_FOLDER, 'plugins.json')
 EXAMPLES_JSON = 'resources/examples.json'
 PLUGINS_JSON = 'resources/plugins.json'
-BUCKET_FOLDER = 'cloudify/wagons'
+PLUGINS_TO_BUNDLE = ['vSphere',
+                     'Terraform',
+                     'Docker',
+                     'OpenStack',
+                     'Fabric',
+                     'GCP',
+                     'AWS',
+                     'Azure',
+                     'Ansible',
+                     'Kubernetes',
+                     'Utilities']
+REDHAT = 'Redhat Maipo'
+CENTOS = 'Centos Core'
+DISTROS_TO_BUNDLE = [CENTOS, REDHAT]
+PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
+ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
+ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 
 
 @contextmanager
@@ -88,12 +109,12 @@ def update_assets_in_plugin_dict(plugin_dict, assets):
             plugin_dict['link'] = asset
             continue
         for wagon in plugin_dict['wagons']:
-            if wagon['name'] == 'Redhat Maipo' and 'redhat-Maipo' in asset:
+            if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
                 if 'md5' in asset:
                         wagon['md5url'] = asset
                 else:
                     wagon['url'] = asset
-            elif wagon['name'] == 'Centos Core' and 'centos-Core' in asset:
+            elif wagon['name'] == CENTOS and 'centos-Core' in asset:
                 if 'md5' in asset:
                         wagon['md5url'] = asset
                 else:
@@ -114,18 +135,16 @@ def update_plugins_json(plugin_name, plugin_version, assets):
         'Updating {plugin_name} {plugin_version} in plugin JSON'.format(
             plugin_name=plugin_name,
             plugin_version=plugin_version))
-    url_template = 'http://repository.cloudifysource.org/{0}/{1}/{2}/{3}'
-    assets = [url_template.format(BUCKET_FOLDER,
-                                  plugin_name,
-                                  plugin_version,
-                                  asset) for asset in assets]
-    plugins_json_path = os.path.join(BUCKET_FOLDER, 'plugins.json')
+    assets = [ASSET_URL_TEMPLATE.format(BUCKET_FOLDER,
+                                        plugin_name,
+                                        plugin_version,
+                                        asset) for asset in assets]
     plugin_dict = get_plugin_new_json(
-        plugins_json_path,
+        PLUGINS_JSON_PATH,
         plugin_name,
         plugin_version,
         assets)
-    write_json_and_upload_to_s3(plugin_dict, plugins_json_path, BUCKET_NAME)
+    write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
 
 
 def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
@@ -145,6 +164,60 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
     logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
         plugin_name=plugin_name, plugin_version=plugin_version))
     upload_to_s3(local_path, bucket_path)
+
+
+def create_plugin_metadata(wgn_path, yaml_path, directory):
+    """This is related to How the plugin bundle is unpacked."""
+    plugin_root_dir = os.path.basename(wgn_path).split('.wgn')[0]
+    os.mkdir(os.path.join(directory, plugin_root_dir))
+    dest_wgn_path = os.path.join(plugin_root_dir,
+                                 os.path.basename(wgn_path))
+    dest_yaml_path = os.path.join(plugin_root_dir,
+                                  os.path.basename(yaml_path))
+    dest_wgn_path = download_from_s3(
+        wgn_path.replace(ASSET_URL_TEMPLATE, BUCKET_FOLDER), dest_wgn_path)
+    dest_yaml_path = download_from_s3(
+        yaml_path.replace(ASSET_URL_TEMPLATE, BUCKET_FOLDER), dest_yaml_path)
+    return dest_wgn_path, dest_yaml_path
+
+
+def create_plugin_bundle_archive(mappings, tar_name=None, destination=None):
+    tar_name = tar_name or PLUGINS_BUNDLE_NAME
+    destination = destination or mkdtemp()
+    work_dir = mkdtemp()
+
+    metadata = {}
+    for key, value in mappings.iteritems():
+        wagon_path, yaml_path = create_plugin_metadata(key, value, work_dir)
+        metadata[wagon_path] = yaml_path
+
+    with open(os.path.join(work_dir, 'METADATA'), 'w+') as f:
+        yaml.dump(metadata, f)
+    tar_path = os.path.join(destination, '{0}.tgz'.format(tar_name))
+    tarfile_ = tarfile.open(tar_path, 'w:gz')
+    try:
+        tarfile_.add(work_dir, arcname=tar_name)
+    finally:
+        tarfile_.close()
+        shutil.rmtree(work_dir, ignore_errors=True)
+    return tar_path
+
+
+def build_plugins_bundle():
+    plugins = get_plugins_json(PLUGINS_JSON_PATH)
+    mapping = {}
+
+    for plugin in plugins:
+        if plugin['title'] in PLUGINS_TO_BUNDLE:
+            plugin_yaml = plugin['link']
+            for wagon in plugin['wagons']:
+                if wagon['name'] in DISTROS_TO_BUNDLE:
+                    mapping[wagon['url']] = plugin_yaml
+
+    bundle_archive = create_plugin_bundle_archive(mapping)
+    print bundle_archive
+    # upload_to_s3(bundle_archive,
+    #              os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
 
 
 def get_workspace_files(file_type=None):
