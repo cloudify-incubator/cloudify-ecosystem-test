@@ -5,15 +5,16 @@ import base64
 import shutil
 import logging
 import zipfile
-from collections import OrderedDict
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 
 import boto3
 
+logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
 EXAMPLES_JSON = 'resources/examples.json'
 PLUGINS_JSON = 'resources/plugins.json'
+BUCKET_FOLDER = 'cloudify/wagons'
 
 
 @contextmanager
@@ -36,6 +37,8 @@ def upload_to_s3(local_path,
         bucket_name = bucket_name or BUCKET_NAME
         s3 = boto3.resource('s3')
         bucket = s3.Bucket(bucket_name)
+        logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
+            local_path=local_path, remote_path=remote_path))
         bucket.upload_file(local_path, remote_path)
 
 
@@ -51,20 +54,25 @@ def download_from_s3(remote_path,
             bucket_name = bucket_name or BUCKET_NAME
             s3 = boto3.resource('s3')
             s3_object = s3.Object(bucket_name, remote_path)
+        logging.info('Downloading s3://{local_path}.'.format(
+            local_path=local_path))
         s3_object.download_file(local_path)
         return local_path
 
 
 def read_json_file(file_path):
     with open(file_path, 'r') as outfile:
-        return json.load(outfile, object_pairs_hook=OrderedDict)
+        return json.load(outfile)
 
 
 def write_json_and_upload_to_s3(content, remote_path, bucket_name):
+    logging.info('Writing new content to s3://{remote_path}.'.format(
+        remote_path=remote_path))
+    logging.debug('The new data is {content}'.format(content=content))
     archive_temp = NamedTemporaryFile(delete=False)
     with open(archive_temp.name, 'w') as outfile:
         json.dump(content, outfile, ensure_ascii=False, indent=4)
-    upload_to_s3(remote_path, bucket_name)
+    upload_to_s3(archive_temp.name, remote_path, bucket_name)
 
 
 def get_plugins_json(remote_path):
@@ -73,33 +81,70 @@ def get_plugins_json(remote_path):
 
 
 def update_assets_in_plugin_dict(plugin_dict, assets):
+    logging.debug('Updating plugin JSON with assets {assets}'.format(
+        assets=assets))
     for asset in assets:
         if asset.endswith('.yaml'):
             plugin_dict['link'] = asset
             continue
         for wagon in plugin_dict['wagons']:
-            if wagon['name'] == 'Redhat Maipo' and 'redhat' in asset:
+            if wagon['name'] == 'Redhat Maipo' and 'redhat-Maipo' in asset:
                 if 'md5' in asset:
                         wagon['md5url'] = asset
                 else:
                     wagon['url'] = asset
-            elif wagon['name'] == 'centos Core' and 'centos' in asset:
+            elif wagon['name'] == 'Centos Core' and 'centos-Core' in asset:
                 if 'md5' in asset:
                         wagon['md5url'] = asset
                 else:
                     wagon['url'] = asset
-    return plugin_dict
 
 
 def get_plugin_new_json(remote_path, plugin_name, plugin_version, assets):
-    for pd in get_plugins_json(remote_path):
+    plugins_list = get_plugins_json(remote_path)
+    for pd in plugins_list:
         if plugin_name == pd['name']:
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
-                return update_assets_in_plugin_dict(pd, assets)
-    raise RuntimeError('The plugin {plugin_name} {plugin_version} '
-                       'was not found in the plugins.json.'.format(
-                           plugin_name=plugin_name,
-                           plugin_version=plugin_version))
+                update_assets_in_plugin_dict(pd, assets)
+    return plugins_list
+
+
+def update_plugins_json(plugin_name, plugin_version, assets):
+    logging.info(
+        'Updating {plugin_name} {plugin_version} in plugin JSON'.format(
+            plugin_name=plugin_name,
+            plugin_version=plugin_version))
+    url_template = 'http://repository.cloudifysource.org/{0}/{1}/{2}/{3}'
+    assets = [url_template.format(BUCKET_FOLDER,
+                                  plugin_name,
+                                  plugin_version,
+                                  asset) for asset in assets]
+    plugins_json_path = os.path.join(BUCKET_FOLDER, 'plugins.json')
+    plugin_dict = get_plugin_new_json(
+        plugins_json_path,
+        plugin_name,
+        plugin_version,
+        assets)
+    write_json_and_upload_to_s3(plugin_dict, plugins_json_path, BUCKET_NAME)
+
+
+def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
+    """
+
+    :param local_path: The path to the asset, such as 'dir/my-wagon.wgn.md5'.
+    :param plugin_name: The plugin name, such as 'cloudify-foo-plugin'.
+    :param plugin_version: The plugin version, such as '1.0.0'.
+    :return:
+    """
+    # We want to create a string in the format:
+    # cloudify/wagons/cloudify-foo-plugin/1.0.0/my-wagon.wgn.md5
+    bucket_path = os.path.join(BUCKET_FOLDER,
+                               plugin_name,
+                               plugin_version,
+                               os.path.basename(local_path))
+    logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
+        plugin_name=plugin_name, plugin_version=plugin_version))
+    upload_to_s3(local_path, bucket_path)
 
 
 def get_workspace_files(file_type=None):
