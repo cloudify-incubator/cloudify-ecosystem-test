@@ -1,17 +1,19 @@
 
-from __future__ import with_statement
-
 import os
+import json
 import base64
 import shutil
 import logging
 import zipfile
+from collections import OrderedDict
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 
 import boto3
 
 BUCKET_NAME = 'cloudify-release-eu'
+EXAMPLES_JSON = 'resources/examples.json'
+PLUGINS_JSON = 'resources/plugins.json'
 
 
 @contextmanager
@@ -27,12 +29,77 @@ def aws(aws_secrets=None, **_):
             del os.environ[envvar.upper()]
 
 
-def upload_to_s3(local_path, bucket_path, bucket_name=None, **_):
+def upload_to_s3(local_path,
+                 remote_path,
+                 bucket_name=None):
     with aws():
         bucket_name = bucket_name or BUCKET_NAME
         s3 = boto3.resource('s3')
         bucket = s3.Bucket(bucket_name)
-        bucket.upload_file(local_path, bucket_path)
+        bucket.upload_file(local_path, remote_path)
+
+
+def download_from_s3(remote_path,
+                     local_path=None,
+                     bucket_name=None,
+                     s3_object=None):
+    with aws():
+        if not local_path:
+            archive_temp = NamedTemporaryFile(delete=False)
+            local_path = archive_temp.name
+        if not s3_object:
+            bucket_name = bucket_name or BUCKET_NAME
+            s3 = boto3.resource('s3')
+            s3_object = s3.Object(bucket_name, remote_path)
+        s3_object.download_file(local_path)
+        return local_path
+
+
+def read_json_file(file_path):
+    with open(file_path, 'r') as outfile:
+        return json.load(outfile, object_pairs_hook=OrderedDict)
+
+
+def write_json_and_upload_to_s3(content, remote_path, bucket_name):
+    archive_temp = NamedTemporaryFile(delete=False)
+    with open(archive_temp.name, 'w') as outfile:
+        json.dump(content, outfile, ensure_ascii=False, indent=4)
+    upload_to_s3(remote_path, bucket_name)
+
+
+def get_plugins_json(remote_path):
+    local_path = download_from_s3(remote_path, PLUGINS_JSON)
+    return read_json_file(local_path)
+
+
+def update_assets_in_plugin_dict(plugin_dict, assets):
+    for asset in assets:
+        if asset.endswith('.yaml'):
+            plugin_dict['link'] = asset
+            continue
+        for wagon in plugin_dict['wagons']:
+            if wagon['name'] == 'Redhat Maipo' and 'redhat' in asset:
+                if 'md5' in asset:
+                        wagon['md5url'] = asset
+                else:
+                    wagon['url'] = asset
+            elif wagon['name'] == 'centos Core' and 'centos' in asset:
+                if 'md5' in asset:
+                        wagon['md5url'] = asset
+                else:
+                    wagon['url'] = asset
+    return plugin_dict
+
+
+def get_plugin_new_json(remote_path, plugin_name, plugin_version, assets):
+    for pd in get_plugins_json(remote_path):
+        if plugin_name == pd['name']:
+            if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
+                return update_assets_in_plugin_dict(pd, assets)
+    raise RuntimeError('The plugin {plugin_name} {plugin_version} '
+                       'was not found in the plugins.json.'.format(
+                           plugin_name=plugin_name,
+                           plugin_version=plugin_version))
 
 
 def get_workspace_files(file_type=None):

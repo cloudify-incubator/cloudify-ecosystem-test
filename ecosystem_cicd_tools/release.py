@@ -24,7 +24,11 @@ from tempfile import NamedTemporaryFile
 from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
 
-from packaging import package_blueprint, get_workspace_files, upload_to_s3
+from packaging import (package_blueprint,
+                       get_workspace_files,
+                       upload_to_s3,
+                       get_plugin_new_json,
+                       write_json_and_upload_to_s3)
 
 logging.basicConfig(level=logging.INFO)
 VERSION_STRING_RE = \
@@ -49,6 +53,20 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
     logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
         plugin_name=plugin_name, plugin_version=plugin_version))
     upload_to_s3(local_path, bucket_path)
+
+
+def update_plugins_json(plugin_name, plugin_version, assets):
+    url_template = 'http://repository.cloudifysource.org/{0}/{1}/{2}/{3}'
+    assets = [url_template.format(BUCKET_FOLDER,
+                                  plugin_name,
+                                  plugin_version,
+                                  asset) for asset in assets]
+    plugin_dict = get_plugin_new_json(
+        os.path.join(BUCKET_FOLDER, 'plugins.json'),
+        plugin_name,
+        plugin_version,
+        assets)
+    write_json_and_upload_to_s3(plugin_dict)
 
 
 def get_client(github_token=None):
@@ -252,6 +270,8 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3(plugin,
                                   plugin_name,
                                   version)
+    plugins.append('plugin.yaml')
+    update_plugins_json(plugin_name, version, plugins)
     return version_release
 
 
