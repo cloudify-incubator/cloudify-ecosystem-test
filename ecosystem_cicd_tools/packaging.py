@@ -7,7 +7,6 @@ import shutil
 import logging
 import tarfile
 import zipfile
-import requests
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
 
@@ -61,6 +60,8 @@ def upload_to_s3(local_path,
         logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
             local_path=local_path, remote_path=remote_path))
         bucket.upload_file(local_path, remote_path)
+        object_acl = s3.ObjectAcl(bucket_name, remote_path)
+        object_acl.put(ACL='public-read')
 
 
 def download_from_s3(remote_path,
@@ -75,8 +76,10 @@ def download_from_s3(remote_path,
             bucket_name = bucket_name or BUCKET_NAME
             s3 = boto3.resource('s3')
             s3_object = s3.Object(bucket_name, remote_path)
-        logging.info('Downloading s3://{local_path}.'.format(
-            local_path=local_path))
+        logging.info('Downloading {s3_object} to {local_path}.'.format(
+            s3_object=s3_object, local_path=local_path))
+        if not os.path.exists(os.path.dirname(local_path)):
+            os.makedirs(os.path.dirname(local_path))
         s3_object.download_file(local_path)
         return local_path
 
@@ -166,46 +169,52 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
     upload_to_s3(local_path, bucket_path)
 
 
-def create_plugin_metadata(wgn_path, yaml_path, directory):
+def create_plugin_metadata(wgn_path, yaml_path, tempdir):
     """This is related to How the plugin bundle is unpacked."""
-    plugin_root_dir = os.path.basename(wgn_path).split('.wgn')[0]
-    os.mkdir(os.path.join(directory, plugin_root_dir))
+    logging.info('Downloading {wgn_path} and {yaml_path}'.format(
+        wgn_path=wgn_path, yaml_path=yaml_path))
+    plugin_root_dir = os.path.basename(wgn_path).rsplit('.', 1)[0]
+    os.mkdir(os.path.join(tempdir, plugin_root_dir))
     dest_wgn_path = os.path.join(plugin_root_dir,
                                  os.path.basename(wgn_path))
     dest_yaml_path = os.path.join(plugin_root_dir,
                                   os.path.basename(yaml_path))
-    dest_wgn_path = download_from_s3(
-        wgn_path.replace(ASSET_URL_TEMPLATE, BUCKET_FOLDER), dest_wgn_path)
-    dest_yaml_path = download_from_s3(
-        yaml_path.replace(ASSET_URL_TEMPLATE, BUCKET_FOLDER), dest_yaml_path)
+    download_from_s3(
+        wgn_path.split(ASSET_URL_DOMAIN + '/')[1],
+        os.path.join(tempdir, dest_wgn_path))
+    download_from_s3(
+        yaml_path.split(ASSET_URL_DOMAIN + '/')[1],
+        os.path.join(tempdir, dest_yaml_path))
     return dest_wgn_path, dest_yaml_path
 
 
-def create_plugin_bundle_archive(mappings, tar_name=None, destination=None):
-    tar_name = tar_name or PLUGINS_BUNDLE_NAME
-    destination = destination or mkdtemp()
-    work_dir = mkdtemp()
-
+def create_plugin_bundle_archive(mappings, tar_name, destination):
+    tempdir = mkdtemp()
     metadata = {}
+
     for key, value in mappings.iteritems():
-        wagon_path, yaml_path = create_plugin_metadata(key, value, work_dir)
+        wagon_path, yaml_path = create_plugin_metadata(key, value, tempdir)
+        logging.info('Inserting metadata[{wagon_path}] = '
+                     '{yaml_path}'.format(
+                         wagon_path=wagon_path, yaml_path=yaml_path))
         metadata[wagon_path] = yaml_path
 
-    with open(os.path.join(work_dir, 'METADATA'), 'w+') as f:
+    with open(os.path.join(tempdir, 'METADATA'), 'w+') as f:
         yaml.dump(metadata, f)
     tar_path = os.path.join(destination, '{0}.tgz'.format(tar_name))
     tarfile_ = tarfile.open(tar_path, 'w:gz')
     try:
-        tarfile_.add(work_dir, arcname=tar_name)
+        tarfile_.add(tempdir, arcname=tar_name)
     finally:
         tarfile_.close()
-        shutil.rmtree(work_dir, ignore_errors=True)
+        shutil.rmtree(tempdir, ignore_errors=True)
     return tar_path
 
 
 def build_plugins_bundle():
     plugins = get_plugins_json(PLUGINS_JSON_PATH)
     mapping = {}
+    build_directory = mkdtemp()
 
     for plugin in plugins:
         if plugin['title'] in PLUGINS_TO_BUNDLE:
@@ -214,13 +223,10 @@ def build_plugins_bundle():
                 if wagon['name'] in DISTROS_TO_BUNDLE:
                     mapping[wagon['url']] = plugin_yaml
 
-    bundle_archive = create_plugin_bundle_archive(mapping)
-    print bundle_archive
-    # TODO: Before we test this,
-    # we need to update all of the plugins to be in s3.
-    # (This can be done in a script.) And we need to update the JSON.
-    # upload_to_s3(bundle_archive,
-    #              os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
+    bundle_archive = create_plugin_bundle_archive(
+        mapping, PLUGINS_BUNDLE_NAME, build_directory)
+    upload_to_s3(bundle_archive,
+                 os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
 
 
 def get_workspace_files(file_type=None):
