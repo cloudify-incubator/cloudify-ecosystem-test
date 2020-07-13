@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import re
 import shutil
 import logging
@@ -24,31 +23,14 @@ from tempfile import NamedTemporaryFile
 from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
 
-from packaging import package_blueprint, get_workspace_files, upload_to_s3
+from packaging import (package_blueprint,
+                       get_workspace_files,
+                       upload_plugin_asset_to_s3,
+                       update_plugins_json)
 
 logging.basicConfig(level=logging.INFO)
 VERSION_STRING_RE = \
     r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
-BUCKET_FOLDER = 'cloudify/wagons'
-
-
-def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
-    """
-
-    :param local_path: The path to the asset, such as 'dir/my-wagon.wgn.md5'.
-    :param plugin_name: The plugin name, such as 'cloudify-foo-plugin'.
-    :param plugin_version: The plugin version, such as '1.0.0'.
-    :return:
-    """
-    # We want to create a string in the format:
-    # cloudify/wagons/cloudify-foo-plugin/1.0.0/my-wagon.wgn.md5
-    bucket_path = os.path.join(BUCKET_FOLDER,
-                               plugin_name,
-                               plugin_version,
-                               os.path.basename(local_path))
-    logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
-        plugin_name=plugin_name, plugin_version=plugin_version))
-    upload_to_s3(local_path, bucket_path)
 
 
 def get_client(github_token=None):
@@ -252,6 +234,8 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3(plugin,
                                   plugin_name,
                                   version)
+    plugins.append('plugin.yaml')
+    update_plugins_json(plugin_name, version, plugins)
     return version_release
 
 
