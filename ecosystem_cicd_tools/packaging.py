@@ -38,11 +38,12 @@ ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 
 
 @contextmanager
-def aws(aws_secrets=None, **_):
-    aws_secrets = aws_secrets or ['aws_access_key_id', 'aws_secret_access_key']
-    for envvar in aws_secrets:
-        secret = base64.b64decode(os.environ[envvar].strip('\n'))
-        os.environ[envvar.upper()] = secret
+def aws(**_):
+    access_key = os.environ['aws_access_key_id'].strip('\n')
+    access_secret = os.environ['aws_secret_access_key'].strip('\n')
+    os.environ['aws_access_key_id'.upper()] = base64.b64decode(access_key)
+    os.environ['aws_secret_access_key'.upper()] = base64.b64decode(
+        access_secret)
     yield
 
 
