@@ -59,7 +59,11 @@ def upload_to_s3(local_path,
         bucket = s3.Bucket(bucket_name)
         logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
             local_path=local_path, remote_path=remote_path))
-        bucket.upload_file(local_path, remote_path, ExtraArgs={'ACL':'public-read'})
+        bucket.upload_file(local_path, remote_path, ExtraArgs={'ACL': 'public-read'})
+        object_acl = s3.ObjectAcl(bucket_name, remote_path)
+        object_acl.put(ACL='public-read')
+        logging.info('{object_acl} grants: {grants}.'.format(
+            object_acl=object_acl, grants=object_acl.grants))
 
 
 def download_from_s3(remote_path,
