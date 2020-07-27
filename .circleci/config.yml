@@ -119,20 +119,17 @@ workflows:
   version: 2
   tests:
     jobs:
-#      - unittests
-#      - release:
-#          filters:
-#            branches:
-#              only: master
-#          requires:
-#          - unittests
-      - build_bundle
-#          requires:
-#          - release
+      - unittests
+      - release:
+          filters:
+            branches:
+              only: master
+          requires:
+          - unittests
   nightly:
     triggers:
     - schedule:
-        cron: "0 0 * * *"
+        cron: "0 23 * * *"
         filters:
           branches:
             only:
