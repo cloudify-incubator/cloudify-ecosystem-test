@@ -119,16 +119,16 @@ workflows:
   version: 2
   tests:
     jobs:
-      - unittests
-      - release:
-          filters:
-            branches:
-              only: master
-          requires:
-          - unittests
-      - build_bundle:
-          requires:
-          - release
+#      - unittests
+#      - release:
+#          filters:
+#            branches:
+#              only: master
+#          requires:
+#          - unittests
+      - build_bundle
+#          requires:
+#          - release
   nightly:
     triggers:
     - schedule:

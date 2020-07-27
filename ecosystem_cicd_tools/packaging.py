@@ -41,8 +41,8 @@ ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 def aws(aws_secrets=None, **_):
     aws_secrets = aws_secrets or ['aws_access_key_id', 'aws_secret_access_key']
     for envvar in aws_secrets:
-        secret = base64.b64decode(os.environ[envvar])
-        os.environ[envvar.upper()] = secret.rstrip('\n')
+        secret = base64.b64decode(os.environ[envvar].strip('\n'))
+        os.environ[envvar.upper()] = secret
     yield
 
 
