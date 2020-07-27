@@ -47,7 +47,10 @@ def aws(aws_secrets=None, **_):
         yield
     finally:
         for envvar in ['aws_access_key_id', 'aws_secret_access_key']:
-            del os.environ[envvar.upper()]
+            try:
+                del os.environ[envvar.upper()]
+            except KeyError:
+                pass
 
 
 def upload_to_s3(local_path,
