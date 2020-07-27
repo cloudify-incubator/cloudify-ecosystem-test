@@ -40,17 +40,10 @@ ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 @contextmanager
 def aws(aws_secrets=None, **_):
     aws_secrets = aws_secrets or ['aws_access_key_id', 'aws_secret_access_key']
-    try:
-        for envvar in aws_secrets:
-            secret = base64.b64decode(os.environ[envvar])
-            os.environ[envvar.upper()] = secret.rstrip('\n')
-        yield
-    finally:
-        for envvar in ['aws_access_key_id', 'aws_secret_access_key']:
-            try:
-                del os.environ[envvar.upper()]
-            except KeyError:
-                pass
+    for envvar in aws_secrets:
+        secret = base64.b64decode(os.environ[envvar])
+        os.environ[envvar.upper()] = secret.rstrip('\n')
+    yield
 
 
 def upload_to_s3(local_path,
