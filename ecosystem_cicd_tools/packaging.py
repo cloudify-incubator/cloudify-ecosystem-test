@@ -39,11 +39,20 @@ ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 
 @contextmanager
 def aws(**_):
+    if 'aws_access_key_id' not in os.environ or 'aws_secret_access_key' not in os.environ:
+        raise RuntimeError(
+            'Neither aws_access_key_id nor '
+            'aws_secret_access_key in environment variables.')
     access_key = os.environ['aws_access_key_id'].strip('\n')
     access_secret = os.environ['aws_secret_access_key'].strip('\n')
-    os.environ['aws_access_key_id'.upper()] = base64.b64decode(access_key)
+    os.environ['aws_access_key_id'.upper()] = base64.b64decode(
+        access_key).strip('\n')
     os.environ['aws_secret_access_key'.upper()] = base64.b64decode(
-        access_secret)
+        access_secret).strip('\n')
+    if 'aws_access_key_id' not in os.environ or 'aws_secret_access_key' not in os.environ:
+        raise RuntimeError(
+            'Neither aws_access_key_id nor '
+            'aws_secret_access_key in environment variables.')
     yield
 
 
