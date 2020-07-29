@@ -12,6 +12,7 @@ from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
 
 import boto3
+from wagon import show
 from botocore.exceptions import ClientError
 
 logging.basicConfig(level=logging.INFO)
@@ -67,13 +68,13 @@ def upload_to_s3(local_path,
         bucket = s3.Bucket(bucket_name)
         logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
             local_path=local_path, remote_path=remote_path))
-        # bucket.upload_file(local_path,
-        #                    remote_path,
-        #                    ExtraArgs={'ACL': 'public-read'})
+        bucket.upload_file(local_path,
+                           remote_path,
+                           ExtraArgs={'ACL': 'public-read'})
         object_acl = s3.ObjectAcl(bucket_name, remote_path)
         logging.info('{object_acl} grants: {grants}.'.format(
             object_acl=object_acl, grants=object_acl.grants))
-        # object_acl.put(ACL='public-read')
+        object_acl.put(ACL='public-read')
         logging.info('{object_acl} grants: {grants}.'.format(
             object_acl=object_acl, grants=object_acl.grants))
 
@@ -103,7 +104,11 @@ def download_from_s3(remote_path,
             s3_object=s3_object, local_path=local_path))
         if not os.path.exists(os.path.dirname(local_path)):
             os.makedirs(os.path.dirname(local_path))
-        s3_object.download_file(local_path)
+        logging.info('Starting download')
+        s3_object.download_file(
+            local_path,
+            Config=boto3.s3.transfer.TransferConfig(use_threads=False))
+        logging.info('Finished download')
         return local_path
 
 
@@ -136,6 +141,14 @@ def write_json_and_upload_to_s3(content, remote_path, bucket_name):
     upload_to_s3(archive_temp.name, remote_path, bucket_name)
 
 
+def write_json(content):
+    logging.info('The new data is {content}'.format(content=content))
+    archive_temp = NamedTemporaryFile(delete=False)
+    with open(archive_temp.name, 'w') as outfile:
+        json.dump(content, outfile, ensure_ascii=False, indent=4)
+    return archive_temp.name
+
+
 def get_plugins_json(remote_path):
     """
     Get the plugins list.
@@ -164,12 +177,12 @@ def update_assets_in_plugin_dict(plugin_dict, assets):
             continue
         for wagon in plugin_dict['wagons']:
             if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
-                if 'md5' in asset:
+                if asset.endswith('md5'):
                         wagon['md5url'] = asset
                 else:
                     wagon['url'] = asset
             elif wagon['name'] == CENTOS and 'centos-Core' in asset:
-                if 'md5' in asset:
+                if asset.endswith('md5'):
                         wagon['md5url'] = asset
                 else:
                     wagon['url'] = asset
@@ -193,6 +206,12 @@ def get_plugin_new_json(remote_path,
     plugins_list = plugins_list or get_plugins_json(remote_path)
     # Plugins list is a list of dictionaries. Each plugin/version is one dict.
     for pd in plugins_list:
+        logging.info('Checking {plugin_name} {plugin_version}'.format(
+            plugin_name=plugin_name,
+            plugin_version=plugin_version))
+        logging.info('against plugin {pn} {pv}'.format(
+            pn=pd['name'],
+            pv=pd['version']))
         if plugin_name == pd['name']:
             # Double check that we are editing the same version.
             # For example, we don't want to update
@@ -228,7 +247,7 @@ def update_plugins_json(plugin_name, plugin_version, assets):
         plugin_name,
         plugin_version,
         assets)
-    # write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
+    write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
 
 
 def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
@@ -250,19 +269,32 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
     upload_to_s3(local_path, bucket_path)
 
 
+def find_wagon_local_path(docker_path, workspace_path=None):
+    """
+
+    :param docker_path:
+    :return:
+    """
+    for f in get_workspace_files(workspace_path=workspace_path):
+        if os.path.basename(docker_path) in f and f.endswith('.wgn'):
+            return f
+
+
 def get_file_from_s3_or_locally(source, destination):
     logging.info('source {0}'.format(source))
     try:
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
         logging.info('source {0}'.format(source))
-        if not os.path.exists(source):
-            raise
     try:
         download_from_s3(
             source,
             destination)
     except ClientError:
+        if source.endswith('.wgn'):
+            source = find_wagon_local_path(source)
+        if source.endswith('plugin.yaml'):
+            source = os.path.join(os.getcwd(), 'plugin.yaml')
         shutil.copyfile(source, destination)
 
 
@@ -272,7 +304,6 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir):
     :param wgn_path: A path to a local wagon file.
     :param yaml_path: A path to a local plugin YAML file.
     :param tempdir: The tempdir we're working with.
-    :param download_paths: Whether to download the wagon/yaml from s3 or not.
     :return:
     """
 
@@ -301,8 +332,6 @@ def create_plugin_bundle_archive(mappings,
     :param mappings: A special metadata data structure.
     :param tar_name: The name of the tar file.
     :param destination: The destination where we save it.
-    :param plugin_name: A plugin name that we want to override
-        with a local file.
     :return:
     """
 
@@ -359,15 +388,60 @@ def configure_bundle_archive(plugins_json=None):
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
 
 
-def build_plugins_bundle():
-    bundle_archive = create_plugin_bundle_archive(*configure_bundle_archive())
+def build_plugins_bundle(plugins_json=None):
+    # Deprecate this by looking in other repos.
+    return create_plugin_bundle_archive(
+        *configure_bundle_archive(plugins_json))
+
+
+def update_plugins_bundle(bundle_archive=None, plugins_json=None):
+    bundle_archive = bundle_archive or build_plugins_bundle(plugins_json)
     upload_to_s3(bundle_archive,
                  os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
 
 
-def get_workspace_files(file_type=None):
+def build_plugins_bundle_with_workspace(workspace_path=None):
+    """
+    Get wagons and md5 files from the workspace and replace the old values in
+    plugins.json with the new values. This is only used to build the
+    bundle, it's not what's published.
+    :return:
+    """
+    plugins_json = {}
+    # Get all the workspace files
+    files = [
+        f for f in get_workspace_files(workspace_path=workspace_path)
+        if f.endswith('wgn') or f.endswith('md5')
+    ]
+    files.sort()
+    for i in range(0, len(files), 2):
+        if files[i].endswith('.wgn'):
+            plugin = (files[i], files[i+1])
+            wagon_metadata = show(find_wagon_local_path(plugin[0]))
+            plugin_name = wagon_metadata["package_name"]
+            plugin_version = wagon_metadata["package_version"]
+            plugins_json = get_plugin_new_json(
+                PLUGINS_JSON_PATH,
+                plugin_name,
+                plugin_version,
+                plugin,
+                plugins_json
+            )
+        else:
+            raise Exception('Illegal files list {files}'.format(files=files))
+    copy_plugins_json_to_workspace(write_json(plugins_json))
+    bundle_path = build_plugins_bundle(plugins_json)
+    workspace_path = os.path.join(
+        os.path.abspath('workspace'),
+        'build',
+        os.path.basename(bundle_path))
+    shutil.copyfile(bundle_path, workspace_path)
+
+
+def get_workspace_files(file_type=None, workspace_path=None):
     file_type = file_type or '.wgn'
-    workspace_path = os.path.join(os.path.abspath('workspace'), 'build')
+    workspace_path = workspace_path or os.path.join(
+        os.path.abspath('workspace'), 'build')
     files = []
     if not os.path.isdir(workspace_path):
         return []
@@ -378,9 +452,26 @@ def get_workspace_files(file_type=None):
             f_md5 = f + '.md5'
             os.system('md5sum {0} > {1}'.format(f, f_md5))
             files.append(f_md5)
-    logging.info('These are the workspace files: {0}'.format(
-        files))
+    logging.info('These are the workspace files: {0}'.format(files))
     return files
+
+
+def copy_plugins_json_to_workspace(plugins_json):
+    new_plugins_json_file = write_json(plugins_json)
+    workspace_path = os.path.join(
+        os.path.abspath('workspace'),
+        'build',
+        'plugins.json')
+    shutil.copyfile(new_plugins_json_file, workspace_path)
+
+
+def get_bundle_from_workspace(workspace_path=None):
+    for filename in get_workspace_files('tgz', workspace_path=workspace_path):
+        if filename.endswith('.tgz'):
+            logging.info('Found bundle: {0}'.format(filename))
+            return filename
+    logging.warn('No bundle found in {workspace_path}'.format(
+        workspace_path=workspace_path))
 
 
 def package_blueprint(name, source_directory):

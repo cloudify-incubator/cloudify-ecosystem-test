@@ -26,11 +26,9 @@ from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
 
 from ecosystem_cicd_tools.packaging import (
-    PLUGINS_JSON_PATH,
-    get_plugin_new_json,
+    get_bundle_from_workspace,
     get_workspace_files,
-    configure_bundle_archive,
-    create_plugin_bundle_archive)
+    find_wagon_local_path)
 
 from wagon import show
 
@@ -110,6 +108,15 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
 
 
 def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
+    """
+    Execute command on the docker container.
+    :param cmd: The command.
+    :param timeout: How long to permit the process to run.
+    :param log: Whether to log stdout or not.
+    :param detach: Allow the process to block other functions.
+    :return: The command output.
+    """
+
     container_name = os.environ.get(
         'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     return handle_process(
@@ -118,6 +125,12 @@ def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
 
 
 def copy_file_to_docker(local_file_path):
+    """
+    Copy a file from the container host to the container.
+    :param local_file_path:  The local file path.
+    :return: The remote path inside the container.
+    """
+
     docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
@@ -127,6 +140,12 @@ def copy_file_to_docker(local_file_path):
 
 
 def copy_directory_to_docker(local_file_path):
+    """
+    Copy a directory from the container host to the container.
+    :param local_file_path:  The local directory path.
+    :return: The remote path inside the container.
+    """
+
     local_dir = os.path.dirname(local_file_path)
     dir_name = os.path.basename(local_dir)
     remote_dir = os.path.join('/tmp', dir_name)
@@ -140,6 +159,15 @@ def copy_directory_to_docker(local_file_path):
 
 
 def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
+    """
+    Execute a Cloudify CLI command inside the container.
+    :param cmd: The command.
+    :param get_json: Whether to return a JSON response or not.
+    :param timeout: How long to allow the command to block other functions.
+    :param log: Whether to log stdout or not.
+    :return:
+    """
+
     if get_json:
         json_output = docker_exec('{0} --json'.format(cmd), timeout)
         try:
@@ -152,6 +180,12 @@ def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
 
 
 def use_cfy(timeout=60):
+    """
+    Initialize the Cloudify CLI profile inside the container.
+    :param timeout:
+    :return: Command output.
+    """
+
     logger.info('Checking manager status.')
     start = datetime.now()
     # Give 10 sec of mercy for the container to boot
@@ -169,6 +203,11 @@ def use_cfy(timeout=60):
 
 
 def license_upload():
+    """
+    Upload the license to the manager.
+    :return: Command output.
+    """
+
     logger.info('Uploading manager license.')
     try:
         license = base64.b64decode(os.environ['TEST_LICENSE'])
@@ -181,13 +220,13 @@ def license_upload():
         copy_file_to_docker(file_temp.name)), get_json=False)
 
 
-def find_wagon_local_path(docker_path):
-    for f in get_workspace_files():
-        if os.path.basename(docker_path) in f and f.endswith('.wgn'):
-            return f
-
-
 def plugin_already_uploaded(wagon_path):
+    """
+    Check if a plugin is already loaded on the manager.
+    :param wagon_path: Path to a wagon.
+    :return: Bool.
+    """
+
     # It`s url
     if '://' in wagon_path:
         wagon_metadata = show(wagon_path)
@@ -210,48 +249,60 @@ def plugin_already_uploaded(wagon_path):
 
 
 def plugins_upload(wagon_path, yaml_path):
+    """
+    Upload a wagon and plugin YAML to the manager.
+    :param wagon_path: Path to the wagon on the manager.
+    :param yaml_path: Path to the YAML on the manager container.
+    :return: Command output.
+    """
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
     if not plugin_already_uploaded(wagon_path):
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
 
 
-def get_test_plugins():
+def get_test_plugins(workspace_path=None):
+    """
+    Find all wagons from the workspace (generated during previous build job)
+    and return a tuple with the wagon path on the manager and the plugin
+    YAML path on the manger.
+    :return: list of tuples
+    """
+
     plugin_yaml = copy_file_to_docker('plugin.yaml')
     return [(copy_file_to_docker(f), plugin_yaml) for f in
-            get_workspace_files() if f.endswith('.wgn')]
+            get_workspace_files(workspace_path=workspace_path)
+            if f.endswith('.wgn')]
 
 
-def upload_test_plugins(plugins, plugin_test, execute_bundle_upload=True):
+def upload_test_plugins(plugins,
+                        plugin_test,
+                        execute_bundle_upload=True,
+                        workspace_path=None):
+    """
+    Upload all plugins that we need to execute the test.
+    :param plugins: A list of additional plugins to upload.
+       (Like ones that are not in the bundle (Openstack 3, Host Pool).
+    :param plugin_test: Whether to isntall plugins from workspace.
+    :param execute_bundle_upload: Whether to install a bundle.
+    :return:
+    """
+
     plugins = plugins or []
     if plugin_test:
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
     if execute_bundle_upload:
-        plugin_name = None
-        plugin_version = None
-        plugins_json = {}
-        for plugin in plugins:
-            if '.wgn' in plugin[0]:
-                wagon_metadata = show(plugin[0])
-                plugin_name = wagon_metadata["package_name"]
-                plugin_version = wagon_metadata["package_version"]
-            plugins_json = get_plugin_new_json(
-                PLUGINS_JSON_PATH,
-                plugin_name,
-                plugin_version,
-                plugin,
-                plugins_json
-            )
-        bundle_config = configure_bundle_archive(plugins_json)
-        bundle_path = create_plugin_bundle_archive(*bundle_config)
-        new_bundle_path = os.path.join(
-            os.path.join(os.path.abspath('workspace'), 'build'),
-            os.path.basename(bundle_path))
-        os.rename(bundle_path, new_bundle_path)
-        cloudify_exec(
-            'cfy plugins bundle-upload --path {bundle_path}'.format(
-                bundle_path=new_bundle_path), get_json=False)
+        bundle_path = get_bundle_from_workspace(workspace_path=workspace_path)
+        if bundle_path:
+            cloudify_exec(
+                'cfy plugins bundle-upload --path {bundle_path}'.format(
+                    bundle_path=copy_file_to_docker(bundle_path)),
+                get_json=False)
+        else:
+            cloudify_exec(
+                'cfy plugins bundle-upload', get_json=False)
+
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
@@ -261,6 +312,12 @@ def upload_test_plugins(plugins, plugin_test, execute_bundle_upload=True):
 
 
 def create_test_secrets(secrets=None):
+    """
+    Create secrets on the manager.
+    :param secrets:
+    :return:
+    """
+
     secrets = secrets or {}
     for secret, f in secrets.items():
         secrets_create(secret, f)
@@ -270,17 +327,36 @@ def create_test_secrets(secrets=None):
 
 def prepare_test(plugins=None,
                  secrets=None,
-                 plugin_test=True,
+                 plugin_test=False,
                  pip_packages=None,
                  yum_packages=None,
                  execute_bundle_upload=True,
-                 use_vpn=False):
+                 use_vpn=False,
+                 workspace_path=None):
+    """
+    Prepare the environment for executing a plugin test.
+
+
+
+    :param plugins: A list of plugins to install. `plugin_test` must be True.
+    :param secrets: A list of secrets to create.
+    :param plugin_test: Do want to use wagons in the workspace for this test?
+    :param pip_packages: A list of packages to install (on manger) with pip.
+    :param yum_packages: A list of packages to install (on manger) with yum.
+    :param execute_bundle_upload: Whether to upload the plugins bundle.
+    :param use_vpn:
+    :param workspace_path: THe path to the build directory if not circleci
+    :return:
+    """
+
     pip_packages = pip_packages or []
     yum_packages = yum_packages or []
     use_cfy()
     license_upload()
-    upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
-    return
+    upload_test_plugins(plugins,
+                        plugin_test,
+                        execute_bundle_upload,
+                        workspace_path=workspace_path)
     create_test_secrets(secrets)
     yum_command = 'yum install -y python-netaddr git '
     if use_vpn:
@@ -302,7 +378,13 @@ def prepare_test(plugins=None,
 
 
 def secrets_create(name, is_file=False):
-    logger.info('creating secret: {0}.'.format(name))
+    """
+    Create a secret on the manager.
+    :param name: The secret key.
+    :param is_file: Whether to create the secret from a file.
+    :return:
+    """
+    logger.info('Creating secret: {0}.'.format(name))
     try:
         value = base64.b64decode(os.environ[name])
     except KeyError:
@@ -313,12 +395,21 @@ def secrets_create(name, is_file=False):
         with open(file_temp.name, 'w') as outfile:
             outfile.write(value)
         return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
-            name, copy_file_to_docker(file_temp.name)), get_json=False)
+            name,
+            copy_file_to_docker(file_temp.name)),
+            get_json=False,
+            log=False)
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)
 
 
 def blueprints_upload(blueprint_file_name, blueprint_id):
+    """
+    Upload a blueprint to the manager.
+    :param blueprint_file_name:
+    :param blueprint_id:
+    :return:
+    """
     remote_dir = copy_directory_to_docker(blueprint_file_name)
     blueprint_file = os.path.basename(blueprint_file_name)
     return cloudify_exec(
@@ -328,6 +419,12 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
 
 
 def deployments_create(blueprint_id, inputs):
+    """
+    Create a deployment on the manager.
+    :param blueprint_id:
+    :param inputs:
+    :return:
+    """
     try:
         os.path.isfile(inputs)
     except TypeError:
@@ -340,6 +437,13 @@ def deployments_create(blueprint_id, inputs):
 
 
 def executions_start(workflow_id, deployment_id, timeout):
+    """
+    Start an execution on the manager.
+    :param workflow_id:
+    :param deployment_id:
+    :param timeout:
+    :return:
+    """
     return cloudify_exec(
         'cfy executions start --timeout {0} -d {1} {2}'.format(
             timeout, deployment_id, workflow_id),
@@ -347,24 +451,46 @@ def executions_start(workflow_id, deployment_id, timeout):
 
 
 def executions_list(deployment_id):
+    """
+    List executions on the manager.
+    :param deployment_id:
+    :return:
+    """
     return cloudify_exec('cfy executions list -d {0} '
                          '--include-system-workflows'.format(deployment_id))
 
 
-def events_list(events_id):
-    events = cloudify_exec('cfy events list {0}'.format(events_id))
+def events_list(execution_id):
+    """
+    List events from an execution.
+    :param execution_id:
+    :return:
+    """
+    events = cloudify_exec('cfy events list {0}'.format(execution_id))
     if not events:
         return []
     return [json.loads(line) for line in events.split('\n') if line]
 
 
-def log_events(events_id):
-    for event in events_list(events_id):
+def log_events(execution_id):
+    """
+    Log events from execution.
+    :param execution_id:
+    :return:
+    """
+    for event in events_list(execution_id):
         if event['context']['task_error_causes']:
             logger.info(event['context']['task_error_causes'])
 
 
 def wait_for_execution(deployment_id, workflow_id, timeout):
+    """
+    Wait for execution to end.
+    :param deployment_id:
+    :param workflow_id:
+    :param timeout:
+    :return:
+    """
     start = datetime.now()
     while True:
         if datetime.now() - start > timedelta(seconds=timeout):
@@ -392,6 +518,11 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
 
 
 def cleanup_on_failure(deployment_id):
+    """
+    Execute uninstall if a deployment failed.
+    :param deployment_id:
+    :return:
+    """
     try:
         executions_list(deployment_id)
     except EcosystemTestException:
@@ -406,6 +537,14 @@ def _basic_blueprint_test(blueprint_file_name,
                           test_name,
                           inputs=None,
                           timeout=None):
+    """
+    Simple blueprint install/uninstall test.
+    :param blueprint_file_name:
+    :param test_name:
+    :param inputs:
+    :param timeout:
+    :return:
+    """
 
     timeout = timeout or TIMEOUT
     inputs = inputs or os.path.join(
@@ -434,7 +573,8 @@ def _basic_blueprint_test(blueprint_file_name,
 
 @contextmanager
 def vpn():
-    """Run tests while VPN is executing."""
+    """Run tests while VPN is executing.
+    Does not actually work in circle ci :("""
     logger.info('Starting VPN...')
     proc = docker_exec('openvpn {config_path}'.format(
         config_path=VPN_CONFIG_PATH), detach=True)
@@ -445,7 +585,9 @@ def vpn():
         yield proc
     except Exception as e:
         # TODO: Learn about potential Exceptions here.
-        logger.info('VPN error {0}'.format(e))
+        logger.info('VPN error {0}'.format(str(e)))
+        pass
+        # Apparently CircleCI does not support VPNs. !!!!
     finally:
         logger.info('Stopping VPN...')
         proc.terminate()
@@ -461,7 +603,7 @@ def basic_blueprint_test(blueprint_file_name,
             _basic_blueprint_test(blueprint_file_name,
                                   test_name,
                                   inputs,
-                                  timeout)
+                                  timeout=10)
     else:
         _basic_blueprint_test(blueprint_file_name,
                               test_name,

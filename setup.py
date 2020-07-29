@@ -15,6 +15,7 @@ setup(
         'cloudify-common',
         'PyGithub',
         'wagon==0.10.0',
-        'boto3'
+        'boto3',
+        'progressbar'
     ]
 )
