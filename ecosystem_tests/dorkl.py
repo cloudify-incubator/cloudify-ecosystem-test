@@ -25,7 +25,12 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
 
-from ecosystem_cicd_tools.packaging import get_workspace_files
+from ecosystem_cicd_tools.packaging import (
+    PLUGINS_JSON_PATH,
+    get_plugin_new_json,
+    get_workspace_files,
+    configure_bundle_archive,
+    create_plugin_bundle_archive)
 
 from wagon import show
 
@@ -206,8 +211,6 @@ def plugin_already_uploaded(wagon_path):
 
 def plugins_upload(wagon_path, yaml_path):
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
-    wagon_name = os.path.basename(wagon_path)
-    wagon_parts = wagon_name.split('-')
     if not plugin_already_uploaded(wagon_path):
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
@@ -225,7 +228,30 @@ def upload_test_plugins(plugins, plugin_test, execute_bundle_upload=True):
         for plugin_pair in get_test_plugins():
             plugins.append(plugin_pair)
     if execute_bundle_upload:
-        cloudify_exec('cfy plugins bundle-upload', get_json=False)
+        plugin_name = None
+        plugin_version = None
+        plugins_json = {}
+        for plugin in plugins:
+            if '.wgn' in plugin[0]:
+                wagon_metadata = show(plugin[0])
+                plugin_name = wagon_metadata["package_name"]
+                plugin_version = wagon_metadata["package_version"]
+            plugins_json = get_plugin_new_json(
+                PLUGINS_JSON_PATH,
+                plugin_name,
+                plugin_version,
+                plugin,
+                plugins_json
+            )
+        bundle_config = configure_bundle_archive(plugins_json)
+        bundle_path = create_plugin_bundle_archive(*bundle_config)
+        new_bundle_path = os.path.join(
+            os.path.join(os.path.abspath('workspace'), 'build'),
+            os.path.basename(bundle_path))
+        os.rename(bundle_path, new_bundle_path)
+        cloudify_exec(
+            'cfy plugins bundle-upload --path {bundle_path}'.format(
+                bundle_path=new_bundle_path), get_json=False)
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
@@ -254,6 +280,7 @@ def prepare_test(plugins=None,
     use_cfy()
     license_upload()
     upload_test_plugins(plugins, plugin_test, execute_bundle_upload)
+    return
     create_test_secrets(secrets)
     yum_command = 'yum install -y python-netaddr git '
     if use_vpn:
