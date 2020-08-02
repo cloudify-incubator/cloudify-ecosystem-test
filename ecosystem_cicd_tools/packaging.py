@@ -160,7 +160,7 @@ def get_plugins_json(remote_path):
     return read_json_file(local_path)
 
 
-def update_assets_in_plugin_dict(plugin_dict, assets):
+def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
     """
     Update the YAML and Wagon URLs in the plugins dict with new assets.
     :param plugin_dict: The dict item for this plugin in plugins.json list.
@@ -170,6 +170,12 @@ def update_assets_in_plugin_dict(plugin_dict, assets):
 
     logging.info('Updating plugin JSON with assets {assets}'.format(
         assets=assets))
+    if plugin_version:
+        plugin_dict['version'] = plugin_version
+        plugin_dict['link'] = plugin_dict['link'].replace(
+            plugin_dict['link'].split('/')[-2],
+            plugin_version
+        )
     for asset in assets:
         # Replace the old asset paths with new ones.
         if asset.endswith('.yaml'):
@@ -203,6 +209,7 @@ def get_plugin_new_json(remote_path,
     :return: the new plugins list.
     """
 
+    update_version = not not plugins_list
     plugins_list = plugins_list or get_plugins_json(remote_path)
     # Plugins list is a list of dictionaries. Each plugin/version is one dict.
     for pd in plugins_list:
@@ -217,7 +224,10 @@ def get_plugin_new_json(remote_path,
             # For example, we don't want to update
             # Openstack 3.2.0 with Openstack 2.14.20.
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
-                update_assets_in_plugin_dict(pd, assets)
+                if update_version:
+                    update_assets_in_plugin_dict(pd, assets, plugin_version)
+                else:
+                    update_assets_in_plugin_dict(pd, assets)
     return plugins_list
 
 
