@@ -25,6 +25,8 @@ from github.GithubException import UnknownObjectException, GithubException
 
 from packaging import (package_blueprint,
                        get_workspace_files,
+                       PLUGINS_BUNDLE_NAME,
+                       update_plugins_bundle,
                        upload_plugin_asset_to_s3,
                        update_plugins_json)
 
@@ -203,9 +205,10 @@ def get_plugin_version():
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
-                   plugins=None):
+                   plugins=None,
+                   workspace_path=None):
 
-    plugins = plugins or get_workspace_files()
+    plugins = plugins or get_workspace_files(workspace_path=workspace_path)
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -223,6 +226,10 @@ def plugin_release(plugin_name,
                                   plugin_name,
                                   version)
     for plugin in plugins:
+        if PLUGINS_BUNDLE_NAME in plugin:
+            logging.info('Skipping bundle upload.')
+            update_plugins_bundle(plugin)
+            continue
         logging.info('Uploading plugin {0}'.format(plugin))
         try:
             version_release.upload_asset(
