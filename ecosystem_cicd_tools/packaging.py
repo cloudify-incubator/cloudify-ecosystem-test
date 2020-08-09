@@ -73,9 +73,7 @@ def upload_to_s3(local_path,
         bucket = s3.Bucket(bucket_name)
         logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
             local_path=local_path, remote_path=remote_path))
-        extra_args = {
-            {'ACL': 'public-read'}
-        }
+        extra_args = {'ACL': 'public-read'}
         if content_type:
             extra_args.update({'ContentType': content_type})
         bucket.upload_file(local_path,
