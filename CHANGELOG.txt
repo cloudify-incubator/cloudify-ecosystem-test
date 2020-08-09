@@ -1,3 +1,4 @@
+2.2.75: Set content type of JSON files when uploading to s3.
 2.2.74: Fix a bug in bundle creation.
 2.2.73: Create new Bundle for test (Does not upload).
 2.2.72: Nightly bundle build.
