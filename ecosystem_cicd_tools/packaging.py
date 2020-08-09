@@ -7,6 +7,7 @@ import shutil
 import logging
 import tarfile
 import zipfile
+import mimetypes
 from pprint import pformat
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -53,12 +54,16 @@ def aws(**_):
 
 def upload_to_s3(local_path,
                  remote_path,
-                 bucket_name=None):
+                 bucket_name=None,
+                 content_type=None):
     """
     Upload a local file to s3.
     :param local_path: The local path to the file that we want to upload.
     :param remote_path: The s3 key.
     :param bucket_name: The s3 bucket.
+    :param content_type: By default s3 upload_file adds
+        content-type octet-stream. This is not universal, for example JSON
+        files need to be application/json.
     :return:
     """
 
@@ -68,9 +73,14 @@ def upload_to_s3(local_path,
         bucket = s3.Bucket(bucket_name)
         logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
             local_path=local_path, remote_path=remote_path))
+        extra_args = {
+            {'ACL': 'public-read'}
+        }
+        if content_type:
+            extra_args.update({'ContentType': content_type})
         bucket.upload_file(local_path,
                            remote_path,
-                           ExtraArgs={'ACL': 'public-read'})
+                           ExtraArgs=extra_args)
         object_acl = s3.ObjectAcl(bucket_name, remote_path)
         logging.info('{object_acl} grants: {grants}.'.format(
             object_acl=object_acl, grants=object_acl.grants))
@@ -135,10 +145,11 @@ def write_json_and_upload_to_s3(content, remote_path, bucket_name):
     logging.info('Writing new content to s3://{remote_path}.'.format(
         remote_path=remote_path))
     logging.info('The new data is {content}'.format(content=content))
-    archive_temp = NamedTemporaryFile(delete=False)
-    with open(archive_temp.name, 'w') as outfile:
+    json_temp = NamedTemporaryFile(suffix='.json', delete=False)
+    with open(json_temp.name, 'w') as outfile:
         json.dump(content, outfile, ensure_ascii=False, indent=4)
-    upload_to_s3(archive_temp.name, remote_path, bucket_name)
+    mt, _ = mimetypes.guess_type(json_temp.name)
+    upload_to_s3(json_temp.name, remote_path, bucket_name, content_type=mt)
 
 
 def write_json(content):
