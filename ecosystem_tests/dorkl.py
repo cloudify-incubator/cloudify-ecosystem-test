@@ -248,7 +248,7 @@ def plugin_already_uploaded(wagon_path):
             plugin.get('yaml_url_path', '')
 
         if plugin_name.replace('_', '-') in compare_name and \
-                plugin_version in compare_version and \
+                plugin_version == compare_version and \
                 plugin_distribution.lower() in compare_distro:
             return True
 
