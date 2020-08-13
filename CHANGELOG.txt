@@ -1,3 +1,4 @@
+2.2.78: Handle change to plugins list that does not include distro.
 2.2.77: Issue with 2.2.76
 2.2.76: Issue with 2.2.75
 2.2.75: Set content type of JSON files when uploading to s3.
