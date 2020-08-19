@@ -6,12 +6,15 @@ from yaml.parser import ParserError
 
 from .github_stuff import (
     get_documentation_branches,
-    permit_merge,
+    raise_if_unmergeable,
     get_repository)
 
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
 version = version_file.read().strip()"""
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def get_plugin_version(file_path=None):
@@ -124,18 +127,59 @@ def validate_plugin_version(plugin_directory=None,
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
 
 
-def validate_documentation_pulls(commit_message, repo=None):
+def _validate_documenation_pulls(docs_repo, docs_branches):
+
+    if '__NODOCS__' in docs_branches:
+        return
+    elif not docs_branches:
+        raise Exception('There are no docs branches in the commit, '
+                        'and __NODOCS__ is not specified in the commit.')
+
+    # For each pull, check if it is mergeable.
+    pulls = docs_repo.get_pulls(state='open')
+    for docs_branch in docs_branches:
+        for pull in pulls:
+            if pull.head.ref == docs_branch:
+                raise_if_unmergeable(pull)
+
+
+def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     """
-    Merge any pulls in the docs repo with documentation for this change.
-    :param commit_message:
-    :param repo:
+    Check that we are providing documentation.
+    :param repo: The current repo (a plugin for example).
+    :param docs_repo: The repo to check for Docs PRs.
+    :param branch: The current branch.
     :return:
     """
-    repo = repo or get_repository(
+
+    logging.info('Validating documentation pull requests are ready.')
+
+    repo = repo or get_repository()
+    docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
-    branches = get_documentation_branches(commit_message)
-    pulls = repo.get_pulls(state='open')
-    for branch in branches:
-        for pull in pulls:
-            if pull.head.ref == branch:
-                permit_merge(pull)
+
+    # We need the current branch, so that we can find out the commits
+    # that will have documentation pointed in them.
+    branch = branch or os.environ.get('CIRCLE_BRANCH')
+
+    logging.info('Checking pull requests for {branch}'.format(branch=branch))
+
+    # We need a pull request in order to constrain the list of commits
+    # Because the branch also has commits from its parents.
+    pull_requests = repo.get_pulls(head=branch)
+    logging.info('Found these pull requests: {prs}'.format(
+        prs=[(pr.number, pr.title) for pr in pull_requests]
+    ))
+    docs_branches = []
+    for pull_request in pull_requests:
+        if pull_request.head.ref == branch:
+            logging.info('Checking commits for {pull}'.format(
+                pull=(pull_request.number, pull_request.title)))
+            # For each commit, read its message, and collect the documentation
+            # branches.
+            for commit in pull_request.get_commits():
+                docs_branches = docs_branches + get_documentation_branches(
+                    commit.commit.message)
+    if not docs_branches:
+        raise Exception('No pull request for current branch was found.')
+    _validate_documenation_pulls(docs_repo, docs_branches)

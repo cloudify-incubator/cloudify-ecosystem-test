@@ -1,10 +1,14 @@
 
+import os
 import logging
 from os import environ
 from re import sub, split, IGNORECASE
 
 from github import Github, Commit, PullRequest
 from github.GithubException import UnknownObjectException, GithubException
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def get_client(github_token=None):
@@ -146,27 +150,26 @@ def get_pull_request(name, repo=None):
     return repo.get_pull(name)
 
 
-def permit_merge(pull, repo=None):
+def raise_if_unmergeable(pull):
     """
-    Merge a pull request if it is approved and mergeable.
+    Raise a pull request if it is not approved and mergeable.
     (Mergeable means that github can do it automatically without our help.)
     :param pull:
-    :param repo:
     :return:
     """
-    if not isinstance(pull, PullRequest.PullRequest):
-        pull = get_pull_request(pull, repo)
-    logging.info('Attempting to merge PR {name}'.format(name=pull.id))
 
+    logging.info('Checking if can merge PR {name}.'.format(name=pull.number))
     approved = any([r.state
-                    for r in pull.get_reviews() if r.state is 'APPROVED'])
-
+                    for r in pull.get_reviews()
+                    if r.state.upper() == 'APPROVED'])
     if pull.mergeable and approved:
+        logging.info('PR {number} is mergeable.'.format(number=pull.number))
         return
     else:
         raise Exception(
-            'Unable to merge PR {name}, because {state}/{approved}.'.format(
-                name=pull.id,
+            'Unable to merge PR {name},'
+            'because state={state}/approved={approved}.'.format(
+                name=pull.number,
                 state=pull.mergeable_state,
                 approved=approved))
 
@@ -177,37 +180,77 @@ def get_documentation_branches(message):
     :param message:
     :return:
     """
+    logging.info('Getting documentation branches from {message}'.format(
+        message=message))
     # Split the commit message into stuff before and after the key.
-    # I.E. 'this is my commit message \n DOCUMENTATION: CY-1234, CY-4321'
-    if 'NO DOCUMENTATION' in message:
-        logging.info('NO DOCUMENTATION in commit message'
+    # I.E. 'this is my commit message \n __DOCS__: CY-1234, CY-4321'
+    if '__NODOCS__' in message:
+        logging.info('__NODOCS__ in commit message'
                      '...skipping requirement.')
-        return []
+        return ['__NODOCS__']
     message = split(
-        'DOCUMENTATION:',
+        '__DOCS__:',
         sub('\s|\t', '', message),
         flags=IGNORECASE)
     # Delete the irrelevant stuff before the key.
     # I.E. 'this is my commit message \n '
     if len(message) != 2:
-        raise Exception(
-            'The commit message must say \'DOCUMENTATION:\' '
-            'Message says: {message}'.format(message=message))
+        logging.error('Use the __DOCS__ key only once per commit.')
+        logging.debug('If your merge squashes commits,'
+                      'you need to handle it before hand.')
+        # TODO: Figure out what to do about squashed commits.
+        return []
     return [b for b in message[-1].split(',') if b.startswith('CY-')]
 
 
-def merge_documentation_pulls(commit_message, repo=None):
+def _merge_documentation_pulls(docs_repo, docs_branches):
+
+    if '__NODOCS__' in docs_branches:
+        return
+    elif not docs_branches:
+        raise Exception('There are no docs branches in the commit, '
+                        'and __NODOCS__ is not specified in the commit.')
+
+    # For each pull, merge it.
+    pulls = docs_repo.get_pulls(state='open')
+    for docs_branch in docs_branches:
+        for pull in pulls:
+            if pull.head.ref == docs_branch:
+                logging.info('Merging {pull}'.format(pull=pull.number))
+                pull.merge()
+
+
+def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     """
     Merge any pulls in the docs repo with documentation for this change.
-    :param commit_message:
-    :param repo:
+    :param repo: The current repo (a plugin for example).
+    :param docs_repo: The repo to check for Docs PRs.
+    :param branch: The current branch.
     :return:
     """
-    repo = repo or get_repository(
+
+    repo = repo or get_repository()
+    docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
-    branches = get_documentation_branches(commit_message)
-    pulls = repo.get_pulls(state='open')
-    for branch in branches:
-        for pull in pulls:
-            if pull.head.ref == branch:
-                pull.merge()
+
+    # Get the parent commits.
+    branch = repo.get_branch(branch)
+    # Get the closed PRs that have heads for those commits.
+    right_msg = split('Merge\spull\srequest\s#',
+                      branch.commit.commit.message)[-1]
+    pr_number = split('\s', right_msg)[0].replace('#', '')
+
+    pull_request = repo.get_pull(int(pr_number))
+    # Get the commits in that PR.
+    # Check those commit messages for Docs Branches.
+    # For each commit, read its message, and collect the documentation
+    # branches.
+    docs_branches = []
+    for commit in pull_request.get_commits():
+        docs_branches = docs_branches + get_documentation_branches(
+            commit.commit.message)
+    logging.info('Will merge these docs branches: {docs_branches}'.format(
+        docs_branches=docs_branches))
+
+    _merge_documentation_pulls(docs_repo, docs_branches)
+
