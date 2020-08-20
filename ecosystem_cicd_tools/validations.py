@@ -61,23 +61,29 @@ def check_changelog_version(version, file_path):
             version=version, path=file_path))
 
 
-def check_plugin_yaml_version(version, file_path):
+def read_plugins(file_path):
+    plugin_yaml = read_yaml_file(file_path)
+    return plugin_yaml['plugins']
+
+
+def get_plugin_yaml_version(file_path):
     """
 
-    :param version:
     :param file_path:
     :return:
     """
 
-    error = False
-
     logging.debug(
-        'Checking plugin YAML version with {version} {file_path}'.format(
-            version=version, file_path=file_path))
+        'Checking plugin YAML version with {file_path}'.format(
+            file_path=file_path))
 
-    plugin_yaml = read_yaml_file(file_path)
+    plugins_section = read_plugins(file_path)
 
-    for _, v in plugin_yaml['plugins'].items():
+    package_version = None
+    for _, v in plugins_section.items():
+
+        if package_version and v['package_version'] != package_version:
+            raise Exception('More than one plugin version is defined.')
 
         package_version = v['package_version']
         package_source = v.get('source')
@@ -87,33 +93,24 @@ def check_plugin_yaml_version(version, file_path):
         logging.debug('Package source {package_source}'.format(
             package_source=package_source))
 
-        if version not in package_version:
-            error = True
-            logging.error('Version {version} '
-                          'does not match {package_version}.'.format(
-                              version=version,
-                              package_version=package_version))
+        if not package_version:
+            raise Exception('Version not specified in plugin YAML.')
 
-        if package_source and version not in package_source:
-            error = True
-            logging.error('Version {version} '
-                          'does not match {package_source}.'.format(
-                              version=version,
-                              package_source=package_source))
-
-    if error:
-        raise Exception('Version {version} does not match plugin.yaml.')
+        if package_source and package_version not in package_source:
+            raise Exception('Version {version} '
+                            'does not match {package_source}.'.format(
+                                version=package_version,
+                                package_source=package_source))
+    return package_version
 
 
 def validate_plugin_version(plugin_directory=None,
-                            version_file='VERSION',
                             plugin_yaml='plugin.yaml',
                             changelog='CHANGELOG.txt'):
     """
     Validate plugin version.
 
     :param plugin_directory: The script should send the absolute path.
-    :param version_file: The name of the file containing the version.
     :param plugin_yaml: The name of the plugin YAML file.
     :param changelog: The name of the CHANGELOG.txt.
     :return:
@@ -121,9 +118,8 @@ def validate_plugin_version(plugin_directory=None,
 
     plugin_directory = plugin_directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-    version = get_plugin_version(os.path.join(plugin_directory, version_file))
-    check_plugin_yaml_version(
-        version, os.path.join(plugin_directory, plugin_yaml))
+    version = get_plugin_yaml_version(
+        os.path.join(plugin_directory, plugin_yaml))
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
 
 
