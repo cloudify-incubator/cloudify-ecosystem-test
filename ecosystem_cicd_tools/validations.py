@@ -1,6 +1,6 @@
 import os
-import sys
 import logging
+import subprocess
 from re import match
 from yaml import safe_load
 from yaml.parser import ParserError
@@ -66,7 +66,8 @@ def check_setuppy_version(version, plugin_directory):
     command = '{exec_path} {path} --version'.format(
         exec_path=sys.executable,
         path=os.path.join(plugin_directory, 'setup.py'))
-    output = os.system(command)
+    output = subprocess.check_output(command, shell=True)
+    output = os.system(output)
     if version != output:
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}'.format(version=version,
