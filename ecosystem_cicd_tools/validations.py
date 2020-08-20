@@ -69,6 +69,7 @@ def check_setuppy_version(version, plugin_directory):
         path=os.path.join(plugin_directory, 'setup.py'))
     output = subprocess.check_output(command, shell=True)
     if version != output:
+        logging.info('{0} {1}'.format(type(output), type(version)))
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}'.format(version=version,
                                                    output=output))
