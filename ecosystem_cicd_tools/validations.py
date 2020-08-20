@@ -67,7 +67,10 @@ def check_setuppy_version(version, plugin_directory):
         exec_path=sys.executable,
         path=os.path.join(plugin_directory, 'setup.py'))
     output = os.system(command)
-    return version == output
+    if version != output:
+        raise Exception('Plugin YAML {version} does not match '
+                        'setup.py {output}'.format(version=version,
+                                                   output=output))
 
 
 def read_plugins(file_path):
