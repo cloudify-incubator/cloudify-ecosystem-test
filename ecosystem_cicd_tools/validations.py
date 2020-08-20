@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import subprocess
 from re import match
@@ -67,7 +68,6 @@ def check_setuppy_version(version, plugin_directory):
         exec_path=sys.executable,
         path=os.path.join(plugin_directory, 'setup.py'))
     output = subprocess.check_output(command, shell=True)
-    output = os.system(output)
     if version != output:
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}'.format(version=version,
