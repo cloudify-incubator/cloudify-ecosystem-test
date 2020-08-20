@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 from re import match
 from yaml import safe_load
@@ -61,6 +62,14 @@ def check_changelog_version(version, file_path):
             version=version, path=file_path))
 
 
+def check_setuppy_version(version, plugin_directory):
+    command = '{exec_path} {path} --version'.format(
+        exec_path=sys.executable,
+        path=os.path.join(plugin_directory, 'setup.py'))
+    output = os.system(command)
+    return version == output
+
+
 def read_plugins(file_path):
     plugin_yaml = read_yaml_file(file_path)
     return plugin_yaml['plugins']
@@ -121,6 +130,7 @@ def validate_plugin_version(plugin_directory=None,
     version = get_plugin_yaml_version(
         os.path.join(plugin_directory, plugin_yaml))
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
+    check_setuppy_version(version, plugin_directory)
 
 
 def _validate_documenation_pulls(docs_repo, docs_branches):
