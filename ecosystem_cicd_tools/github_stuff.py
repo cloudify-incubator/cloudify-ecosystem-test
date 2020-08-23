@@ -1,10 +1,9 @@
 
-import os
 import logging
 from os import environ
 from re import sub, split, IGNORECASE
 
-from github import Github, Commit, PullRequest
+from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
 
 logger = logging.getLogger()

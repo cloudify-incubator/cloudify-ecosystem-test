@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import subprocess
-from re import match
+from re import match, split
 from yaml import safe_load
 from yaml.parser import ParserError
 
@@ -174,12 +174,17 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     # We need the current branch, so that we can find out the commits
     # that will have documentation pointed in them.
     branch = branch or os.environ.get('CIRCLE_BRANCH')
-
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
+    if branch == 'master':
+        right_msg = split('Merge\spull\srequest\s#',
+                          branch.commit.commit.message)[-1]
+        pr_number = split('\s', right_msg)[0].replace('#', '')
 
-    # We need a pull request in order to constrain the list of commits
-    # Because the branch also has commits from its parents.
-    pull_requests = repo.get_pulls(head=branch)
+        pull_requests = [repo.get_pull(int(pr_number))]
+    else:
+        # We need a pull request in order to constrain the list of commits
+        # Because the branch also has commits from its parents.
+        pull_requests = repo.get_pulls(head=branch)
     logging.info('Found these pull requests: {prs}'.format(
         prs=[(pr.number, pr.title) for pr in pull_requests]
     ))
