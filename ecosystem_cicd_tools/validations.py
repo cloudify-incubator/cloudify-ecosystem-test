@@ -19,8 +19,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-
-
 def get_plugin_version(file_path=None):
     """
 
