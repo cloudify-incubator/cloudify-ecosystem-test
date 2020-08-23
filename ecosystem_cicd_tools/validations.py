@@ -161,7 +161,7 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     Check that we are providing documentation.
     :param repo: The current repo (a plugin for example).
     :param docs_repo: The repo to check for Docs PRs.
-    :param branch: The current branch.
+    :param branch: The current branch. 
     :return:
     """
 
