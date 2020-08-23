@@ -28,7 +28,8 @@ from .github_stuff import (
     get_commit,
     upload_asset,
     create_release,
-    delete_latest_tag_if_exists
+    delete_latest_tag_if_exists,
+    merge_documentation_pulls
 )
 from .packaging import (
     package_blueprint,
