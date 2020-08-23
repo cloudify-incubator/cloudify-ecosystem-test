@@ -216,7 +216,7 @@ def _merge_documentation_pulls(docs_repo, docs_branches):
         for pull in pulls:
             if pull.head.ref == docs_branch:
                 logging.info('Merging {pull}'.format(pull=pull.number))
-                pull.merge()
+                pull.merge(merge_method='squash')
 
 
 def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
