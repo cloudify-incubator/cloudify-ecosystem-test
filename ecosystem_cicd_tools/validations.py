@@ -175,30 +175,33 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     # that will have documentation pointed in them.
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
+    docs_branches = []
     if branch == 'master':
         branch_obj = repo.get_branch(branch)
         right_msg = split('Merge\spull\srequest\s#',
                           branch_obj.commit.commit.message)[-1]
         pr_number = split('\s', right_msg)[0].replace('#', '')
-
-        pull_requests = [repo.get_pull(int(pr_number))]
+        pull_request = repo.get_pull(int(pr_number))
+        for commit in pull_request.get_commits():
+            docs_branches = docs_branches + get_documentation_branches(
+                commit.commit.message)
     else:
         # We need a pull request in order to constrain the list of commits
         # Because the branch also has commits from its parents.
         pull_requests = repo.get_pulls(head=branch)
-    logging.info('Found these pull requests: {prs}'.format(
-        prs=[(pr.number, pr.title) for pr in pull_requests]
-    ))
-    docs_branches = []
-    for pull_request in pull_requests:
-        if pull_request.head.ref == branch:
-            logging.info('Checking commits for {pull}'.format(
-                pull=(pull_request.number, pull_request.title)))
-            # For each commit, read its message, and collect the documentation
-            # branches.
-            for commit in pull_request.get_commits():
-                docs_branches = docs_branches + get_documentation_branches(
-                    commit.commit.message)
+        logging.info('Found these pull requests: {prs}'.format(
+            prs=[(pr.number, pr.title) for pr in pull_requests]
+        ))
+        for pull_request in pull_requests:
+            if pull_request.head.ref == branch:
+                logging.info('Checking commits for {pull}'.format(
+                    pull=(pull_request.number, pull_request.title)))
+                # For each commit,
+                # read its message, and collect the documentation
+                # branches.
+                for commit in pull_request.get_commits():
+                    docs_branches = docs_branches + get_documentation_branches(
+                        commit.commit.message)
     if not docs_branches:
         raise Exception('No pull request for current branch was found.')
     _validate_documenation_pulls(docs_repo, docs_branches)
