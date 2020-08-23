@@ -176,8 +176,9 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
     if branch == 'master':
+        branch_obj = repo.get_branch(branch)
         right_msg = split('Merge\spull\srequest\s#',
-                          branch.commit.commit.message)[-1]
+                          branch_obj.commit.commit.message)[-1]
         pr_number = split('\s', right_msg)[0].replace('#', '')
 
         pull_requests = [repo.get_pull(int(pr_number))]
