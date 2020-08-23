@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import subprocess
-from re import match, findall
+from re import match
 from yaml import safe_load
 from yaml.parser import ParserError
 
@@ -14,25 +14,11 @@ from .github_stuff import (
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
 version = version_file.read().strip()"""
-VERSION_STRING_RE = \
-    r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def find_version(setup_py):
-    with open(setup_py, 'r') as infile:
-        version_string = re.findall(VERSION_STRING_RE, infile.read())
-    if version_string:
-        version = version_string[0].split('=')[1]
-        logging.info('Found version {0}.'.format(version))
-        if version.endswith(','):
-            version = version.split(',')[0]
-        if version.startswith("'") and version.endswith("'"):
-            version = version[1:-1]
-        return version
-    raise RuntimeError("Unable to find version string.")
 
 
 def get_plugin_version(file_path=None):

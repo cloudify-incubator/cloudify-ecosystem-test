@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import shutil
 import logging
 import requests
@@ -40,6 +41,22 @@ from .packaging import (
 from .validations import get_plugin_version
 
 logging.basicConfig(level=logging.INFO)
+VERSION_STRING_RE = \
+    r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
+
+
+def find_version(setup_py):
+    with open(setup_py, 'r') as infile:
+        version_string = re.findall(VERSION_STRING_RE, infile.read())
+    if version_string:
+        version = version_string[0].split('=')[1]
+        logging.info('Found version {0}.'.format(version))
+        if version.endswith(','):
+            version = version.split(',')[0]
+        if version.startswith("'") and version.endswith("'"):
+            version = version[1:-1]
+        return version
+    raise RuntimeError("Unable to find version string.")
 
 
 def update_latest_release_resources(most_recent_release, name):
