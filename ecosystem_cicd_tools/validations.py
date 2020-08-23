@@ -61,6 +61,7 @@ def check_changelog_version(version, file_path):
     if version not in read_yaml_file(file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
+    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
 
 
 def check_setuppy_version(version, plugin_directory):
@@ -72,6 +73,8 @@ def check_setuppy_version(version, plugin_directory):
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}.'.format(version=version.strip(),
                                                     output=output.strip()))
+    logging.info('Version {version} matches {output}.'.format(
+        version=version, output=output))
 
 
 def read_plugins(file_path):
