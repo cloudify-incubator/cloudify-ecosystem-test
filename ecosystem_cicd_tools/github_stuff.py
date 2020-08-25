@@ -199,7 +199,8 @@ def get_documentation_branches(message):
                       'you need to handle it before hand.')
         # TODO: Figure out what to do about squashed commits.
         return []
-    return [b for b in message[-1].split(',') if b.startswith('CY-')]
+    return [b for b in message[-1].split(',') if b.startswith('CY-')
+            or b.startswith('CYBL-')]
 
 
 def _merge_documentation_pulls(docs_repo, docs_branches):
