@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import subprocess
-from re import match, split
+from re import match, findall
 from yaml import safe_load
 from yaml.parser import ParserError
 
@@ -178,9 +178,14 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     docs_branches = []
     if branch == 'master':
         branch_obj = repo.get_branch(branch)
-        right_msg = split('Merge\spull\srequest\s#',
-                          branch_obj.commit.commit.message)[-1]
-        pr_number = split('\s', right_msg)[0].replace('#', '')
+
+        number_sign_nums = findall(r'\#\d+', branch_obj.commit.commit.message)
+        if len(number_sign_nums) != 1:
+            raise Exception('A pound sign followed by a number occurs more '
+                            'than once in the commit message. This is very '
+                            'confusing for us, because this is how we '
+                            'identify the PR. Please erase.')
+        pr_number = number_sign_nums[0].replace('#', '')
         pull_request = repo.get_pull(int(pr_number))
         for commit in pull_request.get_commits():
             docs_branches = docs_branches + get_documentation_branches(
