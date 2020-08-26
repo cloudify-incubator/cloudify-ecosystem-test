@@ -1,7 +1,7 @@
 
 import logging
 from os import environ
-from re import sub, split, IGNORECASE
+from re import sub, split, findall, IGNORECASE
 
 from github import Github, Commit
 from github.GithubException import UnknownObjectException, GithubException
@@ -236,9 +236,13 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     # Get the parent commits.
     branch = repo.get_branch(branch)
     # Get the closed PRs that have heads for those commits.
-    right_msg = split('Merge\spull\srequest\s#',
-                      branch.commit.commit.message)[-1]
-    pr_number = split('\s', right_msg)[0].replace('#', '')
+    number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
+    if len(number_sign_nums) != 1:
+        raise Exception('A pound sign followed by a number occurs more '
+                        'than once in the commit message. This is very '
+                        'confusing for us, because this is how we '
+                        'identify the PR. Please erase.')
+    pr_number = number_sign_nums[0].replace('#', '')
 
     pull_request = repo.get_pull(int(pr_number))
     # Get the commits in that PR.

@@ -1,3 +1,4 @@
+2.2.88: Continue work from 2287.
 2.2.87: Use different method for finding merge PR ID.
 2.2.86: Support CYBL in addition to CY.
 2.2.85: Merge method for Docs Site.
