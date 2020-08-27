@@ -177,7 +177,9 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
         pull_request_number = get_branch_pr(branch, repo)
     else:
         # Get the Jira IDs from current branch.
-        pull_request_number = int(os.environ.get('CIRCLE_PULL_REQUEST', 0))
+        pr_url = os.environ.get('CIRCLE_PULL_REQUEST', '/0')
+        pr = pr_url.split('/')[-1]
+        pull_request_number = int(pr)
 
     if not pull_request_number and branch != 'master':
         logging.info('A PR has not yet been opened.')

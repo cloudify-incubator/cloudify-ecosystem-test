@@ -1,3 +1,4 @@
+2.2.90: Bug.
 2.2.89:
   - Remove Merge from Plugin Release. It will be a separate job.
   - Remove requirement for __DOCS__ in commit. We will just search for the jira in the docs pulls list.
