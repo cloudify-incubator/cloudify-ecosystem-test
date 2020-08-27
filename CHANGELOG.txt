@@ -1,3 +1,6 @@
+2.2.89:
+  - Remove Merge from Plugin Release. It will be a separate job.
+  - Remove requirement for __DOCS__ in commit. We will just search for the jira in the docs pulls list.
 2.2.88: Continue work from 2287.
 2.2.87: Use different method for finding merge PR ID.
 2.2.86: Support CYBL in addition to CY.

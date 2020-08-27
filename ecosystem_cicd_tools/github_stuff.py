@@ -142,11 +142,11 @@ def get_most_recent_release(version_family=None, repo=None):
         return release
 
 
-def get_pull_request(name, repo=None):
-    """Get a PR by name"""
-    logging.info('Attempting to get PR {name}'.format(name=name))
+def get_pull_request(number, repo=None):
+    """Get a PR by number"""
+    logging.info('Attempting to get PR {number}'.format(number=number))
     repo = repo or get_repository()
-    return repo.get_pull(name)
+    return repo.get_pull(number)
 
 
 def raise_if_unmergeable(pull):
@@ -173,51 +173,88 @@ def raise_if_unmergeable(pull):
                 approved=approved))
 
 
-def get_documentation_branches(message):
+def get_pull_request_branch_name(pull_number=None, pull=None, repo=None):
     """
-    Get a list of branches containing this plugin change documentation.
+    Find the HEAD branch name of a pull request.
+    :param pull_number:
+    :param pull:
+    :param repo:
+    :return:
+    """
+    pull = pull or get_pull_request(pull_number, repo)
+    return pull.head.label
+
+
+def get_pull_request_jira_ids(pull_number=None, pull=None, repo=None):
+    """
+    Return JIRA IDs in the PR HEAD Branch Name.
+    :param pull_number: The number of the PR.
+    :param pull:
+    :param repo:
+    :return:
+    """
+    branch_name = get_pull_request_branch_name(pull_number, pull, repo)
+    # Find find strings in the form CYBL-1234 or CY-12345.
+    return findall(r'(?:CY|CYBL)\-\d*', branch_name)
+
+
+def get_branch_pr(branch_name, repo=None):
+    """
+    Get the PR number from the current merge commit.
+    :param branch_name: The current branch (master).
+    :param repo:
+    :return:
+    """
+
+    repo = repo or get_repository()
+    logging.info('Attempting to get PR to branch {branch} {name}'.format(
+        branch=branch_name, name=repo.name))
+    branch = repo.get_branch(branch_name)
+    number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
+    if len(number_sign_nums) != 1:
+        raise Exception(
+            'The branch name {branch} contains more than one \#. '
+            'In order to identify the PR, '
+            'we look for \# in the commit message. '
+            'Please remove any \# that you have added.'.format(
+                branch=branch_name))
+    return int(number_sign_nums[0].replace('#', ''))
+
+
+def validate_docs_requirement(message):
+    """
+    Check if we should have docs or not.
     :param message:
     :return:
     """
-    logging.info('Getting documentation branches from {message}'.format(
-        message=message))
-    # Split the commit message into stuff before and after the key.
-    # I.E. 'this is my commit message \n __DOCS__: CY-1234, CY-4321'
+
+    logging.info('Checking if docs are required for this PR.')
     if '__NODOCS__' in message:
-        logging.info('__NODOCS__ in commit message'
-                     '...skipping requirement.')
-        return ['__NODOCS__']
-    message = split(
-        '__DOCS__:',
-        sub('\s|\t', '', message),
-        flags=IGNORECASE)
-    # Delete the irrelevant stuff before the key.
-    # I.E. 'this is my commit message \n '
-    if len(message) != 2:
-        logging.error('Use the __DOCS__ key only once per commit.')
-        logging.debug('If your merge squashes commits,'
-                      'you need to handle it before hand.')
-        # TODO: Figure out what to do about squashed commits.
-        return []
-    return [b for b in message[-1].split(',') if b.startswith('CY-')
-            or b.startswith('CYBL-')]
+        logging.info('__NODOCS__ in commit message. Not checking for docs PRs')
+        return False
+    logging.info('__NODOCS__ not in commit message. Checking for docs PRs')
+    return True
 
 
-def _merge_documentation_pulls(docs_repo, docs_branches):
+def _merge_documentation_pulls(docs_repo, jira_ids):
+    """
 
-    if '__NODOCS__' in docs_branches:
-        return
-    elif not docs_branches:
-        raise Exception('There are no docs branches in the commit, '
-                        'and __NODOCS__ is not specified in the commit.')
+    :param docs_repo: The PyGithub Repo Object,
+        probably for docs.getcloudify.org.
+    :param jira_ids: A list of Jira IDs, like [u'CY-1234', u'CYBL-12345'].
+    :return:
+    """
 
-    # For each pull, merge it.
     pulls = docs_repo.get_pulls(state='open')
-    for docs_branch in docs_branches:
+    merges = 0
+    for jira_id in jira_ids:
         for pull in pulls:
-            if pull.head.ref == docs_branch:
+            if jira_id in pull.head.label:
                 logging.info('Merging {pull}'.format(pull=pull.number))
                 pull.merge(merge_method='squash')
+                merges += 1
+    if not merges:
+        raise Exception('No documentation PRs were found.')
 
 
 def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
@@ -232,29 +269,10 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     repo = repo or get_repository()
     docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
-
-    # Get the parent commits.
-    branch = repo.get_branch(branch)
-    # Get the closed PRs that have heads for those commits.
-    number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
-    if len(number_sign_nums) != 1:
-        raise Exception('A pound sign followed by a number occurs more '
-                        'than once in the commit message. This is very '
-                        'confusing for us, because this is how we '
-                        'identify the PR. Please erase.')
-    pr_number = number_sign_nums[0].replace('#', '')
-
-    pull_request = repo.get_pull(int(pr_number))
-    # Get the commits in that PR.
-    # Check those commit messages for Docs Branches.
-    # For each commit, read its message, and collect the documentation
-    # branches.
-    docs_branches = []
+    pr_number = get_branch_pr(branch, repo)
+    pull_request = repo.get_pull(pr_number)
     for commit in pull_request.get_commits():
-        docs_branches = docs_branches + get_documentation_branches(
-            commit.commit.message)
-    logging.info('Will merge these docs branches: {docs_branches}'.format(
-        docs_branches=docs_branches))
-
-    _merge_documentation_pulls(docs_repo, docs_branches)
-
+        if not validate_docs_requirement(commit.commit.message):
+            return
+    jira_ids = get_pull_request_jira_ids(pr_number)
+    _merge_documentation_pulls(docs_repo, jira_ids)
