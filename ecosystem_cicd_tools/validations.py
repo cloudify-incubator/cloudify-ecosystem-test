@@ -2,14 +2,17 @@ import os
 import sys
 import logging
 import subprocess
-from re import match, findall
+from re import match
 from yaml import safe_load
 from yaml.parser import ParserError
 
 from .github_stuff import (
-    get_documentation_branches,
+    get_branch_pr,
     raise_if_unmergeable,
-    get_repository)
+    get_pull_request_jira_ids,
+    get_repository,
+    get_pull_request,
+    validate_docs_requirement)
 
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
@@ -140,20 +143,16 @@ def validate_plugin_version(plugin_directory=None,
     check_setuppy_version(version, plugin_directory)
 
 
-def _validate_documenation_pulls(docs_repo, docs_branches):
-
-    if '__NODOCS__' in docs_branches:
-        return
-    elif not docs_branches:
-        raise Exception('There are no docs branches in the commit, '
-                        'and __NODOCS__ is not specified in the commit.')
-
-    # For each pull, check if it is mergeable.
+def _validate_documenation_pulls(docs_repo, jira_ids):
+    merges = 0
     pulls = docs_repo.get_pulls(state='open')
-    for docs_branch in docs_branches:
+    for jira_id in jira_ids:
         for pull in pulls:
-            if pull.head.ref == docs_branch:
+            if jira_id in pull.head.label:
                 raise_if_unmergeable(pull)
+                merges += 1
+    if not merges:
+        raise Exception('No documentation PRs were found.')
 
 
 def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
@@ -166,47 +165,28 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     """
 
     logging.info('Validating documentation pull requests are ready.')
-
     repo = repo or get_repository()
     docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
 
-    # We need the current branch, so that we can find out the commits
-    # that will have documentation pointed in them.
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
-    docs_branches = []
-    if branch == 'master':
-        branch_obj = repo.get_branch(branch)
 
-        number_sign_nums = findall(r'\#\d+', branch_obj.commit.commit.message)
-        if len(number_sign_nums) != 1:
-            raise Exception('A pound sign followed by a number occurs more '
-                            'than once in the commit message. This is very '
-                            'confusing for us, because this is how we '
-                            'identify the PR. Please erase.')
-        pr_number = number_sign_nums[0].replace('#', '')
-        pull_request = repo.get_pull(int(pr_number))
-        for commit in pull_request.get_commits():
-            docs_branches = docs_branches + get_documentation_branches(
-                commit.commit.message)
+    if branch == 'master':
+        # Get the Jira IDs from master.
+        pull_request_number = get_branch_pr(branch, repo)
     else:
-        # We need a pull request in order to constrain the list of commits
-        # Because the branch also has commits from its parents.
-        pull_requests = repo.get_pulls(head=branch)
-        logging.info('Found these pull requests: {prs}'.format(
-            prs=[(pr.number, pr.title) for pr in pull_requests]
-        ))
-        for pull_request in pull_requests:
-            if pull_request.head.ref == branch:
-                logging.info('Checking commits for {pull}'.format(
-                    pull=(pull_request.number, pull_request.title)))
-                # For each commit,
-                # read its message, and collect the documentation
-                # branches.
-                for commit in pull_request.get_commits():
-                    docs_branches = docs_branches + get_documentation_branches(
-                        commit.commit.message)
-    if not docs_branches:
-        raise Exception('No pull request for current branch was found.')
-    _validate_documenation_pulls(docs_repo, docs_branches)
+        # Get the Jira IDs from current branch.
+        pull_request_number = int(os.environ.get('CIRCLE_PULL_REQUEST', 0))
+
+    if not pull_request_number and branch != 'master':
+        logging.info('A PR has not yet been opened.')
+        return
+
+    pull_request = get_pull_request(pull_request_number)
+    jira_ids = get_pull_request_jira_ids(pull=pull_request)
+
+    for commit in pull_request.get_commits():
+        if not validate_docs_requirement(commit.commit.message):
+            return
+    _validate_documenation_pulls(docs_repo, jira_ids)

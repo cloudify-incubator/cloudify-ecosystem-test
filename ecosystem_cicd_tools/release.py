@@ -115,7 +115,6 @@ def plugin_release(plugin_name,
                                   version)
     plugins.append('plugin.yaml')
     update_plugins_json(plugin_name, version, plugins)
-    merge_documentation_pulls()
     return version_release
 
 
