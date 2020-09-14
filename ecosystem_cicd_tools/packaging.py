@@ -329,7 +329,10 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir):
     logging.info('Downloading {wgn_path} and {yaml_path}'.format(
         wgn_path=wgn_path, yaml_path=yaml_path))
     plugin_root_dir = os.path.basename(wgn_path).rsplit('.', 1)[0]
-    os.mkdir(os.path.join(tempdir, plugin_root_dir))
+    try:
+        os.mkdir(os.path.join(tempdir, plugin_root_dir))
+    except OSError as e:
+        logging.info(e)
     dest_wgn_path = os.path.join(plugin_root_dir,
                                  os.path.basename(wgn_path))
     dest_yaml_path = os.path.join(plugin_root_dir,
