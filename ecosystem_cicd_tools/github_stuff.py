@@ -210,8 +210,12 @@ def get_branch_pr(branch_name, repo=None):
     logging.info('Attempting to get PR to branch {branch} {name}'.format(
         branch=branch_name, name=repo.name))
     branch = repo.get_branch(branch_name)
+    logging.info('Looking for PR number in {msg}'.format(
+        msg=branch.commit.commit.message))
     number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
-    if len(number_sign_nums) != 1:
+    if '__NODOCS__' in branch.commit.commit.message.lower():
+        return
+    elif len(number_sign_nums) != 1:
         raise Exception(
             'The branch name {branch} contains more than one \#. '
             'In order to identify the PR, '
@@ -270,6 +274,8 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
     pr_number = get_branch_pr(branch, repo)
+    if not pr_number:
+        return
     pull_request = repo.get_pull(pr_number)
     for commit in pull_request.get_commits():
         if not validate_docs_requirement(commit.commit.message):
