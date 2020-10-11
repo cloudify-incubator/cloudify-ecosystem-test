@@ -179,6 +179,8 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
 
     logging.info('Updating plugin JSON with assets {assets}'.format(
         assets=assets))
+    logging.info('Updating plugin JSON with this version {version}'.format(
+        version=plugin_version))
     if plugin_version:
         plugin_dict['version'] = plugin_version
         plugin_dict['link'] = plugin_dict['link'].replace(
@@ -218,6 +220,12 @@ def get_plugin_new_json(remote_path,
     :return: the new plugins list.
     """
 
+    logging.info('Fn get_plugin_new_json {p} {n} {v} {a} {ll}'.format(
+        p=remote_path,
+        n=plugin_name,
+        v=plugin_version,
+        a=assets,
+        ll=plugins_list))
     update_version = not not plugins_list
     plugins_list = plugins_list or get_plugins_json(remote_path)
     # Plugins list is a list of dictionaries. Each plugin/version is one dict.
@@ -232,11 +240,16 @@ def get_plugin_new_json(remote_path,
             # Double check that we are editing the same version.
             # For example, we don't want to update
             # Openstack 3.2.0 with Openstack 2.14.20.
+            logging.info(
+                'Checking if we have a major version '
+                'update {vers} vs {pdv}.'.format(vers=plugin_version,
+                                                 pdv=pd['version']))
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
                 if update_version:
                     update_assets_in_plugin_dict(pd, assets, plugin_version)
                 else:
                     update_assets_in_plugin_dict(pd, assets)
+    logging.info('New plugin list: {pl}'.format(pl=plugins_list))
     return plugins_list
 
 
