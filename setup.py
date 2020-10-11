@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.2.92',
+    version='2.2.93',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
@@ -16,6 +16,7 @@ setup(
         'PyGithub',
         'wagon>=0.10.0',
         'boto3',
-        'progressbar'
+        'progressbar',
+        'pyyaml'
     ]
 )
