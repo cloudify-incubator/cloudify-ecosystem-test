@@ -226,7 +226,7 @@ def get_plugin_new_json(remote_path,
         v=plugin_version,
         a=assets,
         ll=plugins_list))
-    update_version = not not plugins_list
+    update_version = not plugins_list
     plugins_list = plugins_list or get_plugins_json(remote_path)
     # Plugins list is a list of dictionaries. Each plugin/version is one dict.
     for pd in plugins_list:
