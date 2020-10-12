@@ -1,3 +1,4 @@
+2.2.66: Ensure we upload new bundle.
 2.2.95: Fix issue that prevented new json from being written.
 2.2.94: Add more logging to figure out issue
 2.2.93: Dependency issue YAML.

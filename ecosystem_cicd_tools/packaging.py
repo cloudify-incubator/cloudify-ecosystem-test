@@ -49,6 +49,7 @@ def aws(**_):
         access_key).strip('\n')
     os.environ['aws_secret_access_key'.upper()] = base64.b64decode(
         access_secret).strip('\n')
+    os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
     yield
 
 
