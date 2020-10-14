@@ -1,4 +1,5 @@
-2.2.66: Ensure we upload new bundle.
+2.2.97: Add logging for bundle operations to figure out why some plugins are sometimes skipped.
+2.2.96: Ensure we upload new bundle.
 2.2.95: Fix issue that prevented new json from being written.
 2.2.94: Add more logging to figure out issue
 2.2.93: Dependency issue YAML.

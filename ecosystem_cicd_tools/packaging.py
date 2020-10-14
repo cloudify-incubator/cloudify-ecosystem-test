@@ -390,8 +390,11 @@ def create_plugin_bundle_archive(mappings,
         metadata[wagon_path] = yaml_path
 
     with open(os.path.join(tempdir, 'METADATA'), 'w+') as f:
+        logging.info(
+            'create_plugin_bundle_archive writing metadata {m}'.format(
+                m=metadata))
         yaml.dump(metadata, f)
-    tar_path = os.path.join(destination, '{0}.tgz'.format(tar_name))
+    tar_path = os.path.join(destination, tar_name + '.tgz')
     tarfile_ = tarfile.open(tar_path, 'w:gz')
     try:
         tarfile_.add(tempdir, arcname=tar_name)
@@ -421,6 +424,7 @@ def configure_bundle_archive(plugins_json=None):
                 if wagon['name'] in DISTROS_TO_BUNDLE:
                     mapping[wagon['url']] = plugin_yaml
 
+    logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
 
 
@@ -434,6 +438,8 @@ def update_plugins_bundle(bundle_archive=None, plugins_json=None):
     bundle_archive = bundle_archive or build_plugins_bundle(plugins_json)
     upload_to_s3(bundle_archive,
                  os.path.join(BUCKET_FOLDER, os.path.basename(bundle_archive)))
+    logging.info('update_plugins_bundle report_tar_contents ...')
+    report_tar_contents(bundle_archive)
 
 
 def build_plugins_bundle_with_workspace(workspace_path=None):
@@ -454,6 +460,8 @@ def build_plugins_bundle_with_workspace(workspace_path=None):
         if files[i].endswith('.wgn'):
             plugin = (files[i], files[i+1])
             wagon_metadata = show(find_wagon_local_path(plugin[0]))
+            logging.info('Build plugins bundle {md}.'.format(
+                md=wagon_metadata))
             plugin_name = wagon_metadata["package_name"]
             plugin_version = wagon_metadata["package_version"]
             plugins_json = get_plugin_new_json(
@@ -463,6 +471,8 @@ def build_plugins_bundle_with_workspace(workspace_path=None):
                 plugin,
                 plugins_json
             )
+            logging.info('Build plugins json {i} {out}'.format(
+                i=i, out=plugins_json))
         else:
             raise Exception('Illegal files list {files}'.format(files=files))
     copy_plugins_json_to_workspace(write_json(plugins_json))
@@ -471,7 +481,21 @@ def build_plugins_bundle_with_workspace(workspace_path=None):
         os.path.abspath('workspace'),
         'build',
         os.path.basename(bundle_path))
+
     shutil.copyfile(bundle_path, workspace_path)
+    logging.info('build_plugins_bundle_with_workspace fn report_tar_contents.')
+    report_tar_contents(workspace_path)
+
+
+def report_tar_contents(path):
+    loc = mkdtemp()
+    tar = tarfile.open(path)
+    tar.extractall(path=loc)
+    tar.close()
+    files = os.listdir(loc)
+    logging.info('These are the files in the bundle: {files}'.format(
+        files=files))
+    shutil.rmtree(loc)
 
 
 def get_workspace_files(file_type=None, workspace_path=None):
