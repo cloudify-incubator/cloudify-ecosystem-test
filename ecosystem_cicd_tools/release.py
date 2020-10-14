@@ -37,7 +37,8 @@ from .packaging import (
     PLUGINS_BUNDLE_NAME,
     update_plugins_bundle,
     upload_plugin_asset_to_s3,
-    update_plugins_json
+    update_plugins_json,
+    report_tar_contents
 )
 from .validations import get_plugin_version
 
@@ -77,10 +78,10 @@ def update_latest_release_resources(most_recent_release, name):
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
-                   plugins=None,
+                   workspace_files=None,
                    workspace_path=None):
 
-    plugins = plugins or get_workspace_files(workspace_path=workspace_path)
+    workspace_files = workspace_files or get_workspace_files(workspace_path=workspace_path)
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -97,24 +98,30 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3('plugin.yaml',
                                   plugin_name,
                                   version)
-    for plugin in plugins:
-        if PLUGINS_BUNDLE_NAME in plugin:
-            logging.info('Skipping bundle upload.')
-            update_plugins_bundle(plugin)
+    for workspace_file in workspace_files:
+        if PLUGINS_BUNDLE_NAME in workspace_file:
+            logging.info('Updating bundle {f}'.format(f=workspace_file))
+            update_plugins_bundle(workspace_file)
+            logging.info('plugin_release report_tar_contents')
+            report_tar_contents(workspace_file)
             continue
-        logging.info('Uploading plugin {0}'.format(plugin))
-        try:
-            version_release.upload_asset(
-                plugin,
-                path.basename(plugin),
-                'application/zip')
-        except GithubException:
-            logging.warn('Failed to upload {0}'.format(plugin))
-        upload_plugin_asset_to_s3(plugin,
-                                  plugin_name,
-                                  version)
-    plugins.append('plugin.yaml')
-    update_plugins_json(plugin_name, version, plugins)
+        elif 'plugins.json' in workspace_file:
+            continue
+        elif path.splitext(workspace_file)[1] in ('.wgn', '.md5'):
+
+            logging.info('Uploading plugin {0}'.format(workspace_file))
+            try:
+                version_release.upload_asset(
+                    workspace_file,
+                    path.basename(workspace_file),
+                    'application/zip')
+            except GithubException:
+                logging.warn('Failed to upload {0}'.format(workspace_file))
+            upload_plugin_asset_to_s3(workspace_file,
+                                      plugin_name,
+                                      version)
+    workspace_files.append('plugin.yaml')
+    update_plugins_json(plugin_name, version, workspace_files)
     return version_release
 
 
@@ -171,7 +178,7 @@ def plugin_release_with_latest(plugin_name,
             'Create release with name latest and tag latest')
         plugin_release(plugin_name, "latest",
                        plugin_release_name=version_release.body,
-                       plugins=plugins)
+                       workspace_files=plugins)
 
 
 def blueprint_release_with_latest(blueprint_name,
