@@ -195,7 +195,7 @@ def get_pull_request_jira_ids(pull_number=None, pull=None, repo=None):
     """
     branch_name = get_pull_request_branch_name(pull_number, pull, repo)
     # Find find strings in the form CYBL-1234 or CY-12345.
-    return findall(r'(?:CY|CYBL)\-\d*', branch_name)
+    return findall(r'(?:CY|CYBL|RD)\-\d*', branch_name)
 
 
 def get_branch_pr(branch_name, repo=None):
