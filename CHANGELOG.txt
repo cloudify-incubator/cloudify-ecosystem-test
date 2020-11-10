@@ -1,3 +1,4 @@
+2.2.98: Add "RD" to regex in order to find new Jira ticket branches.
 2.2.97: Add logging for bundle operations to figure out why some plugins are sometimes skipped.
 2.2.96: Ensure we upload new bundle.
 2.2.95: Fix issue that prevented new json from being written.
