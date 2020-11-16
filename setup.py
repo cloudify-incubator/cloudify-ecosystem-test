@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.2.98',
+    version='2.2.99',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
@@ -18,6 +18,8 @@ setup(
         'boto3',
         'urllib3>=1.25.4',
         'progressbar',
-        'pyyaml'
+        'pyyaml',
+        'requests',
+
     ]
 )

@@ -3,7 +3,6 @@
 import os
 import re
 import sys
-import shutil
 import tempfile
 
 # Third Parties Imports
@@ -13,7 +12,7 @@ from cloudify.test_utils.local_workflow_decorator \
     import IGNORED_LOCAL_WORKFLOW_MODULES
 
 # Local Imports
-from utils import (
+from .utils import (
     initialize_cfy_profile,
     create_password,
     create_blueprint,

@@ -72,6 +72,7 @@ def check_setuppy_version(version, plugin_directory):
         exec_path=sys.executable,
         path=os.path.join(plugin_directory, 'setup.py'))
     output = subprocess.check_output(command, shell=True)
+    output = output.decode("utf-8")
     if version.strip() != output.strip():
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}.'.format(version=version.strip(),
@@ -141,6 +142,7 @@ def validate_plugin_version(plugin_directory=None,
         os.path.join(plugin_directory, plugin_yaml))
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
     check_setuppy_version(version, plugin_directory)
+    return version
 
 
 def _validate_documenation_pulls(docs_repo, jira_ids):
