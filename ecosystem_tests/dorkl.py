@@ -131,18 +131,13 @@ def replace_file_on_manager(local_file_path, manager_file_path):
     :param manager_file_path:
     :return:
     """
+    docker_path = copy_file_to_docker(local_file_path)
     if os.path.isdir(local_file_path):
-        docker_path = copy_file_to_docker(local_file_path)
         docker_exec('rm -rf {destination}'.format(
             destination=manager_file_path))
-        docker_exec('mv {files} {destination}'.format(
-            files=docker_path,
-            destination=manager_file_path))
-    else:
-        docker_path = copy_file_to_docker(local_file_path)
-        docker_exec('mv {file} {destination}'.format(
-            file=docker_path,
-            destination=manager_file_path))
+    docker_exec('mv {file} {destination}'.format(
+        file=docker_path,
+        destination=manager_file_path))
 
 
 def replace_plugin_package_on_manager(plugin_name,

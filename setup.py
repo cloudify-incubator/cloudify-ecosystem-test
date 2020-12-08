@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.2.99',
+    version='2.2.100',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
@@ -20,6 +20,6 @@ setup(
         'progressbar',
         'pyyaml',
         'requests',
-
+        'networkx'
     ]
 )
