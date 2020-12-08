@@ -1,3 +1,4 @@
+2.2.100: networx
 2.2.99: Add Helm3 plugin to "plugins to bundle" list.
 2.2.98: Add "RD" to regex in order to find new Jira ticket branches.
 2.2.97: Add logging for bundle operations to figure out why some plugins are sometimes skipped.

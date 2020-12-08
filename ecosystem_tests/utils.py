@@ -4,6 +4,7 @@ from random import randint, choice
 import string
 import subprocess
 import sys
+import logging
 import time
 import yaml
 import zipfile
@@ -14,6 +15,10 @@ from cloudify_rest_client.exceptions import CloudifyClientError
 NODECELLAR = 'https://github.com/cloudify-examples/' \
              'nodecellar-auto-scale-auto-heal-blueprint' \
              '/archive/master.zip'
+
+logging.basicConfig()
+logger = logging.getLogger('logger')
+logger.setLevel(logging.DEBUG)
 
 
 def execute_command(command, return_output=False, use_sudo=False):
@@ -29,7 +34,7 @@ def execute_command(command, return_output=False, use_sudo=False):
     :rtype: int or a string
     """
 
-    print "Executing command `{0}`".format(command)
+    logger.info('Executing command `{0}`'.format(command))
     process = subprocess.Popen(
         command.split(),
         stdout=subprocess.PIPE,
@@ -45,9 +50,9 @@ def execute_command(command, return_output=False, use_sudo=False):
     except ValueError:
         pass
     output, error = process.communicate()
-    print "`{0}` output: {1}".format(command, output)
+    logger.info("`{0}` output: {1}".format(command, output))
     if error:
-        print "`{0}` error: {1}".format(command, error)
+        logger.info("`{0}` error: {1}".format(command, error))
     if return_output:
         return output
     return process.returncode
@@ -397,7 +402,7 @@ def get_deployment_resources_by_node_type_substring(
                 node_type_substring not in node_type:
             continue
         node_id = node.get('id')
-        print 'Creating a node dictionary for {0}'.format(node_id)
+        logger.info('Creating a node dictionary for {0}'.format(node_id))
         current_node = {
             'id': node_id,
             'node_type': node_type,
@@ -408,8 +413,8 @@ def get_deployment_resources_by_node_type_substring(
         for node_instance in get_node_instances(
                 node_id, deployment_id=deployment_id):
             node_instance_id = node_instance.get('id')
-            print 'Creating a node-instance dictionary for {0}'.format(
-                node_instance_id)
+            logger.info('Creating a node-instance dictionary for {0}'.format(
+                node_instance_id))
             current_node_instance = {
                 'id': node_instance_id,
                 'runtime_properties': node_instance.get(
@@ -459,8 +464,8 @@ def get_deployment_resource_names(
     for node in get_deployment_resources_by_node_type_substring(
             deployment_id, node_type_substring,
             node_type_substring_exclusions):
-        print 'Getting {0} resource properties in {1}'.format(
-            name_property, node)
+        logger.info('Getting {0} resource properties in {1}'.format(
+            name_property, node))
         for instance in node['instances']:
             name = \
                 instance['runtime_properties'].get(name_property)
@@ -491,7 +496,7 @@ def get_resource_ids_by_type(
 
     resources = []
     for instance in instances:
-        print 'Getting resource: {0}'.format(instance.node_id)
+        logger.info('Getting resource: {0}'.format(instance.node_id))
         node = get_function(instance.node_id)
         if node_type not in node.type:
             break
@@ -515,7 +520,7 @@ def download_file(url_path, file_path, filemode='wb'):
     :rtype: NoneType
     """
 
-    print "downloading with requests"
+    logger.info("downloading with requests")
     response = requests.get(url_path)
     with open(file_path, filemode) as outfile:
         outfile.write(response.content)
@@ -645,8 +650,8 @@ def get_wagon_path(workspace_path):
     try:
         filename = workspace_file_list[0]
     except IndexError:
-        print 'Wagon does not exist in files: {0}'.format(
-            workspace_file_list)
+        # print 'Wagon does not exist in files: {0}'.format(
+        #     workspace_file_list)
         raise
     return os.path.join(workspace_path, filename)
 
@@ -703,7 +708,7 @@ def check_deployment(blueprint_path,
 
 
 def get_data_as_unicode(data):
-    return data if not isinstance(data, unicode) else data.encode('utf-8')
+    return data if not isinstance(data, str) else data.encode('utf-8')
 
 
 def create_external_resource_blueprint(
@@ -789,7 +794,6 @@ def create_external_resource_blueprint(
             del blueprint_yaml[unneeded]
     new_blueprint_path = '{0}-external.yaml'.format(
         blueprint_path.split('.yaml')[0])
-    print "NEW YAML:\n{0}".format(blueprint_yaml)
     write_blueprint_yaml(blueprint_yaml, new_blueprint_path)
     return new_blueprint_path
 

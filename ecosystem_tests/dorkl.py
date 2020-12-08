@@ -92,7 +92,7 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
         if datetime.now() - time_started > timedelta(seconds=timeout):
             dump_command_output()
             raise EcosystemTimeout('The timeout was reached.')
-        sleep(10)
+        sleep(2)
 
     if log:
         logger.info('Command finished {0}...'.format(command))
@@ -122,6 +122,57 @@ def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
     return handle_process(
         'docker exec {container_name} {cmd}'.format(
             container_name=container_name, cmd=cmd), timeout, log, detach)
+
+
+def replace_file_on_manager(local_file_path, manager_file_path):
+    """ Remove a file and upload a new one.
+
+    :param local_file_path:
+    :param manager_file_path:
+    :return:
+    """
+    docker_path = copy_file_to_docker(local_file_path)
+    if os.path.isdir(local_file_path):
+        docker_exec('rm -rf {destination}'.format(
+            destination=manager_file_path))
+    docker_exec('mv {file} {destination}'.format(
+        file=docker_path,
+        destination=manager_file_path))
+
+
+def replace_plugin_package_on_manager(plugin_name,
+                                      plugin_version,
+                                      package_name,
+                                      python_version='python3.6'):
+    """Replace plugin code in the manager's path.
+
+    Example usage: https://github.com/cloudify-cosmo/
+    cloudify-vcloud-plugin/blob/75a9ab891edc249a7a7f82b0f855bd79fcd22d9e/
+    cicd/update_test_manager.py#L8
+
+    Then call the code like this: python .cicd/update_test_manager.py
+
+    :param plugin_name: Name of a plug in.
+    :param plugin_version: The plug in's version.
+    :param package_name:  The plug in's name.
+    :param python_version: The python version name.
+    :return:
+    """
+
+    manager_package_path = \
+        '/opt/mgmtworker/env/plugins/default_tenant/' \
+        '{plugin}/{version}/lib/{python}/' \
+        'site-packages/{package}'.format(
+            plugin=plugin_name,
+            version=plugin_version,
+            python=python_version,
+            package=package_name.split('/')[-1]
+        )
+    logger.info('Replacing {s} on manager {d}'.format(
+        s=package_name, d=manager_package_path))
+    replace_file_on_manager(package_name, manager_package_path)
+    docker_exec('chown -R cfyuser:cfyuser {path}'.format(
+        path=manager_package_path))
 
 
 def copy_file_to_docker(local_file_path):
