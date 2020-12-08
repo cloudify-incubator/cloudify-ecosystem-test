@@ -32,7 +32,8 @@ PLUGINS_TO_BUNDLE = ['vSphere',
                      'Azure',
                      'Ansible',
                      'Kubernetes',
-                     'Utilities']
+                     'Utilities',
+                     'Helm']
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
 DISTROS_TO_BUNDLE = [CENTOS, REDHAT]
