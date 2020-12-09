@@ -19,6 +19,7 @@ import yaml
 import base64
 import logging
 import subprocess
+import urllib.request
 from time import sleep
 from shlex import split
 from contextlib import contextmanager
@@ -29,6 +30,7 @@ from ecosystem_cicd_tools.packaging import (
     get_bundle_from_workspace,
     get_workspace_files,
     find_wagon_local_path)
+from ecosystem_cicd_tools.validations import validate_plugin_version
 
 from wagon import show
 
@@ -54,7 +56,9 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
     file_obj_stdout = NamedTemporaryFile(delete=False)
     file_obj_stderr = NamedTemporaryFile(delete=False)
     stdout_file = open(file_obj_stdout.name, 'w')
+    stdout_file_read = open(file_obj_stdout.name, 'r')
     stderr_file = open(file_obj_stderr.name, 'w')
+    stderr_file_read = open(file_obj_stderr.name, 'r')
 
     popen_args = {
         'args': split(command),
@@ -65,13 +69,11 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
     def dump_command_output():
         if log:
             stdout_file.flush()
-            with open(file_obj_stdout.name, 'r') as fout:
-                for stdout_line in fout.readlines():
-                    logger.debug('STDOUT: {0}'.format(stdout_line))
+            for stdout_line in stdout_file_read.readlines():
+                logger.info('Execution output: {0}'.format(stdout_line))
             stderr_file.flush()
-            with open(file_obj_stderr.name, 'r') as fout:
-                for stderr_line in fout.readlines():
-                    logger.error('STDERR: {0}'.format(stderr_line))
+            for stderr_line in stderr_file_read.readlines():
+                logger.error('Execution error: {0}'.format(stderr_line))
 
     def return_parsable_output():
         stdout_file.flush()
@@ -89,10 +91,11 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
     while p.poll() is None:
         if log:
             logger.info('Command {0} still executing...'.format(command))
-        if datetime.now() - time_started > timedelta(seconds=timeout):
             dump_command_output()
+        if datetime.now() - time_started > timedelta(seconds=timeout):
             raise EcosystemTimeout('The timeout was reached.')
         sleep(2)
+    dump_command_output()
 
     if log:
         logger.info('Command finished {0}...'.format(command))
@@ -175,6 +178,13 @@ def replace_plugin_package_on_manager(plugin_name,
         path=manager_package_path))
 
 
+def update_plugin_on_manager(version_path, plugin_name, plugin_packages):
+    version = validate_plugin_version(version_path)
+    for package in plugin_packages:
+        replace_plugin_package_on_manager(
+            plugin_name, version, package, )
+
+
 def copy_file_to_docker(local_file_path):
     """
     Copy a file from the container host to the container.
@@ -209,25 +219,27 @@ def copy_directory_to_docker(local_file_path):
     return remote_dir
 
 
-def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True):
+def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True, detach=False):
     """
     Execute a Cloudify CLI command inside the container.
     :param cmd: The command.
     :param get_json: Whether to return a JSON response or not.
     :param timeout: How long to allow the command to block other functions.
     :param log: Whether to log stdout or not.
+    :param detach: To detach after executing
     :return:
     """
 
     if get_json:
-        json_output = docker_exec('{0} --json'.format(cmd), timeout)
+        json_output = docker_exec(
+            '{0} --json'.format(cmd), timeout, log, detach)
         try:
             return json.loads(json_output)
         except (TypeError, ValueError):
             if log:
                 logger.error('JSON failed here: {0}'.format(json_output))
             return
-    return docker_exec(cmd, timeout, log)
+    return docker_exec(cmd, timeout, log, detach)
 
 
 def use_cfy(timeout=60):
@@ -265,7 +277,7 @@ def license_upload():
     except KeyError:
         raise EcosystemTestException('License env var not set {0}.')
     file_temp = NamedTemporaryFile(delete=False)
-    with open(file_temp.name, 'w') as outfile:
+    with open(file_temp.name, 'wb') as outfile:
         outfile.write(license)
     return cloudify_exec('cfy license upload {0}'.format(
         copy_file_to_docker(file_temp.name)), get_json=False)
@@ -448,7 +460,7 @@ def secrets_create(name, is_file=False):
             'Secret env var not set {0}.'.format(name))
     if is_file:
         file_temp = NamedTemporaryFile(delete=False)
-        with open(file_temp.name, 'w') as outfile:
+        with open(file_temp.name, 'wb') as outfile:
             outfile.write(value)
         return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
             name,
@@ -474,6 +486,12 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
             blueprint_id), get_json=False)
 
 
+def blueprints_delete(blueprint_id):
+    return cloudify_exec(
+        'cfy blueprints upload {0}'.format(
+            blueprint_id), get_json=False)
+
+
 def deployments_create(blueprint_id, inputs):
     """
     Create a deployment on the manager.
@@ -488,8 +506,29 @@ def deployments_create(blueprint_id, inputs):
         with open(archive_temp.name, 'w') as outfile:
             yaml.dump(inputs, outfile, allow_unicode=True)
         inputs = archive_temp.name
+    if inputs == '':
+        return cloudify_exec('cfy deployments create -b {0}'.format(
+            blueprint_id), get_json=False)
     return cloudify_exec('cfy deployments create -i {0} -b {1}'.format(
         inputs, blueprint_id), get_json=False)
+
+
+def deployment_delete(blueprint_id):
+    return cloudify_exec('cfy deployments delete {0}'.format(
+        blueprint_id), get_json=False)
+
+
+def get_deployment_outputs(deployment_id):
+    logger.info('Getting deployment outputs {0}'.format(deployment_id))
+    return cloudify_exec(
+        'cfy deployments outputs --json {0}'.format(deployment_id))
+
+
+def get_deployment_output_by_name(deployment_id, output_id):
+    logger.info('Getting deployment output: {output_id}'.format(
+        output_id=output_id))
+    outputs = get_deployment_outputs(deployment_id)
+    return outputs.get(output_id, {}).get('value')
 
 
 def executions_start(workflow_id, deployment_id, timeout):
@@ -573,6 +612,17 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
         sleep(5)
 
 
+def verify_endpoint(endpoint, endpoint_value):
+    logger.info('Checking Endpoint.')
+    conn = urllib.request.urlopen(endpoint)
+    if conn.getcode() == endpoint_value:
+        logger.info('Endpoint up!')
+        return
+    raise EcosystemTestException(
+        'Endpoint {e} not up {result}.'.format(
+            e=endpoint, result=endpoint_value))
+
+
 def cleanup_on_failure(deployment_id):
     """
     Execute uninstall if a deployment failed.
@@ -592,7 +642,9 @@ def cleanup_on_failure(deployment_id):
 def _basic_blueprint_test(blueprint_file_name,
                           test_name,
                           inputs=None,
-                          timeout=None):
+                          timeout=None,
+                          endpoint_name=None,
+                          endpoint_value=None):
     """
     Simple blueprint install/uninstall test.
     :param blueprint_file_name:
@@ -603,8 +655,9 @@ def _basic_blueprint_test(blueprint_file_name,
     """
 
     timeout = timeout or TIMEOUT
-    inputs = inputs or os.path.join(
-        os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
+    if inputs != '':
+        inputs = inputs or os.path.join(
+            os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
     logger.info('Blueprints list: {0}'.format(
         cloudify_exec('cfy blueprints list')))
     blueprints_upload(blueprint_file_name, test_name)
@@ -622,9 +675,21 @@ def _basic_blueprint_test(blueprint_file_name,
         wait_for_execution(test_name, 'install', 10)
     else:
         wait_for_execution(test_name, 'install', timeout)
+    if endpoint_name and endpoint_value:
+        verify_endpoint(
+            get_deployment_output_by_name(
+                test_name,
+                endpoint_name
+            ), endpoint_value)
     logger.info('Uninstalling...')
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
+    try:
+        deployment_delete(test_name)
+        blueprints_delete(test_name)
+    except Exception as e:
+        logger.info('Failed to delete blueprint, '
+                    '{0}'.format(str(e)))
 
 
 @contextmanager
@@ -653,15 +718,28 @@ def basic_blueprint_test(blueprint_file_name,
                          test_name,
                          inputs=None,
                          timeout=None,
-                         use_vpn=False):
+                         use_vpn=False,
+                         endpoint_name=None,
+                         endpoint_value=None):
     if use_vpn:
         with vpn():
+            try:
+                _basic_blueprint_test(blueprint_file_name,
+                                      test_name,
+                                      inputs,
+                                      timeout,
+                                      endpoint_name=endpoint_name,
+                                      endpoint_value=endpoint_value)
+            except:
+                cleanup_on_failure(test_name)
+    else:
+        try:
             _basic_blueprint_test(blueprint_file_name,
                                   test_name,
                                   inputs,
-                                  timeout=10)
-    else:
-        _basic_blueprint_test(blueprint_file_name,
-                              test_name,
-                              inputs,
-                              timeout)
+                                  timeout,
+                                  endpoint_name=endpoint_name,
+                                  endpoint_value=endpoint_value)
+        except Exception as e:
+            logger.info('Error: {e}'.format(e=str(e)))
+            cleanup_on_failure(test_name)
