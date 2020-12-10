@@ -19,7 +19,10 @@ import yaml
 import base64
 import logging
 import subprocess
-import urllib.request
+try:
+    from urllib.request import urlopen  # Python 3
+except ImportError:
+    from urllib2 import urlopen  # Python 2
 from time import sleep
 from shlex import split
 from contextlib import contextmanager
@@ -614,7 +617,7 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
 
 def verify_endpoint(endpoint, endpoint_value):
     logger.info('Checking Endpoint.')
-    conn = urllib.request.urlopen(endpoint)
+    conn = urlopen(endpoint)
     if conn.getcode() == endpoint_value:
         logger.info('Endpoint up!')
         return
