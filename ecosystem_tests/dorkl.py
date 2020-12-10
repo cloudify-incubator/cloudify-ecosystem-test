@@ -488,7 +488,7 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
 
 def blueprints_delete(blueprint_id):
     return cloudify_exec(
-        'cfy blueprints upload {0}'.format(
+        'cfy blueprints delete {0}'.format(
             blueprint_id), get_json=False)
 
 
