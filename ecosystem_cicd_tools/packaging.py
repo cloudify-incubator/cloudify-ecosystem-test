@@ -46,10 +46,10 @@ ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 def aws(**_):
     access_key = os.environ['aws_access_key_id'].strip('\n')
     access_secret = os.environ['aws_secret_access_key'].strip('\n')
-    os.environ['aws_access_key_id'.upper()] = base64.b64decode(
-        access_key).strip('\n')
-    os.environ['aws_secret_access_key'.upper()] = base64.b64decode(
-        access_secret).strip('\n')
+    os.environ['aws_access_key_id'.upper()] = str(base64.b64decode(
+        access_key), 'utf-8').strip('\n')
+    os.environ['aws_secret_access_key'.upper()] = str(base64.b64decode(
+        access_secret), 'utf-8').strip('\n')
     os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
     yield
 

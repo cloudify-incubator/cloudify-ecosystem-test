@@ -286,3 +286,11 @@ INFO:logger:Execution output: 2020-12-10 09:01:15.788  CFY <hello-world-20201210
 INFO:logger:Execution output: 2020-12-10 09:01:18.771  LOG <hello-world-202012101056> [vm_vr4usn.configure] INFO: I like to test my plugins during development!
 INFO:logger:Command docker exec cfy_manager cfy executions start --timeout 3000 -d hello-world-202012101056 install still executing...
 ```
+
+
+# IDE
+
+## Requirements:
+
+  * pytest
+  * pytest-logger, add this to your test runner configuration: `--log-cli-level debug -s -v`.
