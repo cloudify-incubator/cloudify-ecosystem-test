@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 checkout:
   post:
@@ -9,29 +9,17 @@ checkout:
         git checkout -qf FETCH_HEAD
       fi
 
-jobs:
+executors:
+  py36:
+    docker:
+      - image: circleci/python:3.6
+
+
+commands:
 
   unittests:
-    # docker:
-    #   - image: circleci/python:2.7.15-stretch
-    machine:
-      enabled: true
-      python:
-        version: pypy-2.2.1
     steps:
       - checkout
-      - run:
-          name: download manager docker image
-          command: wget http://repository.cloudifysource.org/cloudify/4.3.2/ga-release/cloudify-docker-manager-4.3.2ga.tar
-      - run:
-          name: load docker image
-          command: docker load -i cloudify-docker-manager-4.3.2ga.tar
-      - run:
-          name: retain space by dumping the tar
-          command: rm cloudify-docker-manager-4.3.2ga.tar
-      - run:
-          name: start docker container
-          command: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host docker-cfy-manager:latest
       - run:
           name: upgrade pip
           command: pip install --upgrade pip
@@ -46,11 +34,9 @@ jobs:
           command: tox -e pep8
       - run:
           name: Run py27 test
-          command: tox -e py27
+          command: tox -e py36
 
   release:
-    docker:
-      - image: circleci/python:2.7.15-stretch
     steps:
       - checkout
       - run:
@@ -72,7 +58,7 @@ jobs:
           command: virtualenv env
       - run:
           name: install tox
-          command: pip install --user pygithub pyyaml==3.10
+          command: pip install --user pygithub pyyaml>=4.2b1
       - run:
           name: upgrade setuptools
           command: pip install --upgrade setuptools
@@ -82,8 +68,6 @@ jobs:
       - run: python .circleci/package_release.py
 
   build_bundle:
-    docker:
-      - image: circleci/python:2.7.15-stretch
     steps:
       - checkout
       - run:
@@ -113,6 +97,27 @@ jobs:
           name: install local project
           command: pip install .
       - run: python .circleci/build_bundle.py
+
+jobs:
+
+  unittests:
+    executor: py36
+    steps:
+      - checkout
+      - unittests
+
+  release:
+    executor: py36
+    steps:
+      - checkout
+      - release
+
+  build_bundle:
+    executor: py36
+    steps:
+      - checkout
+      - build_bundle
+
 
 workflows:
   version: 2

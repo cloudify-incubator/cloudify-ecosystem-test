@@ -1,3 +1,4 @@
+2.2.104: Python 3 Bytes issue.
 2.2.103: urllib compat.
 2.2.102: Pin networkx.
 2.2.101: Improve usage for external users.
