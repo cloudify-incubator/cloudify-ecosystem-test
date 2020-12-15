@@ -19,10 +19,10 @@ commands:
 
   unittests:
     steps:
+      - checkout
       - run:
           name: Set Python
           command: pyenv global 3.6.5
-      - checkout
       - run:
           name: upgrade pip
           command: pip install --upgrade pip
@@ -43,13 +43,13 @@ commands:
     steps:
       - checkout
       - run:
-          name: Set Python
-          command: pyenv global 3.6.5
-      - run:
           name: "Pull Submodules"
           command: |
             git submodule init
             git submodule update --remote
+      - run:
+          name: Set Python
+          command: pyenv global 3.6.5
       - run:
           name: Download pip
           command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
@@ -77,13 +77,13 @@ commands:
     steps:
       - checkout
       - run:
-          name: Set Python
-          command: pyenv global 3.6.5
-      - run:
           name: "Pull Submodules"
           command: |
             git submodule init
             git submodule update --remote
+      - run:
+          name: Set Python
+          command: pyenv global 3.6.5
       - run:
           name: Download pip
           command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
