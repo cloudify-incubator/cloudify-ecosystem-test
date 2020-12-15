@@ -19,6 +19,9 @@ commands:
 
   unittests:
     steps:
+      - run:
+          name: Set Python
+          command: pyenv global 3.6.5
       - checkout
       - run:
           name: upgrade pip
@@ -39,6 +42,9 @@ commands:
   release:
     steps:
       - checkout
+      - run:
+          name: Set Python
+          command: pyenv global 3.6.5
       - run:
           name: "Pull Submodules"
           command: |
@@ -70,6 +76,9 @@ commands:
   build_bundle:
     steps:
       - checkout
+      - run:
+          name: Set Python
+          command: pyenv global 3.6.5
       - run:
           name: "Pull Submodules"
           command: |
