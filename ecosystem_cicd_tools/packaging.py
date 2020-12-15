@@ -381,7 +381,7 @@ def create_plugin_bundle_archive(mappings,
     tempdir = mkdtemp()
     metadata = {}
 
-    for key, value in mappings.iteritems():
+    for key, value in mappings.items():
         # If we have a plugin we want to use for a local path,
         # then we don't want to download it.
         wagon_path, yaml_path = create_plugin_metadata(key, value, tempdir)
