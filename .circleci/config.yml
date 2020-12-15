@@ -22,7 +22,14 @@ commands:
       - checkout
       - run:
           name: Set Python
-          command: pyenv global 3.6.5
+          command: |
+            if ! command -v COMMAND &> /dev/null
+            then
+                echo "COMMAND could not be found"
+                exit
+            else
+                pyenv global 3.6.5
+            fi
       - run:
           name: upgrade pip
           command: pip install --upgrade pip
@@ -49,7 +56,14 @@ commands:
             git submodule update --remote
       - run:
           name: Set Python
-          command: pyenv global 3.6.5
+          command: |
+            if ! command -v COMMAND &> /dev/null
+            then
+                echo "COMMAND could not be found"
+                exit
+            else
+                pyenv global 3.6.5
+            fi
       - run:
           name: Download pip
           command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
@@ -83,7 +97,14 @@ commands:
             git submodule update --remote
       - run:
           name: Set Python
-          command: pyenv global 3.6.5
+          command: |
+            if ! command -v COMMAND &> /dev/null
+            then
+                echo "COMMAND could not be found"
+                exit
+            else
+                pyenv global 3.6.5
+            fi
       - run:
           name: Download pip
           command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
