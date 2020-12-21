@@ -589,6 +589,8 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
     :param timeout:
     :return:
     """
+    logger.info('Waiting for execution deployment ID '
+                '{0} workflow ID {1}'.format(deployment_id, workflow_id))
     start = datetime.now()
     while True:
         if datetime.now() - start > timedelta(seconds=timeout):
@@ -602,16 +604,18 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
                 'Workflow {0} for deployment {1} was not found.'.format(
                     workflow_id, deployment_id))
 
-        if ex['status'] == 'completed':
-            logger.info('{0}:{1} finished!'.format(
-                deployment_id, workflow_id))
+        if ex['status'].lower() == 'completed':
+            logger.info('{0}:{1} finished!'.format(deployment_id, workflow_id))
             break
-        elif ex['status'] == 'pending' or ex['status'] == 'started':
+        elif ex['status'].lower() == 'pending' or ex['status'] == 'started':
             logger.info('{0}:{1} is pending/started.'.format(
                 deployment_id, workflow_id))
-        elif ex['status'] == 'failed':
+        elif ex['status'].lower() == 'failed':
             raise EcosystemTestException('Execution failed {0}:{1}'.format(
                 deployment_id, workflow_id))
+        else:
+            logger.info(
+                'Execution still running. Status: {0}'.format(ex['status']))
         sleep(5)
 
 
@@ -693,6 +697,7 @@ def _basic_blueprint_test(blueprint_file_name,
     except Exception as e:
         logger.info('Failed to delete blueprint, '
                     '{0}'.format(str(e)))
+        raise e
 
 
 @contextmanager
@@ -744,5 +749,5 @@ def basic_blueprint_test(blueprint_file_name,
                                   endpoint_name=endpoint_name,
                                   endpoint_value=endpoint_value)
         except Exception as e:
-            logger.info('Error: {e}'.format(e=str(e)))
+            logger.error('Error: {e}'.format(e=str(e)))
             cleanup_on_failure(test_name)
