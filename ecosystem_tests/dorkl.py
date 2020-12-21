@@ -697,7 +697,6 @@ def _basic_blueprint_test(blueprint_file_name,
     except Exception as e:
         logger.info('Failed to delete blueprint, '
                     '{0}'.format(str(e)))
-        raise e
 
 
 @contextmanager

@@ -1,3 +1,4 @@
+2.2.109: Remove exception on deployment/blueprint delete.
 2.2.108: Check events for workflow failures.
 2.2.107: Add urlparse.
 2.2.106: Remove another Python3.
