@@ -19,29 +19,29 @@ import yaml
 import base64
 import logging
 import subprocess
+from time import sleep
+from shlex import split
+from contextlib import contextmanager
+from tempfile import NamedTemporaryFile
+from datetime import datetime, timedelta
 try:
     from urllib.request import urlopen  # Python 3
 except ImportError:
     from urllib2 import urlopen  # Python 2
-from time import sleep
-from shlex import split
-from contextlib import contextmanager
-from datetime import datetime, timedelta
-from tempfile import NamedTemporaryFile
-
-from ecosystem_cicd_tools.packaging import (
-    get_bundle_from_workspace,
-    get_workspace_files,
-    find_wagon_local_path)
-from ecosystem_cicd_tools.validations import validate_plugin_version
 
 from wagon import show
+
+from ecosystem_cicd_tools.packaging import (
+    get_workspace_files,
+    find_wagon_local_path,
+    get_bundle_from_workspace)
+from ecosystem_cicd_tools.validations import validate_plugin_version
 
 logging.basicConfig()
 logger = logging.getLogger('logger')
 logger.setLevel(logging.DEBUG)
 
-MANAGER_CONTAINER_NAME = 'cfy_manager'
+MANAGER_CONTAINER_NAME = os.environ.get('MANAGER_CONTAINER', 'cfy_manager')
 TIMEOUT = 1800
 VPN_CONFIG_PATH = '/tmp/vpn.conf'
 
@@ -472,6 +472,21 @@ def secrets_create(name, is_file=False):
             log=False)
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)
+
+
+def export_secret_to_environment(name):
+    """
+    Add secret to envvar.
+    :param name: The secret key.
+    :return:
+    """
+    logger.info('Creating secret: {0}.'.format(name))
+    try:
+        value = base64.b64decode(os.environ[name])
+    except KeyError:
+        raise EcosystemTestException(
+            'Secret env var not set {0}.'.format(name))
+    os.environ(name.upper(), value)
 
 
 def blueprints_upload(blueprint_file_name, blueprint_id):

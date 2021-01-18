@@ -43,7 +43,7 @@ commands:
           name: Runt flake8 test
           command: tox -e pep8
       - run:
-          name: Run py27 test
+          name: Run py36 test
           command: tox -e py36
 
   release:
