@@ -548,6 +548,18 @@ def executions_start(workflow_id, deployment_id, timeout):
         get_json=False, timeout=timeout)
 
 
+def executions_resume(execution_id, timeout):
+    """
+    Resume an execution on the manager.
+    :param execution_id:
+    :param timeout:
+    :return:
+    """
+    return cloudify_exec(
+        'cfy executions resume {0}'.format(execution_id),
+        get_json=False, timeout=timeout)
+
+
 def executions_list(deployment_id):
     """
     List executions on the manager.
@@ -750,3 +762,232 @@ def basic_blueprint_test(blueprint_file_name,
         except Exception as e:
             logger.error('Error: {e}'.format(e=str(e)))
             cleanup_on_failure(test_name)
+
+
+def is_first_invocation(test_name):
+    """
+    Check if this is the first invocation of the test,
+    by check existence of blueprint and deployment with test_name id.
+    param: test_name: The test name.
+    """
+    logger.info('Checking if {test_name} in blueprints or deployments list '.format(
+        test_name=test_name))
+    blueprints_list = cloudify_exec('cfy blueprints list')
+    deployments_list = cloudify_exec('cfy deployments list')
+    map_func = lambda bl_or_dep_dict: bl_or_dep_dict["id"]
+    if test_name in map(map_func, blueprints_list) or test_name in map(
+            map_func, deployments_list):
+        return False
+    else:
+        return True
+
+
+def validate_on_second_invoke_param(on_second_invoke=None):
+    if on_second_invoke and on_second_invoke not in ['resume', 'rerun',
+                                                     'update']:
+        raise EcosystemTestException('on_second_invoke param must be one of:'
+                                     ' resume, rerun, update')
+
+
+def _basic_blueprint_test_updated(blueprint_file_name,
+                               test_name,
+                               inputs=None,
+                               timeout=None,
+                               endpoint_name=None,
+                               endpoint_value=None,
+                               on_second_invoke=None):
+
+    """
+    blueprint test.
+    :param blueprint_file_name:
+    :param test_name:
+    :param inputs:
+    :param timeout:
+    :param on_second_invoke: Should be one of: resume,rerun,update
+    :return:
+    """
+    timeout = timeout or TIMEOUT
+    if inputs != '':
+        inputs = inputs or os.path.join(
+            os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
+    if is_first_invocation(test_name):
+        first_invocation_test_path(blueprint_file_name,
+                                   test_name,
+                                   inputs=inputs,
+                                   timeout=timeout,
+                                   endpoint_name=endpoint_name,
+                                   endpoint_value=endpoint_value
+                                   )
+    else:
+        validate_on_second_invoke_param(on_second_invoke)
+        second_invocation_test_path(
+                               test_name,
+                               on_second_invoke=on_second_invoke,
+                               inputs=inputs,
+                               timeout=timeout,
+                               endpoint_name=endpoint_name,
+                               endpoint_value=endpoint_value
+                              )
+
+
+def first_invocation_test_path(blueprint_file_name,
+                               test_name,
+                               inputs=None,
+                               timeout=None,
+                               endpoint_name=None,
+                               endpoint_value=None):
+    logger.info('Blueprints list: {0}'.format(
+        cloudify_exec('cfy blueprints list')))
+    blueprints_upload(blueprint_file_name, test_name)
+    logger.info('Deployments list: {0}'.format(
+        cloudify_exec('cfy deployments list')))
+    deployments_create(test_name, inputs)
+    sleep(5)
+    logger.info('Installing...')
+    try:
+        executions_list(test_name)
+        executions_start('install', test_name, timeout)
+    except EcosystemTimeout:
+        # Give 5 seconds grace.
+        executions_list(test_name)
+        wait_for_execution(test_name, 'install', 10)
+    else:
+        wait_for_execution(test_name, 'install', timeout)
+    if endpoint_name and endpoint_value:
+        verify_endpoint(
+            get_deployment_output_by_name(
+                test_name,
+                endpoint_name
+            ), endpoint_value)
+    logger.info('Uninstalling...')
+    executions_start('uninstall', test_name, timeout)
+    wait_for_execution(test_name, 'uninstall', timeout)
+    try:
+        deployment_delete(test_name)
+        blueprints_delete(test_name)
+    except Exception as e:
+        logger.info('Failed to delete blueprint, '
+                    '{0}'.format(str(e)))
+
+
+def second_invocation_test_path(blueprint_file_name,
+                                test_name,
+                                on_second_invoke,
+                                inputs=None,
+                                timeout=None,
+                                endpoint_name=None,
+                                endpoint_value=None
+                                ):
+    """
+    Handle blueprint test path in second test invocation depends on
+    on_second_invoke value.
+    :param test_name:
+    :param on_second_invoke: Should be one of: resume,rerun,update.
+    :param inputs:
+    :param timeout:
+
+    """
+    if on_second_invoke == 'resume':
+        # TODO: Ask Tramell if we want to resume only install workflow
+        exec_id = find_install_execution_to_resume(test_name)
+        try:
+            logger.info('resuming...')
+            executions_resume(exec_id, timeout)
+        except EcosystemTimeout:
+            # Give 5 seconds grace.
+            executions_list(test_name)
+            wait_for_execution(test_name, 'install', 10)
+        else:
+            wait_for_execution(test_name, 'install', timeout)
+    elif on_second_invoke == 'rerun':
+        logger.info('Installing...')
+        try:
+            executions_list(test_name)
+            executions_start('install', test_name, timeout)
+        except EcosystemTimeout:
+            # Give 5 seconds grace.
+            executions_list(test_name)
+            wait_for_execution(test_name, 'install', 10)
+        else:
+            wait_for_execution(test_name, 'install', timeout)
+    elif on_second_invoke == 'update':
+        logger.info('updating deployment...')
+        try:
+            logger.info('Blueprints list: {0}'.format(
+                cloudify_exec('cfy blueprints list')))
+            blueprints_upload(blueprint_file_name, test_name+'_update')
+            deployment_update(test_name,
+                              test_name+'_update',
+                              inputs,
+                              timeout)
+        except EcosystemTimeout:
+            # Give 5 seconds grace.
+            executions_list(test_name)
+            wait_for_execution(test_name, 'update', 10)
+        else:
+            wait_for_execution(test_name, 'update', timeout)
+
+
+def deployment_update(deployment_id,
+                      blueprint_id,
+                      inputs,
+                      timeout=None):
+    """
+    Perform deployment update.
+    :param deployment_id:
+    :param blueprint_id:  Id of the blueprint to update the deployment with,
+     blueprint id of a blueprint that already exists in the system.
+    :param inputs:
+    :param timeout:
+
+    """
+    try:
+        os.path.isfile(inputs)
+    except TypeError:
+        archive_temp = NamedTemporaryFile(delete=False)
+        with open(archive_temp.name, 'w') as outfile:
+            yaml.dump(inputs, outfile, allow_unicode=True)
+        inputs = archive_temp.name
+
+    if inputs == '':
+
+        return cloudify_exec(
+            'cfy deployments update {deployment_id} -b {blueprint_id}'.format(
+                deployment_id=deployment_id, blueprint_id=blueprint_id),
+            get_json=False, timeout=timeout)
+    else:
+        return cloudify_exec(
+            'cfy deployments update {deployment_id} -b {blueprint_id} -i {'
+            'inputs}'.format(
+                deployment_id=deployment_id, blueprint_id=blueprint_id,
+                inputs=inputs),
+            get_json=False, timeout=timeout)
+
+
+def find_install_execution_to_resume(deployment_id):
+    """
+    Find the last install execution to resume.
+    :param deployment_id:
+    :param workflow_id:
+    :param timeout:
+    :return:
+    """
+    executions = executions_list(deployment_id)
+    try:
+        #Get the last install execution
+        ex = [e for e in executions
+          if 'install' == e['workflow_id']][-1]
+        #For debugging
+        print [e for e in executions if 'install' == e['workflow_id']]
+    except (IndexError, KeyError):
+        raise EcosystemTestException(
+            'Workflow install to resume for deployment {dep_id} was not '
+            'found.'.format(
+                dep_id=deployment_id))
+
+    if ex['status'].lower() not in ['failed', 'canceled']:
+        raise EcosystemTestException(
+            'Found install execution with id: {id} but with status {status},'
+            'can`t resume this execution'.format(
+                id=ex['id'], status=ex['status']))
+    return ex['id']
