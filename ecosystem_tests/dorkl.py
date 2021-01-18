@@ -195,12 +195,10 @@ def copy_file_to_docker(local_file_path):
     :return: The remote path inside the container.
     """
 
-    container_name = os.environ.get(
-        'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
-                                       container_name,
+                                       MANAGER_CONTAINER_NAME,
                                        docker_path))
     return docker_path
 
@@ -212,15 +210,13 @@ def copy_directory_to_docker(local_file_path):
     :return: The remote path inside the container.
     """
 
-    container_name = os.environ.get(
-        'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     local_dir = os.path.dirname(local_file_path)
     dir_name = os.path.basename(local_dir)
     remote_dir = os.path.join('/tmp', dir_name)
     try:
         handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,
-                                            container_name))
+                                            MANAGER_CONTAINER_NAME))
     except EcosystemTestException:
         pass
     return remote_dir
@@ -1042,8 +1038,8 @@ def handle_test_failure(test_name, on_failure, on_second_invoke):
 
 def prepare_test_dev(plugins=None,
                  secrets=None,
-                 pip_packages=None,
-                 yum_packages=None,
+                 # pip_packages=None,
+                 # yum_packages=None,
                  execute_bundle_upload=True,
                  use_vpn=False,
                  bundle_path=None):
@@ -1063,31 +1059,31 @@ def prepare_test_dev(plugins=None,
     :return:
     """
 
-    pip_packages = pip_packages or []
-    yum_packages = yum_packages or []
+    # pip_packages = pip_packages or []
+    # yum_packages = yum_packages or []
     use_cfy()
     license_upload()
     upload_test_plugins_dev(plugins,
                         execute_bundle_upload,
                         bundle_path=bundle_path)
     create_test_secrets(secrets)
-    yum_command = 'yum install -y python-netaddr git '
-    if use_vpn:
-        yum_packages.append('openvpn')
-    if yum_packages:
-        yum_command = yum_command + ' '.join(yum_packages)
-    docker_exec(yum_command)
-    pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
-    if pip_packages:
-        pip_command = pip_command + ' '.join(pip_packages)
-    docker_exec(pip_command)
-    if use_vpn:
-        value = base64.b64decode(os.environ['vpn_config'])
-        file_temp = NamedTemporaryFile(delete=False)
-        with open(file_temp.name, 'w') as outfile:
-            outfile.write(value)
-        docker_path = copy_file_to_docker(file_temp.name)
-        docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
+    # yum_command = 'yum install -y python-netaddr git '
+    # if use_vpn:
+    #     yum_packages.append('openvpn')
+    # if yum_packages:
+    #     yum_command = yum_command + ' '.join(yum_packages)
+    # docker_exec(yum_command)
+    # pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
+    # if pip_packages:
+    #     pip_command = pip_command + ' '.join(pip_packages)
+    # docker_exec(pip_command)
+    # if use_vpn:
+    #     value = base64.b64decode(os.environ['vpn_config'])
+    #     file_temp = NamedTemporaryFile(delete=False)
+    #     with open(file_temp.name, 'w') as outfile:
+    #         outfile.write(value)
+    #     docker_path = copy_file_to_docker(file_temp.name)
+    #     docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
 
 def upload_test_plugins_dev(plugins,
                         execute_bundle_upload=True,
