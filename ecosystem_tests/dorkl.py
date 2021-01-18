@@ -195,10 +195,12 @@ def copy_file_to_docker(local_file_path):
     :return: The remote path inside the container.
     """
 
+    container_name = os.environ.get(
+        'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
-                                       MANAGER_CONTAINER_NAME,
+                                       container_name,
                                        docker_path))
     return docker_path
 
@@ -210,13 +212,15 @@ def copy_directory_to_docker(local_file_path):
     :return: The remote path inside the container.
     """
 
+    container_name = os.environ.get(
+        'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
     local_dir = os.path.dirname(local_file_path)
     dir_name = os.path.basename(local_dir)
     remote_dir = os.path.join('/tmp', dir_name)
     try:
         handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,
-                                            MANAGER_CONTAINER_NAME))
+                                            container_name))
     except EcosystemTestException:
         pass
     return remote_dir
@@ -1034,3 +1038,82 @@ def find_install_execution_to_resume(deployment_id):
 
 def handle_test_failure(test_name, on_failure, on_second_invoke):
     pass
+
+
+def prepare_test_dev(plugins=None,
+                 secrets=None,
+                 pip_packages=None,
+                 yum_packages=None,
+                 execute_bundle_upload=True,
+                 use_vpn=False,
+                 bundle_path=None):
+    """
+    Prepare the environment for executing a blueprint test.
+
+
+
+    :param plugins: A list of plugins to install. `plugin_test` must be True.
+    :param secrets: A list of secrets to create.
+    :param plugin_test: Do want to use wagons in the workspace for this test?
+    :param pip_packages: A list of packages to install (on manger) with pip.
+    :param yum_packages: A list of packages to install (on manger) with yum.
+    :param execute_bundle_upload: Whether to upload the plugins bundle.
+    :param use_vpn:
+    :param workspace_path: THe path to the build directory if not circleci
+    :return:
+    """
+
+    pip_packages = pip_packages or []
+    yum_packages = yum_packages or []
+    use_cfy()
+    license_upload()
+    upload_test_plugins_dev(plugins,
+                        execute_bundle_upload,
+                        bundle_path=bundle_path)
+    create_test_secrets(secrets)
+    yum_command = 'yum install -y python-netaddr git '
+    if use_vpn:
+        yum_packages.append('openvpn')
+    if yum_packages:
+        yum_command = yum_command + ' '.join(yum_packages)
+    docker_exec(yum_command)
+    pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
+    if pip_packages:
+        pip_command = pip_command + ' '.join(pip_packages)
+    docker_exec(pip_command)
+    if use_vpn:
+        value = base64.b64decode(os.environ['vpn_config'])
+        file_temp = NamedTemporaryFile(delete=False)
+        with open(file_temp.name, 'w') as outfile:
+            outfile.write(value)
+        docker_path = copy_file_to_docker(file_temp.name)
+        docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
+
+def upload_test_plugins_dev(plugins,
+                        execute_bundle_upload=True,
+                        bundle_path=None):
+    """
+    Upload all plugins that we need to execute the test.
+    :param plugins: A list of additional plugins to upload.
+       (Like ones that are not in the bundle (Openstack 3, Host Pool).
+    :param execute_bundle_upload: Whether to install a bundle.
+    :return:
+    """
+
+    plugins = plugins or []
+    if execute_bundle_upload:
+        if os.path.isfile(bundle_path):
+            cloudify_exec(
+                'cfy plugins bundle-upload --path {bundle_path}'.format(
+                    bundle_path=copy_file_to_docker(bundle_path)),
+                get_json=False)
+        else:
+            cloudify_exec(
+                'cfy plugins bundle-upload', get_json=False)
+
+    for plugin in plugins:
+        sleep(3)
+        output = plugins_upload(plugin[0], plugin[1])
+        logger.info('Uploaded plugin: {0}'.format(output))
+    logger.info('Plugins list: {0}'.format(
+        cloudify_exec('cfy plugins list')))
