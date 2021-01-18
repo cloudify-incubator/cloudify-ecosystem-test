@@ -764,14 +764,23 @@ def basic_blueprint_test(blueprint_file_name,
             cleanup_on_failure(test_name)
 
 
+
+
+
+
+
+
+
+
 def is_first_invocation(test_name):
     """
     Check if this is the first invocation of the test,
     by check existence of blueprint and deployment with test_name id.
     param: test_name: The test name.
     """
-    logger.info('Checking if {test_name} in blueprints or deployments list '.format(
-        test_name=test_name))
+    logger.info(
+        'Checking if {test_name} in blueprints or deployments list '.format(
+            test_name=test_name))
     blueprints_list = cloudify_exec('cfy blueprints list')
     deployments_list = cloudify_exec('cfy deployments list')
     map_func = lambda bl_or_dep_dict: bl_or_dep_dict["id"]
@@ -789,14 +798,15 @@ def validate_on_second_invoke_param(on_second_invoke=None):
                                      ' resume, rerun, update')
 
 
-def _basic_blueprint_test_updated(blueprint_file_name,
-                               test_name,
-                               inputs=None,
-                               timeout=None,
-                               endpoint_name=None,
-                               endpoint_value=None,
-                               on_second_invoke=None):
-
+def basic_blueprint_test_dev(blueprint_file_name,
+                             test_name,
+                             inputs=None,
+                             timeout=None,
+                             endpoint_name=None,
+                             endpoint_value=None,
+                             on_second_invoke=None,
+                             on_failure=None,
+                             uninstall_on_success=True):
     """
     blueprint test.
     :param blueprint_file_name:
@@ -804,6 +814,10 @@ def _basic_blueprint_test_updated(blueprint_file_name,
     :param inputs:
     :param timeout:
     :param on_second_invoke: Should be one of: resume,rerun,update
+    :param on_failure  what should test do in failure.
+    Should be one of: None,rollback-full,rollback-partial,uninsatll-force.
+    :param uninstall_on_success: Perform uninstall if the test succeeded,
+    and delete the test blueprint.
     :return:
     """
     timeout = timeout or TIMEOUT
@@ -811,23 +825,32 @@ def _basic_blueprint_test_updated(blueprint_file_name,
         inputs = inputs or os.path.join(
             os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
     if is_first_invocation(test_name):
-        first_invocation_test_path(blueprint_file_name,
-                                   test_name,
-                                   inputs=inputs,
-                                   timeout=timeout,
-                                   endpoint_name=endpoint_name,
-                                   endpoint_value=endpoint_value
-                                   )
+        try:
+            first_invocation_test_path(blueprint_file_name,
+                                       test_name,
+                                       inputs=inputs,
+                                       timeout=timeout,
+                                       endpoint_name=endpoint_name,
+                                       endpoint_value=endpoint_value,
+                                       uninstall_on_success=uninstall_on_success
+                                       )
+
+        except:
+            handle_test_failure(test_name, on_failure, on_second_invoke)
     else:
         validate_on_second_invoke_param(on_second_invoke)
-        second_invocation_test_path(
-                               test_name,
-                               on_second_invoke=on_second_invoke,
-                               inputs=inputs,
-                               timeout=timeout,
-                               endpoint_name=endpoint_name,
-                               endpoint_value=endpoint_value
-                              )
+        try:
+            second_invocation_test_path(
+                test_name,
+                on_second_invoke=on_second_invoke,
+                inputs=inputs,
+                timeout=timeout,
+                endpoint_name=endpoint_name,
+                endpoint_value=endpoint_value,
+                uninstall_on_success=uninstall_on_success
+            )
+        except:
+            handle_test_failure(test_name, on_failure, on_second_invoke)
 
 
 def first_invocation_test_path(blueprint_file_name,
@@ -835,7 +858,8 @@ def first_invocation_test_path(blueprint_file_name,
                                inputs=None,
                                timeout=None,
                                endpoint_name=None,
-                               endpoint_value=None):
+                               endpoint_value=None,
+                               uninstall_on_success=True):
     logger.info('Blueprints list: {0}'.format(
         cloudify_exec('cfy blueprints list')))
     blueprints_upload(blueprint_file_name, test_name)
@@ -859,15 +883,16 @@ def first_invocation_test_path(blueprint_file_name,
                 test_name,
                 endpoint_name
             ), endpoint_value)
-    logger.info('Uninstalling...')
-    executions_start('uninstall', test_name, timeout)
-    wait_for_execution(test_name, 'uninstall', timeout)
-    try:
-        deployment_delete(test_name)
-        blueprints_delete(test_name)
-    except Exception as e:
-        logger.info('Failed to delete blueprint, '
-                    '{0}'.format(str(e)))
+    if uninstall_on_success:
+        logger.info('Uninstalling...')
+        executions_start('uninstall', test_name, timeout)
+        wait_for_execution(test_name, 'uninstall', timeout)
+        try:
+            deployment_delete(test_name)
+            blueprints_delete(test_name)
+        except Exception as e:
+            logger.info('Failed to delete blueprint, '
+                        '{0}'.format(str(e)))
 
 
 def second_invocation_test_path(blueprint_file_name,
@@ -876,7 +901,8 @@ def second_invocation_test_path(blueprint_file_name,
                                 inputs=None,
                                 timeout=None,
                                 endpoint_name=None,
-                                endpoint_value=None
+                                endpoint_value=None,
+                                uninstall_on_success=True
                                 ):
     """
     Handle blueprint test path in second test invocation depends on
@@ -915,9 +941,10 @@ def second_invocation_test_path(blueprint_file_name,
         try:
             logger.info('Blueprints list: {0}'.format(
                 cloudify_exec('cfy blueprints list')))
-            blueprints_upload(blueprint_file_name, test_name+'_update')
+            update_bp_name = test_name + '_update'
+            blueprints_upload(blueprint_file_name, update_bp_name)
             deployment_update(test_name,
-                              test_name+'_update',
+                              update_bp_name,
                               inputs,
                               timeout)
         except EcosystemTimeout:
@@ -926,6 +953,18 @@ def second_invocation_test_path(blueprint_file_name,
             wait_for_execution(test_name, 'update', 10)
         else:
             wait_for_execution(test_name, 'update', timeout)
+    if uninstall_on_success:
+        logger.info('Uninstalling...')
+        executions_start('uninstall', test_name, timeout)
+        wait_for_execution(test_name, 'uninstall', timeout)
+        try:
+            deployment_delete(test_name)
+            blueprints_delete(test_name)
+            if on_second_invoke == 'update':
+                blueprints_delete(update_bp_name)
+        except Exception as e:
+            logger.info('Failed to delete blueprint, '
+                        '{0}'.format(str(e)))
 
 
 def deployment_update(deployment_id,
@@ -974,10 +1013,10 @@ def find_install_execution_to_resume(deployment_id):
     """
     executions = executions_list(deployment_id)
     try:
-        #Get the last install execution
+        # Get the last install execution
         ex = [e for e in executions
-          if 'install' == e['workflow_id']][-1]
-        #For debugging
+              if 'install' == e['workflow_id']][-1]
+        # For debugging
         print [e for e in executions if 'install' == e['workflow_id']]
     except (IndexError, KeyError):
         raise EcosystemTestException(
@@ -991,3 +1030,7 @@ def find_install_execution_to_resume(deployment_id):
             'can`t resume this execution'.format(
                 id=ex['id'], status=ex['status']))
     return ex['id']
+
+
+def handle_test_failure(test_name, on_failure, on_second_invoke):
+    pass
