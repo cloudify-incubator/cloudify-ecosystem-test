@@ -575,6 +575,23 @@ def executions_resume(execution_id, timeout):
         get_json=False, timeout=timeout)
 
 
+def executions_cancel(execution_id, timeout, force=False):
+    """
+    Cancel an execution on the manager.
+    :param execution_id:
+    :param timeout:
+    :param force:
+    :return:
+    """
+    cmd = 'cfy executions cancel {0}'
+    if force:
+        cmd = cmd + ' -f'
+
+    return cloudify_exec(
+        cmd.format(execution_id),
+        get_json=False, timeout=timeout)
+
+
 def executions_list(deployment_id):
     """
     List executions on the manager.
@@ -799,10 +816,12 @@ def is_first_invocation(test_name):
     blueprints_list = cloudify_exec('cfy blueprints list')
     deployments_list = cloudify_exec('cfy deployments list')
     map_func = lambda bl_or_dep_dict: bl_or_dep_dict["id"]
-    if test_name in map(map_func, blueprints_list) or test_name in map(
+    if test_name in map(map_func, blueprints_list) and test_name in map(
             map_func, deployments_list):
+        logger.info('Not first invocation!')
         return False
     else:
+        logger.info('First invocation!')
         return True
 
 
@@ -830,7 +849,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
     :param timeout:
     :param on_second_invoke: Should be one of: resume,rerun,update
     :param on_failure  what should test do in failure.
-    Should be one of: None,rollback-full,rollback-partial,uninsatll-force.
+    Should be one of: None,rollback-full,rollback-partial,uninstall-force.
     :param uninstall_on_success: Perform uninstall if the test succeeded,
     and delete the test blueprint.
     :return:
@@ -841,31 +860,32 @@ def basic_blueprint_test_dev(blueprint_file_name,
             os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
     if is_first_invocation(test_name):
         try:
-            first_invocation_test_path(blueprint_file_name,
-                                       test_name,
-                                       inputs=inputs,
-                                       timeout=timeout,
-                                       endpoint_name=endpoint_name,
-                                       endpoint_value=endpoint_value,
-                                       uninstall_on_success=uninstall_on_success
-                                       )
-
-        except:
-            handle_test_failure(test_name, on_failure, on_second_invoke)
+            first_invocation_test_path(
+                blueprint_file_name,
+                test_name,
+                inputs=inputs,
+                timeout=timeout,
+                endpoint_name=endpoint_name,
+                endpoint_value=endpoint_value,
+                uninstall_on_success=uninstall_on_success)
+        except Exception:
+            handle_test_failure(test_name, on_failure, timeout)
+            raise EcosystemTestException('Test failed first invoke!')
     else:
         validate_on_second_invoke_param(on_second_invoke)
         try:
             second_invocation_test_path(
+                blueprint_file_name,
                 test_name,
                 on_second_invoke=on_second_invoke,
                 inputs=inputs,
                 timeout=timeout,
                 endpoint_name=endpoint_name,
                 endpoint_value=endpoint_value,
-                uninstall_on_success=uninstall_on_success
-            )
-        except:
-            handle_test_failure(test_name, on_failure, on_second_invoke)
+                uninstall_on_success=uninstall_on_success)
+        except Exception:
+            handle_test_failure(test_name, on_failure, timeout)
+            raise EcosystemTestException('Test failed second invoke!')
 
 
 def first_invocation_test_path(blueprint_file_name,
@@ -928,9 +948,11 @@ def second_invocation_test_path(blueprint_file_name,
     :param timeout:
 
     """
+    logger.debug('on second_invocation_test_path')
     if on_second_invoke == 'resume':
         # TODO: Ask Tramell if we want to resume only install workflow
         exec_id = find_install_execution_to_resume(test_name)
+        logger.debug('execution to resume: {id}'.format(id=exec_id))
         try:
             logger.info('resuming...')
             executions_resume(exec_id, timeout)
@@ -939,6 +961,7 @@ def second_invocation_test_path(blueprint_file_name,
             executions_list(test_name)
             wait_for_execution(test_name, 'install', 10)
         else:
+            logger.debug('inside the else in resume!!')
             wait_for_execution(test_name, 'install', timeout)
     elif on_second_invoke == 'rerun':
         logger.info('Installing...')
@@ -1040,7 +1063,7 @@ def find_install_execution_to_resume(deployment_id):
             'found.'.format(
                 dep_id=deployment_id))
 
-    if ex['status'].lower() not in ['failed', 'canceled']:
+    if ex['status'].lower() not in ['failed', 'cancelled']:
         raise EcosystemTestException(
             'Found install execution with id: {id} but with status {status},'
             'can`t resume this execution'.format(
@@ -1048,8 +1071,66 @@ def find_install_execution_to_resume(deployment_id):
     return ex['id']
 
 
-def handle_test_failure(test_name, on_failure, on_second_invoke):
-    pass
+def find_executions_to_cancel(deployment_id):
+    """
+    Find all the executions to cancel.
+    :param deployment_id:
+    :param workflow_id:
+    :param timeout:
+    :return:
+    """
+    executions = executions_list(deployment_id)
+    try:
+        # Get all install and update executions
+        filtered_executions = [e['id'] for e in executions
+                      if e['workflow_id'] in ['install', 'update'] and e[
+                          'status'].lower() in ['pending', 'started']]
+        # For debugging
+        logger.info("these are potential executions to cancel")
+        logger.info(filtered_executions)
+    except (IndexError, KeyError):
+        logger.info(
+            'Workflows to cancel for deployment {dep_id} was not '
+            'found.'.format(
+                dep_id=deployment_id))
+        # filtered_executions = []
+
+    return filtered_executions
+
+
+def handle_test_failure(test_name, on_failure, timeout):
+    """
+    rollback-full,rollback-partial,uninstall-force
+    """
+    executions_to_cancel = find_executions_to_cancel(test_name)
+    if on_failure is None:
+        return
+    elif on_failure == 'rollback-full':
+        cancel_multiple_executions(executions_to_cancel, timeout, force=False)
+        #TODO:Call to rollback with param full
+        pass
+    elif on_failure == 'rollback-partial':
+        cancel_multiple_executions(executions_to_cancel, timeout, force=False)
+        # TODO:Call to rollback with param not full
+        pass
+    elif on_failure == 'uninstall-force':
+        cancel_multiple_executions(executions_to_cancel, timeout, force=False)
+        cleanup_on_failure(test_name)
+    else:
+        raise EcosystemTestException('Wrong on_failure param supplied,'
+                                     ' Doing nothing please clean resources on'
+                                     ' the manager manually.')
+
+
+def cancel_multiple_executions(executions_list, timeout, force):
+    for execution_id in executions_list:
+        try:
+            executions_cancel(execution_id, timeout, force=force)
+        except (EcosystemTestException, EcosystemTimeout):
+            raise EcosystemTestException(
+                'Failed to cancel execution {id} please clean resources '
+                'manually'.format(
+                    id=execution_id))
 
 
 def prepare_test_dev(plugins=None,
@@ -1066,7 +1147,6 @@ def prepare_test_dev(plugins=None,
 
     :param plugins: A list of plugins to install. `plugin_test` must be True.
     :param secrets: A list of secrets to create.
-    :param plugin_test: Do want to use wagons in the workspace for this test?
     :param pip_packages: A list of packages to install (on manger) with pip.
     :param yum_packages: A list of packages to install (on manger) with yum.
     :param execute_bundle_upload: Whether to upload the plugins bundle.
