@@ -486,6 +486,8 @@ def export_secret_to_environment(name):
     except KeyError:
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
+    if isinstance(value, bytes):
+        value = value.decode(encoding='UTF-8')
     os.environ[name.upper()] = value
 
 
