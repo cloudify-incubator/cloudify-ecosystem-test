@@ -1123,6 +1123,7 @@ def handle_test_failure(test_name, on_failure, timeout):
 
 
 def cancel_multiple_executions(executions_list, timeout, force):
+    # TODO: Add wait_for_execution.
     for execution_id in executions_list:
         try:
             executions_cancel(execution_id, timeout, force=force)
