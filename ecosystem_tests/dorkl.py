@@ -1032,7 +1032,8 @@ def find_install_execution_to_resume(deployment_id):
         ex = [e for e in executions
               if 'install' == e['workflow_id']][-1]
         # For debugging
-        print [e for e in executions if 'install' == e['workflow_id']]
+        logger.info("these are potential executions to resume")
+        logger.info([e for e in executions if 'install' == e['workflow_id']])
     except (IndexError, KeyError):
         raise EcosystemTestException(
             'Workflow install to resume for deployment {dep_id} was not '
@@ -1112,6 +1113,7 @@ def upload_test_plugins_dev(plugins,
     """
 
     plugins = plugins or []
+    bundle_path = bundle_path or ''
     if execute_bundle_upload:
         if os.path.isfile(bundle_path):
             cloudify_exec(
