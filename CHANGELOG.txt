@@ -1,3 +1,4 @@
+2.2.112: Fix bytes in python3.
 2.2.111: Fix method for adding secrets to env vars.
 2.2.110: Add method for adding secrets to env vars.
 2.2.109: Remove exception on deployment/blueprint delete.
