@@ -836,8 +836,6 @@ def basic_blueprint_test_dev(blueprint_file_name,
                              test_name,
                              inputs=None,
                              timeout=None,
-                             endpoint_name=None,
-                             endpoint_value=None,
                              on_second_invoke=None,
                              on_failure=None,
                              uninstall_on_success=True):
@@ -865,8 +863,6 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 test_name,
                 inputs=inputs,
                 timeout=timeout,
-                endpoint_name=endpoint_name,
-                endpoint_value=endpoint_value,
                 uninstall_on_success=uninstall_on_success)
         except Exception:
             handle_test_failure(test_name, on_failure, timeout)
@@ -880,8 +876,6 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 on_second_invoke=on_second_invoke,
                 inputs=inputs,
                 timeout=timeout,
-                endpoint_name=endpoint_name,
-                endpoint_value=endpoint_value,
                 uninstall_on_success=uninstall_on_success)
         except Exception:
             handle_test_failure(test_name, on_failure, timeout)
@@ -892,8 +886,6 @@ def first_invocation_test_path(blueprint_file_name,
                                test_name,
                                inputs=None,
                                timeout=None,
-                               endpoint_name=None,
-                               endpoint_value=None,
                                uninstall_on_success=True):
     logger.info('Blueprints list: {0}'.format(
         cloudify_exec('cfy blueprints list')))
@@ -912,12 +904,6 @@ def first_invocation_test_path(blueprint_file_name,
         wait_for_execution(test_name, 'install', 10)
     else:
         wait_for_execution(test_name, 'install', timeout)
-    if endpoint_name and endpoint_value:
-        verify_endpoint(
-            get_deployment_output_by_name(
-                test_name,
-                endpoint_name
-            ), endpoint_value)
     if uninstall_on_success:
         logger.info('Uninstalling...')
         executions_start('uninstall', test_name, timeout)
@@ -935,8 +921,6 @@ def second_invocation_test_path(blueprint_file_name,
                                 on_second_invoke,
                                 inputs=None,
                                 timeout=None,
-                                endpoint_name=None,
-                                endpoint_value=None,
                                 uninstall_on_success=True
                                 ):
     """
@@ -1086,14 +1070,15 @@ def find_executions_to_cancel(deployment_id):
                       if e['workflow_id'] in ['install', 'update'] and e[
                           'status'].lower() in ['pending', 'started']]
         # For debugging
-        logger.info("these are potential executions to cancel")
-        logger.info(filtered_executions)
+        logger.info(
+            "these are potential executions to cancel: {executions}".format(
+                executions=filtered_executions))
     except (IndexError, KeyError):
         logger.info(
             'Workflows to cancel for deployment {dep_id} was not '
             'found.'.format(
                 dep_id=deployment_id))
-        # filtered_executions = []
+        filtered_executions = []
 
     return filtered_executions
 
@@ -1136,10 +1121,7 @@ def cancel_multiple_executions(executions_list, timeout, force):
 
 def prepare_test_dev(plugins=None,
                  secrets=None,
-                 # pip_packages=None,
-                 # yum_packages=None,
                  execute_bundle_upload=True,
-                 use_vpn=False,
                  bundle_path=None):
     """
     Prepare the environment for executing a blueprint test.
@@ -1148,43 +1130,22 @@ def prepare_test_dev(plugins=None,
 
     :param plugins: A list of plugins to install. `plugin_test` must be True.
     :param secrets: A list of secrets to create.
-    :param pip_packages: A list of packages to install (on manger) with pip.
-    :param yum_packages: A list of packages to install (on manger) with yum.
     :param execute_bundle_upload: Whether to upload the plugins bundle.
-    :param use_vpn:
     :param workspace_path: THe path to the build directory if not circleci
     :return:
     """
 
-    # pip_packages = pip_packages or []
-    # yum_packages = yum_packages or []
     use_cfy()
     license_upload()
     upload_test_plugins_dev(plugins,
                         execute_bundle_upload,
                         bundle_path=bundle_path)
     create_test_secrets(secrets)
-    # yum_command = 'yum install -y python-netaddr git '
-    # if use_vpn:
-    #     yum_packages.append('openvpn')
-    # if yum_packages:
-    #     yum_command = yum_command + ' '.join(yum_packages)
-    # docker_exec(yum_command)
-    # pip_command = '/opt/mgmtworker/env/bin/pip install netaddr ipaddr '
-    # if pip_packages:
-    #     pip_command = pip_command + ' '.join(pip_packages)
-    # docker_exec(pip_command)
-    # if use_vpn:
-    #     value = base64.b64decode(os.environ['vpn_config'])
-    #     file_temp = NamedTemporaryFile(delete=False)
-    #     with open(file_temp.name, 'w') as outfile:
-    #         outfile.write(value)
-    #     docker_path = copy_file_to_docker(file_temp.name)
-    #     docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
+
 
 def upload_test_plugins_dev(plugins,
-                        execute_bundle_upload=True,
-                        bundle_path=None):
+                            execute_bundle_upload=True,
+                            bundle_path=None):
     """
     Upload all plugins that we need to execute the test.
     :param plugins: A list of additional plugins to upload.
