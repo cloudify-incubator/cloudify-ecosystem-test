@@ -807,13 +807,16 @@ def is_first_invocation(test_name):
             test_name=test_name))
     blueprints_list = cloudify_exec('cfy blueprints list')
     deployments_list = cloudify_exec('cfy deployments list')
-    map_func = lambda bl_or_dep_dict: bl_or_dep_dict["id"]
-    if test_name in map(map_func, blueprints_list) and test_name in map(
-            map_func, deployments_list):
+
+    def _map_func(bl_or_dep_dict):
+        return bl_or_dep_dict["id"]
+
+    if test_name in map(_map_func, blueprints_list) and test_name in map(
+            _map_func, deployments_list):
         logger.info('Not first invocation!')
         return False
-    elif test_name in map(map_func, blueprints_list) or test_name in map(
-            map_func, deployments_list):
+    elif test_name in map(_map_func, blueprints_list) or test_name in map(
+            _map_func, deployments_list):
         raise EcosystemTestException(
             'Found blueprint or deployment with name:{test_name}, please '
             'delete the blueprint/deployment manually and rerun the '
