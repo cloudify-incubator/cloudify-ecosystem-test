@@ -796,14 +796,6 @@ def basic_blueprint_test(blueprint_file_name,
             cleanup_on_failure(test_name)
 
 
-
-
-
-
-
-
-
-
 def is_first_invocation(test_name):
     """
     Check if this is the first invocation of the test,
@@ -1066,9 +1058,10 @@ def find_executions_to_cancel(deployment_id):
     executions = executions_list(deployment_id)
     try:
         # Get all install and update executions
-        filtered_executions = [e['id'] for e in executions
-                      if e['workflow_id'] in ['install', 'update'] and e[
-                          'status'].lower() in ['pending', 'started']]
+        filtered_executions = \
+            [e['id'] for e in executions if
+             e['workflow_id'] in ['install', 'update'] and e['status'].lower()
+             in ['pending', 'started']]
         # For debugging
         logger.info(
             "these are potential executions to cancel: {executions}".format(
@@ -1092,7 +1085,7 @@ def handle_test_failure(test_name, on_failure, timeout):
         return
     elif on_failure == 'rollback-full':
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
-        #TODO:Call to rollback with param full
+        # TODO:Call to rollback with param full
         pass
     elif on_failure == 'rollback-partial':
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
@@ -1108,7 +1101,7 @@ def handle_test_failure(test_name, on_failure, timeout):
 
 
 def cancel_multiple_executions(executions_list, timeout, force):
-    # TODO: Add wait_for_execution.
+    # TODO: Add wait_for_execution instead of sleep.
     for execution_id in executions_list:
         try:
             executions_cancel(execution_id, timeout, force=force)
@@ -1117,12 +1110,13 @@ def cancel_multiple_executions(executions_list, timeout, force):
                 'Failed to cancel execution {id} please clean resources '
                 'manually'.format(
                     id=execution_id))
+        sleep(5)
 
 
 def prepare_test_dev(plugins=None,
-                 secrets=None,
-                 execute_bundle_upload=True,
-                 bundle_path=None):
+                     secrets=None,
+                     execute_bundle_upload=True,
+                     bundle_path=None):
     """
     Prepare the environment for executing a blueprint test.
 
@@ -1138,8 +1132,8 @@ def prepare_test_dev(plugins=None,
     use_cfy()
     license_upload()
     upload_test_plugins_dev(plugins,
-                        execute_bundle_upload,
-                        bundle_path=bundle_path)
+                            execute_bundle_upload,
+                            bundle_path=bundle_path)
     create_test_secrets(secrets)
 
 
