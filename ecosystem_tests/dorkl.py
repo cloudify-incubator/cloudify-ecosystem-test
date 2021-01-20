@@ -812,6 +812,13 @@ def is_first_invocation(test_name):
             map_func, deployments_list):
         logger.info('Not first invocation!')
         return False
+    elif test_name in map(map_func, blueprints_list) or test_name in map(
+            map_func, deployments_list):
+        raise EcosystemTestException(
+            'Found blueprint or deployment with name:{test_name}, please '
+            'delete the blueprint/deployment manually and rerun the '
+            'test'.format(
+                test_name=test_name))
     else:
         logger.info('First invocation!')
         return True
