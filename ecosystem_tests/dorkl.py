@@ -825,9 +825,10 @@ def is_first_invocation(test_name):
 
 def validate_on_subsequent_invoke_param(on_subsequent_invoke=None):
     if on_subsequent_invoke and on_subsequent_invoke not in ['resume', 'rerun',
-                                                     'update']:
-        raise EcosystemTestException('on_subsequent_invoke param must be one of:'
-                                     ' resume, rerun, update')
+                                                             'update']:
+        raise EcosystemTestException(
+            'on_subsequent_invoke param must be one of:'
+            ' resume, rerun, update')
 
 
 def basic_blueprint_test_dev(blueprint_file_name,
@@ -919,12 +920,19 @@ def subsequent_invocation_test_path(blueprint_file_name,
     elif on_subsequent_invoke == 'rerun':
         start_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'update':
-        update_bp_name = test_name + '_update'
-        handle_deplyment_update(blueprint_file_name,
-                                update_bp_name,
-                                test_name,
-                                inputs,
-                                timeout)
+        update_bp_name = test_name + '-' + datetime.now().strftime(
+            "%d-%m-%Y-%H-%M-%S")
+        handle_deployment_update(blueprint_file_name,
+                                 update_bp_name,
+                                 test_name,
+                                 inputs,
+                                 timeout)
+        # We run install after update because of this scenario:
+        # The user run test with blueprint X then the test fails, on second
+        # invocation the user uses "update" option so the tool runs update
+        # with the same blueprint X and it
+        # succeeds(because nothing changed in the blueprint)
+        start_install_workflow(test_name, timeout)
     if uninstall_on_success:
         handle_uninstall_on_success(test_name, timeout)
 
@@ -942,7 +950,7 @@ def subsequent_invocation_test_path(blueprint_file_name,
     #                     '{0}'.format(str(e)))
 
 
-def handle_deplyment_update(blueprint_file_name,
+def handle_deployment_update(blueprint_file_name,
                             update_bp_name,
                             test_name,
                             inputs,
@@ -951,7 +959,6 @@ def handle_deplyment_update(blueprint_file_name,
     try:
         logger.info('Blueprints list: {0}'.format(
             cloudify_exec('cfy blueprints list')))
-        update_bp_name = update_bp_name
         blueprints_upload(blueprint_file_name, update_bp_name)
         deployment_update(test_name,
                           update_bp_name,
@@ -1002,7 +1009,7 @@ def resume_install_workflow(test_name, timeout):
         wait_for_execution(test_name, 'install', timeout)
 
 
-def start_install_workflow(test_name,timeout):
+def start_install_workflow(test_name, timeout):
     logger.info('Installing...')
     try:
         executions_list(test_name)
