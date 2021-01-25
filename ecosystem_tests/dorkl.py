@@ -24,6 +24,7 @@ from shlex import split
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from datetime import datetime, timedelta
+
 try:
     from urllib.request import urlopen  # Python 3
 except ImportError:
@@ -55,7 +56,6 @@ class EcosystemTimeout(Exception):
 
 
 def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
-
     file_obj_stdout = NamedTemporaryFile(delete=False)
     file_obj_stderr = NamedTemporaryFile(delete=False)
     stdout_file = open(file_obj_stdout.name, 'w')
@@ -202,8 +202,10 @@ def copy_file_to_docker(local_file_path):
                                        docker_path))
     return docker_path
 
+
 def delete_file_from_docker(docker_path):
     docker_exec('rm -rf {destination}'.format(destination=docker_path))
+
 
 def copy_directory_to_docker(local_file_path):
     """
@@ -313,7 +315,7 @@ def plugin_already_uploaded(wagon_path):
         compare_name = plugin['package_name']
         compare_version = plugin['package_version']
         compare_distro = plugin.get('distribution', '').lower() or \
-            plugin.get('yaml_url_path', '')
+                         plugin.get('yaml_url_path', '')
 
         if plugin_name.replace('_', '-') in compare_name and \
                 plugin_version == compare_version and \
@@ -356,7 +358,7 @@ def upload_test_plugins(plugins,
     Upload all plugins that we need to execute the test.
     :param plugins: A list of additional plugins to upload.
        (Like ones that are not in the bundle (Openstack 3, Host Pool).
-    :param plugin_test: Whether to isntall plugins from workspace.
+    :param plugin_test: Whether to install plugins from workspace.
     :param execute_bundle_upload: Whether to install a bundle.
     :return:
     """
@@ -898,20 +900,22 @@ def first_invocation_test_path(blueprint_file_name,
 
 
 def subsequent_invocation_test_path(blueprint_file_name,
-                                test_name,
-                                on_subsequent_invoke,
-                                inputs=None,
-                                timeout=None,
-                                uninstall_on_success=True
-                                ):
+                                    test_name,
+                                    on_subsequent_invoke,
+                                    inputs=None,
+                                    timeout=None,
+                                    uninstall_on_success=True
+                                    ):
     """
     Handle blueprint test path in subsequent test invocation depends on
     on_subsequent_invoke value.
+    :param blueprint_file_name: Path to blueprint.
     :param test_name:
     :param on_subsequent_invoke: Should be one of: resume,rerun,update.
     :param inputs:
     :param timeout:
-
+    :param uninstall_on_success: Perform uninstall if the test succeeded,
+    and delete the test blueprint.
     """
     logger.debug('on subsequent_invocation_test_path')
     if on_subsequent_invoke == 'resume':
@@ -937,10 +941,10 @@ def subsequent_invocation_test_path(blueprint_file_name,
 
 
 def handle_deployment_update(blueprint_file_name,
-                            update_bp_name,
-                            test_name,
-                            inputs,
-                            timeout):
+                             update_bp_name,
+                             test_name,
+                             inputs,
+                             timeout):
     logger.info('updating deployment...')
     try:
         logger.info('Blueprints list: {0}'.format(
@@ -1015,7 +1019,8 @@ def prepare_inputs(inputs):
     elif type(inputs) is dict:
         with NamedTemporaryFile(mode='w+', delete=True) as outfile:
             yaml.dump(inputs, outfile, allow_unicode=True)
-            logger.debug("temporary inputs file path {p}".format(p=outfile.name))
+            logger.debug(
+                "temporary inputs file path {p}".format(p=outfile.name))
             inputs_on_docker = copy_file_to_docker(outfile.name)
             try:
                 yield inputs_on_docker
@@ -1064,8 +1069,6 @@ def find_install_execution_to_resume(deployment_id):
     """
     Find the last install execution to resume.
     :param deployment_id:
-    :param workflow_id:
-    :param timeout:
     :return:
     """
     executions = executions_list(deployment_id)
@@ -1094,8 +1097,6 @@ def find_executions_to_cancel(deployment_id):
     """
     Find all the executions to cancel.
     :param deployment_id:
-    :param workflow_id:
-    :param timeout:
     :return:
     """
     executions = executions_list(deployment_id)
@@ -1144,8 +1145,8 @@ def handle_test_failure(test_name, on_failure, timeout):
                                      ' the manager manually.')
 
 
-def cancel_multiple_executions(executions_list, timeout, force):
-    for execution_id in executions_list:
+def cancel_multiple_executions(executions_lst, timeout, force):
+    for execution_id in executions_lst:
         try:
             executions_cancel(execution_id, timeout, force=force)
         except (EcosystemTestException, EcosystemTimeout):
@@ -1168,7 +1169,7 @@ def prepare_test_dev(plugins=None,
     :param plugins: A list of plugins to install. `plugin_test` must be True.
     :param secrets: A list of secrets to create.
     :param execute_bundle_upload: Whether to upload the plugins bundle.
-    :param workspace_path: THe path to the build directory if not circleci
+    :param bundle_path: THe path to the build directory if not circleci
     :return:
     """
 
@@ -1188,6 +1189,7 @@ def upload_test_plugins_dev(plugins,
     :param plugins: A list of additional plugins to upload.
        (Like ones that are not in the bundle (Openstack 3, Host Pool).
     :param execute_bundle_upload: Whether to install a bundle.
+    :param bundle_path: Path to plugins bundle.
     :return:
     """
 
