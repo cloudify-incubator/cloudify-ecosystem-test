@@ -202,6 +202,8 @@ def copy_file_to_docker(local_file_path):
                                        docker_path))
     return docker_path
 
+def delete_file_from_docker(docker_path):
+    docker_exec('rm -rf {destination}'.format(destination=docker_path))
 
 def copy_directory_to_docker(local_file_path):
     """
@@ -517,18 +519,12 @@ def deployments_create(blueprint_id, inputs):
     :param inputs:
     :return:
     """
-    try:
-        os.path.isfile(inputs)
-    except TypeError:
-        archive_temp = NamedTemporaryFile(delete=False)
-        with open(archive_temp.name, 'w') as outfile:
-            yaml.dump(inputs, outfile, allow_unicode=True)
-        inputs = archive_temp.name
-    if inputs == '':
+    if inputs == '' or inputs is None:
         return cloudify_exec('cfy deployments create -b {0}'.format(
             blueprint_id), get_json=False)
-    return cloudify_exec('cfy deployments create -i {0} -b {1}'.format(
-        inputs, blueprint_id), get_json=False)
+    with prepare_inputs(inputs) as handled_inputs:
+        return cloudify_exec('cfy deployments create -i {0} -b {1}'.format(
+            handled_inputs, blueprint_id), get_json=False)
 
 
 def deployment_delete(blueprint_id):
@@ -836,25 +832,26 @@ def basic_blueprint_test_dev(blueprint_file_name,
                              inputs=None,
                              timeout=None,
                              on_subsequent_invoke=None,
-                             on_failure=None,
+                             on_failure='rollback-partial',
                              uninstall_on_success=True):
     """
     blueprint test.
-    :param blueprint_file_name:
+    :param blueprint_file_name: Path to blueprint for the test, notice that
+    if there is a deployment for this test_name,this parameter will be
+    ignored(except if on_subsequent_invoke value is "update")
     :param test_name:
-    :param inputs:
+    :param inputs: Inputs for deployment create / deployment update.
     :param timeout:
     :param on_subsequent_invoke: Should be one of: resume,rerun,update
     :param on_failure  what should test do in failure.
-    Should be one of: None,rollback-full,rollback-partial,uninstall-force.
+    Should be one of: False(do nothing),rollback-full,rollback-partial,
+    uninstall-force.
+    The default value is rollback-partial.
     :param uninstall_on_success: Perform uninstall if the test succeeded,
     and delete the test blueprint.
     :return:
     """
     timeout = timeout or TIMEOUT
-    if inputs != '':
-        inputs = inputs or os.path.join(
-            os.path.dirname(blueprint_file_name), 'inputs/test-inputs.yaml')
     if is_first_invocation(test_name):
         try:
             first_invocation_test_path(
@@ -863,7 +860,8 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 inputs=inputs,
                 timeout=timeout,
                 uninstall_on_success=uninstall_on_success)
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException('Test failed first invoke!')
     else:
@@ -876,7 +874,8 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 inputs=inputs,
                 timeout=timeout,
                 uninstall_on_success=uninstall_on_success)
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException('Test failed subsequent invoke!')
 
@@ -936,19 +935,6 @@ def subsequent_invocation_test_path(blueprint_file_name,
     if uninstall_on_success:
         handle_uninstall_on_success(test_name, timeout)
 
-    # if uninstall_on_success:
-    #     logger.info('Uninstalling...')
-    #     executions_start('uninstall', test_name, timeout)
-    #     wait_for_execution(test_name, 'uninstall', timeout)
-    #     try:
-    #         deployment_delete(test_name)
-    #         blueprints_delete(test_name)
-    #         if on_subsequent_invoke == 'update':
-    #             blueprints_delete(update_bp_name)
-    #     except Exception as e:
-    #         logger.info('Failed to delete blueprint, '
-    #                     '{0}'.format(str(e)))
-
 
 def handle_deployment_update(blueprint_file_name,
                             update_bp_name,
@@ -995,7 +981,6 @@ def handle_uninstall_on_success(test_name, timeout):
 
 
 def resume_install_workflow(test_name, timeout):
-    # TODO: Ask Tramell if we want to resume only install workflow
     exec_id = find_install_execution_to_resume(test_name)
     logger.debug('execution to resume: {id}'.format(id=exec_id))
     try:
@@ -1021,23 +1006,30 @@ def start_install_workflow(test_name, timeout):
     else:
         wait_for_execution(test_name, 'install', timeout)
 
-# def Notify_blueprint_changed(blueprint_file_name, deployment_name):
-#     """
-#     Check that blueprint_file_name is the same blueprint as deployment_name
-#     use (name comparison only,not content!).
-#     """
-#     deployments = cloudify_exec('cfy deployments list')
-#     test_dep_blueprint_id = \
-#     [deployment['blueprint_id'] for deployment in deployments if
-#      deployment['id'] == deployment_name][0]
-#     blueprints_list = cloudify_exec('cfy blueprints list')
-#     main_blueprint_file_name = \
-#     [blueprint['main_file_name'] for blueprint in blueprints_list if
-#      blueprint['id'] == test_dep_blueprint_id][0]
-#     if main_blueprint_file_name != os.path.basename(blueprint_file_name):
-#         raise EcosystemTestException(' Found that provided {blueprint_file_name} file is different than the one used in {deployment_name} ( file name checked), You can either (1) run uninstall manually and delete deployment, and create a new test with the same name (2) rerun (3) resume')
 
-
+@contextmanager
+def prepare_inputs(inputs):
+    logger.info("Preparing inputs...")
+    if not inputs:
+        yield
+    elif type(inputs) is dict:
+        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
+            yaml.dump(inputs, outfile, allow_unicode=True)
+            logger.debug("temporary inputs file path {p}".format(p=outfile.name))
+            inputs_on_docker = copy_file_to_docker(outfile.name)
+            try:
+                yield inputs_on_docker
+            finally:
+                delete_file_from_docker(inputs_on_docker)
+    elif os.path.isfile(inputs):
+        inputs_on_docker = copy_file_to_docker(inputs)
+        try:
+            yield inputs_on_docker
+        finally:
+            delete_file_from_docker(inputs_on_docker)
+    else:
+        # It's input string or None so yield it as is.
+        yield inputs
 
 
 def deployment_update(deployment_id,
@@ -1053,27 +1045,19 @@ def deployment_update(deployment_id,
     :param timeout:
 
     """
-    try:
-        os.path.isfile(inputs)
-    except TypeError:
-        archive_temp = NamedTemporaryFile(delete=False)
-        with open(archive_temp.name, 'w') as outfile:
-            yaml.dump(inputs, outfile, allow_unicode=True)
-        inputs = archive_temp.name
-
-    if inputs == '':
-
+    if not inputs:
         return cloudify_exec(
             'cfy deployments update {deployment_id} -b {blueprint_id}'.format(
                 deployment_id=deployment_id, blueprint_id=blueprint_id),
             get_json=False, timeout=timeout)
     else:
-        return cloudify_exec(
-            'cfy deployments update {deployment_id} -b {blueprint_id} -i {'
-            'inputs}'.format(
-                deployment_id=deployment_id, blueprint_id=blueprint_id,
-                inputs=inputs),
-            get_json=False, timeout=timeout)
+        with prepare_inputs(inputs) as handled_inputs:
+            return cloudify_exec(
+                'cfy deployments update {deployment_id} -b {blueprint_id} -i {'
+                'inputs}'.format(
+                    deployment_id=deployment_id, blueprint_id=blueprint_id,
+                    inputs=handled_inputs),
+                get_json=False, timeout=timeout)
 
 
 def find_install_execution_to_resume(deployment_id):
@@ -1140,7 +1124,7 @@ def handle_test_failure(test_name, on_failure, timeout):
     rollback-full,rollback-partial,uninstall-force
     """
     executions_to_cancel = find_executions_to_cancel(test_name)
-    if on_failure is None:
+    if on_failure is False:
         return
     elif on_failure == 'rollback-full':
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
@@ -1161,7 +1145,6 @@ def handle_test_failure(test_name, on_failure, timeout):
 
 
 def cancel_multiple_executions(executions_list, timeout, force):
-    # TODO: Add wait_for_execution instead of sleep.
     for execution_id in executions_list:
         try:
             executions_cancel(execution_id, timeout, force=force)
