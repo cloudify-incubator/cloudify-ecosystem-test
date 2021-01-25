@@ -484,13 +484,15 @@ def export_secret_to_environment(name):
     :param name: The secret key.
     :return:
     """
-    logger.info('Creating secret: {0}.'.format(name))
+    logger.info('Adding envvar: {0}.'.format(name))
     try:
         value = base64.b64decode(os.environ[name])
     except KeyError:
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
-    os.environ(name.upper(), value)
+    if isinstance(value, bytes):
+        value = value.decode(encoding='UTF-8')
+    os.environ[name.upper()] = value
 
 
 def blueprints_upload(blueprint_file_name, blueprint_id):
