@@ -314,8 +314,8 @@ def plugin_already_uploaded(wagon_path):
             plugin))
         compare_name = plugin['package_name']
         compare_version = plugin['package_version']
-        compare_distro = plugin.get('distribution', '').lower() or \
-                         plugin.get('yaml_url_path', '')
+        compare_distro = plugin.get('distribution', '').lower() or plugin.get(
+            'yaml_url_path', '')
 
         if plugin_name.replace('_', '-') in compare_name and \
                 plugin_version == compare_version and \
