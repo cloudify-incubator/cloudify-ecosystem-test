@@ -20,10 +20,11 @@ from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from datetime import datetime
 
-
-from . import (logger,
-               EcosystemTimeout,
-               EcosystemTestException)
+from constansts import (logger,
+                        TIMEOUT,
+                        VPN_CONFIG_PATH)
+from exceptions import (EcosystemTimeout,
+                        EcosystemTestException)
 from cloudify_api import (use_cfy,
                           license_upload,
                           verify_endpoint,
@@ -45,8 +46,6 @@ from cloudify_api import (use_cfy,
 from commands import (docker_exec,
                       cloudify_exec,
                       copy_file_to_docker)
-from constansts import (TIMEOUT,
-                        VPN_CONFIG_PATH)
 
 
 def prepare_test(plugins=None,
@@ -227,6 +226,7 @@ def is_first_invocation(test_name):
     else:
         logger.info('First invocation!')
         return True
+
 
 def validate_on_subsequent_invoke_param(on_subsequent_invoke=None):
     if on_subsequent_invoke and on_subsequent_invoke not in ['resume', 'rerun',

@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import logging
-logging.basicConfig()
-logger = logging.getLogger('logger')
-logger.setLevel(logging.DEBUG)
 
-MANAGER_CONTAINER_NAME = os.environ.get('MANAGER_CONTAINER', 'cfy_manager')
-TIMEOUT = 1800
-VPN_CONFIG_PATH = '/tmp/vpn.conf'
+class EcosystemTestException(Exception):
+    pass
+
+
+class EcosystemTimeout(Exception):
+    pass

@@ -29,13 +29,13 @@ except ImportError:
 
 from wagon import show
 
+from constansts import logger
 from ecosystem_cicd_tools.packaging import (
     get_workspace_files,
     find_wagon_local_path,
     get_bundle_from_workspace)
-from . import (logger,
-               EcosystemTimeout,
-               EcosystemTestException)
+from exceptions import (EcosystemTimeout,
+                        EcosystemTestException)
 from commands import (cloudify_exec,
                       copy_file_to_docker,
                       delete_file_from_docker,
@@ -107,8 +107,8 @@ def plugin_already_uploaded(wagon_path):
             plugin))
         compare_name = plugin['package_name']
         compare_version = plugin['package_version']
-        compare_distro = plugin.get('distribution', '').lower() or \
-                         plugin.get('yaml_url_path', '')
+        compare_distro = plugin.get('distribution', '').lower() or plugin.get(
+            'yaml_url_path', '')
 
         if plugin_name.replace('_', '-') in compare_name and \
                 plugin_version == compare_version and \

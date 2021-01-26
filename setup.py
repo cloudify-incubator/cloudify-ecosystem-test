@@ -7,6 +7,7 @@ setup(
     license='LICENSE',
     packages=[
         'ecosystem_tests',
+        'ecosystem_tests/dorkl',
         'ecosystem_cicd_tools',
     ],
     description='Stuff that Ecosystem Tests Use',
