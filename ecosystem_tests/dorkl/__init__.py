@@ -1,13 +1,13 @@
 # For backwards compatibility in plugins integration tests.
 
-from commands import cloudify_exec
+from ecosystem_tests.dorkl.commands import cloudify_exec
 
-from testing import (prepare_test,
-                     prepare_test_dev,
-                     basic_blueprint_test,
-                     basic_blueprint_test_dev)
-from cloudify_api import (executions_start,
-                          blueprints_upload,
-                          blueprints_delete,
-                          cleanup_on_failure,
-                          deployments_create)
+from ecosystem_tests.dorkl.testing import (prepare_test,
+                                           prepare_test_dev,
+                                           basic_blueprint_test,
+                                           basic_blueprint_test_dev)
+from ecosystem_tests.dorkl.cloudify_api import (executions_start,
+                                                blueprints_upload,
+                                                blueprints_delete,
+                                                cleanup_on_failure,
+                                                deployments_create)

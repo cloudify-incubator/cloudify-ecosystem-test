@@ -20,32 +20,32 @@ from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 from datetime import datetime
 
-from constansts import (logger,
-                        TIMEOUT,
-                        VPN_CONFIG_PATH)
-from exceptions import (EcosystemTimeout,
-                        EcosystemTestException)
-from cloudify_api import (use_cfy,
-                          license_upload,
-                          verify_endpoint,
-                          executions_list,
-                          executions_start,
-                          deployment_delete,
-                          deployment_update,
-                          executions_resume,
-                          blueprints_delete,
-                          blueprints_upload,
-                          cleanup_on_failure,
-                          wait_for_execution,
-                          deployments_create,
-                          upload_test_plugins,
-                          create_test_secrets,
-                          upload_test_plugins_dev,
-                          cancel_multiple_executions,
-                          get_deployment_output_by_name)
-from commands import (docker_exec,
-                      cloudify_exec,
-                      copy_file_to_docker)
+from ecosystem_tests.dorkl.constansts import (logger,
+                                              TIMEOUT,
+                                              VPN_CONFIG_PATH)
+from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
+                                              EcosystemTestException)
+from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
+                                                license_upload,
+                                                verify_endpoint,
+                                                executions_list,
+                                                executions_start,
+                                                deployment_delete,
+                                                deployment_update,
+                                                executions_resume,
+                                                blueprints_delete,
+                                                blueprints_upload,
+                                                cleanup_on_failure,
+                                                wait_for_execution,
+                                                deployments_create,
+                                                upload_test_plugins,
+                                                create_test_secrets,
+                                                upload_test_plugins_dev,
+                                                cancel_multiple_executions,
+                                                get_deployment_output_by_name)
+from ecosystem_tests.dorkl.commands import (docker_exec,
+                                            cloudify_exec,
+                                            copy_file_to_docker)
 
 
 def prepare_test(plugins=None,

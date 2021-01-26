@@ -7,11 +7,11 @@ from shlex import split
 from tempfile import NamedTemporaryFile
 from datetime import datetime, timedelta
 
-from constansts import (logger,
-                        TIMEOUT,
-                        MANAGER_CONTAINER_NAME)
-from exceptions import (EcosystemTimeout,
-                        EcosystemTestException)
+from ecosystem_tests.dorkl.constansts import (logger,
+                                              TIMEOUT,
+                                              MANAGER_CONTAINER_NAME)
+from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
+                                              EcosystemTestException)
 from ecosystem_cicd_tools.validations import validate_plugin_version
 
 

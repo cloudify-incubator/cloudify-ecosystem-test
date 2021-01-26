@@ -29,17 +29,18 @@ except ImportError:
 
 from wagon import show
 
-from constansts import logger
+
 from ecosystem_cicd_tools.packaging import (
     get_workspace_files,
     find_wagon_local_path,
     get_bundle_from_workspace)
-from exceptions import (EcosystemTimeout,
-                        EcosystemTestException)
-from commands import (cloudify_exec,
-                      copy_file_to_docker,
-                      delete_file_from_docker,
-                      copy_directory_to_docker)
+from ecosystem_tests.dorkl.constansts import logger
+from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
+                                              EcosystemTestException)
+from ecosystem_tests.dorkl.commands import (cloudify_exec,
+                                            copy_file_to_docker,
+                                            delete_file_from_docker,
+                                            copy_directory_to_docker)
 
 
 def use_cfy(timeout=60):
