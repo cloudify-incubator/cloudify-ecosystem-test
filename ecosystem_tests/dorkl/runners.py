@@ -15,6 +15,7 @@
 
 import os
 import base64
+import traceback
 from time import sleep
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
@@ -191,7 +192,8 @@ def basic_blueprint_test(blueprint_file_name,
                                       timeout,
                                       endpoint_name=endpoint_name,
                                       endpoint_value=endpoint_value)
-            except:
+            except Exception as e:
+                logger.error('Error: {e}'.format(e=str(e)))
                 cleanup_on_failure(test_name)
     else:
         try:
@@ -220,7 +222,7 @@ def is_first_invocation(test_name):
     def _map_func(bl_or_dep_dict):
         return bl_or_dep_dict["id"]
 
-    if test_name in map(_map_func, deployments_list):
+    if test_name in [_map_func(deployment) for deployment in deployments_list]:
         logger.info('Not first invocation!')
         return False
     else:
@@ -242,7 +244,10 @@ def basic_blueprint_test_dev(blueprint_file_name,
                              timeout=None,
                              on_subsequent_invoke=None,
                              on_failure='rollback-partial',
-                             uninstall_on_success=True):
+                             uninstall_on_success=True,
+                             user_defined_check=None,
+                             user_defined_check_params=None
+                             ):
     """
     blueprint test.
     :param blueprint_file_name: Path to blueprint for the test, notice that
@@ -252,12 +257,16 @@ def basic_blueprint_test_dev(blueprint_file_name,
     :param inputs: Inputs for deployment create / deployment update.
     :param timeout:
     :param on_subsequent_invoke: Should be one of: resume,rerun,update
-    :param on_failure  what should test do in failure.
+    :param on_failure:  What should test do in failure.
     Should be one of: False(do nothing),rollback-full,rollback-partial,
     uninstall-force.
     The default value is rollback-partial.
     :param uninstall_on_success: Perform uninstall if the test succeeded,
     and delete the test blueprint.
+    :param: user_defined_check: Function that performs user defined checks
+     after the deployment installation succeeds.
+    :param: user_defined_check_params: dictionary contains parameters
+      for user defined check.
     :return:
     """
     timeout = timeout or TIMEOUT
@@ -268,9 +277,12 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 test_name,
                 inputs=inputs,
                 timeout=timeout,
-                uninstall_on_success=uninstall_on_success)
-        except Exception as e:
-            logger.error(e)
+                uninstall_on_success=uninstall_on_success,
+                user_defined_check=user_defined_check,
+                user_defined_check_params=user_defined_check_params)
+
+        except Exception:
+            logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException('Test failed first invoke!')
     else:
@@ -282,9 +294,11 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 on_subsequent_invoke=on_subsequent_invoke,
                 inputs=inputs,
                 timeout=timeout,
-                uninstall_on_success=uninstall_on_success)
-        except Exception as e:
-            logger.error(e)
+                uninstall_on_success=uninstall_on_success,
+                user_defined_check=user_defined_check,
+                user_defined_check_params=user_defined_check_params)
+        except Exception:
+            logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException('Test failed subsequent invoke!')
 
@@ -293,7 +307,10 @@ def first_invocation_test_path(blueprint_file_name,
                                test_name,
                                inputs=None,
                                timeout=None,
-                               uninstall_on_success=True):
+                               uninstall_on_success=True,
+                               user_defined_check=None,
+                               user_defined_check_params=None
+                               ):
     logger.info('Blueprints list: {0}'.format(
         cloudify_exec('cfy blueprints list')))
     blueprints_upload(blueprint_file_name, test_name)
@@ -302,6 +319,7 @@ def first_invocation_test_path(blueprint_file_name,
     deployments_create(test_name, inputs)
     sleep(5)
     start_install_workflow(test_name, timeout)
+    run_user_defined_check(user_defined_check, user_defined_check_params)
     if uninstall_on_success:
         handle_uninstall_on_success(test_name, timeout)
 
@@ -311,7 +329,9 @@ def subsequent_invocation_test_path(blueprint_file_name,
                                     on_subsequent_invoke,
                                     inputs=None,
                                     timeout=None,
-                                    uninstall_on_success=True
+                                    uninstall_on_success=True,
+                                    user_defined_check=None,
+                                    user_defined_check_params=None
                                     ):
     """
     Handle blueprint test path in subsequent test invocation depends on
@@ -343,6 +363,7 @@ def subsequent_invocation_test_path(blueprint_file_name,
         # with the same blueprint X and it
         # succeeds(because nothing changed in the blueprint)
         start_install_workflow(test_name, timeout)
+    run_user_defined_check(user_defined_check, user_defined_check_params)
     if uninstall_on_success:
         handle_uninstall_on_success(test_name, timeout)
 
@@ -380,7 +401,8 @@ def handle_uninstall_on_success(test_name, timeout):
             if dep_dict['id'] == test_name:
                 return dep_dict["blueprint_id"]
 
-        blueprint_of_deployment = map(_get_blueprint_id, deployments_list)[0]
+        blueprint_of_deployment = [_get_blueprint_id(deployment) for
+                                   deployment in deployments_list][0]
         logger.info(
             "Blueprint id of deployment {dep_id} is : {blueprint_id}".format(
                 dep_id=test_name, blueprint_id=blueprint_of_deployment))
@@ -477,6 +499,7 @@ def handle_test_failure(test_name, on_failure, timeout):
     """
     rollback-full,rollback-partial,uninstall-force
     """
+    logger.info('Handling test failure...')
     executions_to_cancel = find_executions_to_cancel(test_name)
     if on_failure is False:
         return
@@ -520,3 +543,13 @@ def prepare_test_dev(plugins=None,
                             execute_bundle_upload,
                             bundle_path=bundle_path)
     create_test_secrets(secrets)
+
+
+def run_user_defined_check(user_defined_check, user_defined_check_params):
+    if user_defined_check:
+        if callable(user_defined_check):
+            logger.info('Run user defined check...')
+            params = user_defined_check_params or {}
+            user_defined_check(**params)
+        else:
+            raise EcosystemTestException('User defined check is not callable!')

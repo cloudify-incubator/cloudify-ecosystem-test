@@ -203,13 +203,14 @@ def secrets_create(name, is_file=False):
     """
     logger.info('Creating secret: {0}.'.format(name))
     try:
-        value = base64.b64decode(os.environ[name])
+        value = (base64.b64decode(os.environ[name].encode('utf-8'))).decode(
+            'ascii')
     except KeyError:
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
         file_temp = NamedTemporaryFile(delete=False)
-        with open(file_temp.name, 'wb') as outfile:
+        with open(file_temp.name, 'w') as outfile:
             outfile.write(value)
         return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
             name,

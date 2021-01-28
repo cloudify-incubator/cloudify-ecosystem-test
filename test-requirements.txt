@@ -7,4 +7,4 @@ pylint
 pytest
 # for integration and platform tests
 cloudify>=5.1.0
-pep8
+pycodestyle
