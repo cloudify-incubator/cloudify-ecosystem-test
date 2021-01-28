@@ -3,10 +3,11 @@ from setuptools import setup
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.2.112',
+    version='2.3.0',
     license='LICENSE',
     packages=[
         'ecosystem_tests',
+        'ecosystem_tests/dorkl',
         'ecosystem_cicd_tools',
     ],
     description='Stuff that Ecosystem Tests Use',
