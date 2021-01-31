@@ -15,7 +15,8 @@
 
 # For backwards compatibility in plugins integration tests.
 
-from ecosystem_tests.dorkl.commands import cloudify_exec
+from ecosystem_tests.dorkl.commands import (cloudify_exec,
+                                            handle_process)
 
 from ecosystem_tests.dorkl.runners import (prepare_test,
                                            prepare_test_dev,
