@@ -1,5 +1,9 @@
+import os
 import click
+import base64
+
 from ..ecosystem_tests_cli import helptexts
+from .exceptions import EcosystemTestCliException
 from .constants import (TIMEOUT,
                         DEFAULT_LICENSE_PATH,
                         DEFAULT_BLUEPRINT_PATH,
@@ -35,8 +39,16 @@ def inputs_callback(ctx, param, value):
     return inputs_to_dict(value)
 
 def license_callback(ctx, param, value):
-    """Prepare Licence as base64 encoded string for dorkl"""
-    # TODO: Check if its file and if it is so encode it.
+    """
+    Prepare Licence as base64 encoded string for dorkl.
+    :param value: Base64 encoded license or path to licence.
+    """
+    if os.path.isfile(value):
+        with open(value,'r') as licence_file:
+            content=licence_file.read()
+        return base64.b64encode(content.encode('utf-8')).decode('ascii')
+    elif value == DEFAULT_LICENSE_PATH:
+        raise EcosystemTestCliException('Liscence not found in default location:{path}'.format(DEFAULT_LICENSE_PATH))
     return value
 
 def secrets_callback(ctx, param, value):
@@ -108,7 +120,8 @@ class Options(object):
                                     type=click.STRING,
                                     help=helptexts.LICENSE,
                                     callback=license_callback,
-                                    default='license.yaml')
+                                    default=DEFAULT_LICENSE_PATH,
+                                    show_default=DEFAULT_LICENSE_PATH)
 
         self.secret = click.option('-s','--secret',
                                     multiple=True,

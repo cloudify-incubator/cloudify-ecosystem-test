@@ -1,5 +1,5 @@
 from .commands import local_blueprint_test, remote_blueprint_test
-import ecosystem_tests.ecosystem_tests_cli.ecosystem_tests as ecosystem_tests
+from ..ecosystem_tests_cli import ecosystem_tests
 
 
 @ecosystem_tests.group(name='ecosystem-test')

@@ -1,15 +1,16 @@
 
-from setuptools import setup
+from setuptools import setup,find_packages
 
 setup(
     name='cloudify-ecosystem-test',
     version='2.3.2',
     license='LICENSE',
-    packages=[
-        'ecosystem_tests',
-        'ecosystem_tests/dorkl',
-        'ecosystem_cicd_tools',
-    ],
+    # packages=[
+    #     'ecosystem_tests',
+    #     'ecosystem_tests/dorkl',
+    #     'ecosystem_cicd_tools',
+    # ],
+    packages=find_packages(),
     description='Stuff that Ecosystem Tests Use',
     entry_points={
         "console_scripts": [
