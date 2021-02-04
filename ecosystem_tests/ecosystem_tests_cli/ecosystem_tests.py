@@ -2,6 +2,7 @@ import os
 import click
 import base64
 
+from .inputs import inputs_to_dict
 from ..ecosystem_tests_cli import helptexts
 from .exceptions import EcosystemTestCliException
 from .constants import (TIMEOUT,
@@ -35,8 +36,8 @@ def inputs_callback(ctx, param, value):
     """
     if not value or ctx.resilient_parsing:
         return {}
-
     return inputs_to_dict(value)
+
 
 def license_callback(ctx, param, value):
     """
@@ -44,12 +45,15 @@ def license_callback(ctx, param, value):
     :param value: Base64 encoded license or path to licence.
     """
     if os.path.isfile(value):
-        with open(value,'r') as licence_file:
-            content=licence_file.read()
+        with open(value, 'r') as licence_file:
+            content = licence_file.read()
         return base64.b64encode(content.encode('utf-8')).decode('ascii')
     elif value == DEFAULT_LICENSE_PATH:
-        raise EcosystemTestCliException('Liscence not found in default location:{path}'.format(DEFAULT_LICENSE_PATH))
+        raise EcosystemTestCliException(
+            'Liscence not found in default location: {path}'.format(
+                path=DEFAULT_LICENSE_PATH))
     return value
+
 
 def secrets_callback(ctx, param, value):
     """Prepare secrets as base64 encoded string for dorkl"""
@@ -58,17 +62,20 @@ def secrets_callback(ctx, param, value):
         return {}
     return value
 
+
 def file_secrets_callback(ctx, param, value):
     """Prepare secrets from file as base64 encoded string for dorkl"""
     if not value or ctx.resilient_parsing:
         return {}
     return value
 
+
 def encoded_secrets_callback(ctx, param, value):
     """Prepare encoded secrets from file as base64 encoded string for dorkl"""
     if not value or ctx.resilient_parsing:
         return {}
     return value
+
 
 class Options(object):
     def __init__(self):
@@ -95,6 +102,7 @@ class Options(object):
             '--inputs',
             multiple=True,
             callback=inputs_callback,
+            type=click.STRING,
             help=helptexts.INPUTS)
 
         self.timeout = click.option('-t',
@@ -116,36 +124,39 @@ class Options(object):
                                           default=False,
                                           help=helptexts.VALIDATE_ONLY)
 
-        self.license = click.option('-l','--license',
+        self.license = click.option('-l', '--license',
                                     type=click.STRING,
                                     help=helptexts.LICENSE,
                                     callback=license_callback,
                                     default=DEFAULT_LICENSE_PATH,
                                     show_default=DEFAULT_LICENSE_PATH)
 
-        self.secret = click.option('-s','--secret',
-                                    multiple=True,
-                                    type=click.STRING,
-                                    help=helptexts.SECRETS,
-                                    callback=secrets_callback)
+        self.secret = click.option('-s', '--secret',
+                                   multiple=True,
+                                   type=click.STRING,
+                                   help=helptexts.SECRETS,
+                                   callback=secrets_callback)
 
-        self.file_secret = click.option('-fs','--file-secret',
+        self.file_secret = click.option('-fs', '--file-secret',
                                         type=click.STRING,
                                         multiple=True,
                                         help=helptexts.FILE_SECRETS,
                                         callback=file_secrets_callback)
 
-        # TODO: Add note that we Assume all secrets that encoded are from file(even if they are not), need to test that .
-        self.encoded_secrets = click.option('-es','--encoded-secret',
-                                    multiple=True,
-                                    type=click.STRING,
-                                    help=helptexts.ENCODED_SECRETS,
-                                    # callback=encoded_secrets_callback,
-                                    )
+        # TODO: Add note that we Assume all secrets that encoded are from
+        #  file(even if they are not), need to test that .
+        self.encoded_secrets = click.option('-es', '--encoded-secret',
+                                            multiple=True,
+                                            type=click.STRING,
+                                            help=helptexts.ENCODED_SECRETS,
+                                            # callback=encoded_secrets_callback,
+                                            )
 
-        self.container_name=click.option('-c',
-                                         '--container-name',
-                                         type=click.STRING,
-                                         default=MANAGER_CONTAINER_NAME,
-                                         help=helptexts.CONTAINER_NAME)
+        self.container_name = click.option('-c',
+                                           '--container-name',
+                                           type=click.STRING,
+                                           default=MANAGER_CONTAINER_NAME,
+                                           help=helptexts.CONTAINER_NAME)
+
+
 options = Options()

@@ -2,19 +2,17 @@ import os
 import glob
 import yaml
 import  collections
+from .logger import logger
 from .exceptions import EcosystemTestCliException
+
 
 def inputs_to_dict(resources, **kwargs):
     """Returns a dictionary of inputs
     `resources` can be:
-    - A list of files. yes!
-    - A single file yes!
-    - A directory containing multiple input files -no!
-    - A key1=value1;key2=value2 pairs string. -yes!
-    - A string formatted as JSON/YAML. yes!
-    - Wildcard based string (e.g. *-inputs.yaml)   -no!
+    - A list of files.
+    - A single file
+    - A key1=value1;key2=value2 pairs string.
     """
-    # logger = get_logger()
 
     if not resources:
         return dict()
@@ -22,8 +20,7 @@ def inputs_to_dict(resources, **kwargs):
     parsed_dict = {}
 
     for resource in resources:
-        # logger.debug('Processing inputs source: {0}'.format(resource))
-        # if isinstance(resource, (text_type, bytes)):
+        logger.debug('Processing inputs source: {0}'.format(resource))
         try:
             parsed_dict.update(_parse_single_input(resource))
         except EcosystemTestCliException as ex:
@@ -47,16 +44,7 @@ def _parse_single_input(resource, **kwargs):
         # parse resource as string representation of a dictionary
         return plain_string_to_dict(resource, **kwargs)
     except EcosystemTestCliException:
-        # input_files = glob.glob(resource)
         parsed_dict = dict()
-        # if os.path.isdir(resource):
-        #     for input_file in os.listdir(resource):
-        #         parsed_dict.update(
-        #             _parse_yaml_path(os.path.join(resource, input_file)))
-        # elif input_files:
-        #     for input_file in input_files:
-        #         parsed_dict.update(_parse_yaml_path(input_file))
-        # else:
         parsed_dict.update(_parse_yaml_path(resource))
     return parsed_dict
 
@@ -111,20 +99,11 @@ def plain_string_to_dict(input_string, **kwargs):
         if not mapped_input:
             continue
 
-        # # Only in delete-runtime the input can be a string (key) with no value.
-        # if kwargs.get('deleting'):
         if _is_not_plain_string_input(mapped_input):
-            raise CloudifyCliError('The input {0} is not a plain string '
+            raise EcosystemTestCliException('The input {0} is not a plain string '
                                    'key'.format(mapped_input))
-        #     key = mapped_input.strip()
-        #     value = None
-        # else:
         key, value = _parse_key_value_pair(mapped_input, input_string)
 
-        # # If the input is in dot hierarchy format, e.g. 'a.b.c=d'
-        # if kwargs.get('dot_hierarchy') and '.' in key:
-        #     insert_dotted_key_to_dict(input_dict, key, value)
-        # else:
         input_dict[key] = value
     return input_dict
 

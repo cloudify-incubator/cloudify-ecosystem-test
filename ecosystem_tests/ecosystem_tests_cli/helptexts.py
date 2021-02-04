@@ -1,6 +1,6 @@
 INPUTS_PARAMS_USAGE = (
     '(Can be provided as path to YAML file, or as '
-    '\'key1=value1\'). This argument can be used multiple times.'
+    '\'key1=value1;key2=value2\'). This argument can be used multiple times.'
 )
 
 INPUTS = "Test inputs {0}".format(INPUTS_PARAMS_USAGE)

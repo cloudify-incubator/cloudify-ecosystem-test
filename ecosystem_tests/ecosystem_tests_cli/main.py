@@ -1,6 +1,6 @@
+from .logger import logger
 from .commands import local_blueprint_test, remote_blueprint_test
 from ..ecosystem_tests_cli import ecosystem_tests
-
 
 @ecosystem_tests.group(name='ecosystem-test')
 def _ecosystem_test():
@@ -9,7 +9,6 @@ def _ecosystem_test():
 
 
 def _register_commands():
-    pass
     _ecosystem_test.add_command(local_blueprint_test.local_blueprint_test)
     _ecosystem_test.add_command(remote_blueprint_test.remote_blueprint_test)
 

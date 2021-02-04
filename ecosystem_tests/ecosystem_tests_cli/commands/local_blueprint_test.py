@@ -24,7 +24,6 @@ def local_blueprint_test(blueprint_path,
 
 
     bp_test_ids = validate_and_generate_test_ids(blueprint_path,test_id)
-    click.echo(bp_test_ids)
 
 
 def validate_and_generate_test_ids(blueprint_path,test_id):
