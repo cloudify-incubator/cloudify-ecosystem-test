@@ -1,12 +1,14 @@
 import os
-import glob
 import yaml
-import  collections
+
 from .logger import logger
+from .utilities import parse_key_value_pair
 from .exceptions import EcosystemTestCliException
 
 
-def inputs_to_dict(resources, **kwargs):
+ERR_MSG="Invalid input format: {0}, the expected format is: " \
+        "key1=value1;key2=value2"
+def inputs_to_dict(resources):
     """Returns a dictionary of inputs
     `resources` can be:
     - A list of files.
@@ -39,10 +41,10 @@ def inputs_to_dict(resources, **kwargs):
 
 
 
-def _parse_single_input(resource, **kwargs):
+def _parse_single_input(resource):
     try:
         # parse resource as string representation of a dictionary
-        return plain_string_to_dict(resource, **kwargs)
+        return plain_string_to_dict(resource)
     except EcosystemTestCliException:
         parsed_dict = dict()
         parsed_dict.update(_parse_yaml_path(resource))
@@ -73,16 +75,16 @@ def _parse_yaml_path(resource):
     return content
 
 
-def _parse_key_value_pair(mapped_input, input_string):
-    split_mapping = mapped_input.split('=')
-    try:
-        key = split_mapping[0].strip()
-        value = split_mapping[1].strip()
-        return key, value
-    except IndexError:
-        raise EcosystemTestCliException(
-            "Invalid input format: {0}, the expected format is: "
-            "key1=value1;key2=value2".format(input_string))
+# def _parse_key_value_pair(mapped_input, input_string):
+#     split_mapping = mapped_input.split('=')
+#     try:
+#         key = split_mapping[0].strip()
+#         value = split_mapping[1].strip()
+#         return key, value
+#     except IndexError:
+#         raise EcosystemTestCliException(
+#             "Invalid input format: {0}, the expected format is: "
+#             "key1=value1;key2=value2".format(input_string))
 
 
 def _is_not_plain_string_input(mapped_input):
@@ -90,7 +92,7 @@ def _is_not_plain_string_input(mapped_input):
     return mapped_input.endswith(('}', '.yaml', '/'))
 
 
-def plain_string_to_dict(input_string, **kwargs):
+def plain_string_to_dict(input_string):
     input_string = input_string.strip()
     input_dict = {}
     mapped_inputs = input_string.split(';')
@@ -102,7 +104,7 @@ def plain_string_to_dict(input_string, **kwargs):
         if _is_not_plain_string_input(mapped_input):
             raise EcosystemTestCliException('The input {0} is not a plain string '
                                    'key'.format(mapped_input))
-        key, value = _parse_key_value_pair(mapped_input, input_string)
+        key, value = parse_key_value_pair(mapped_input, ERR_MSG.format(input_string))
 
         input_dict[key] = value
     return input_dict

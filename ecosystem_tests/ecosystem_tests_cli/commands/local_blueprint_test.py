@@ -13,6 +13,7 @@ from ...ecosystem_tests_cli import ecosystem_tests
 @ecosystem_tests.options.secret
 @ecosystem_tests.options.file_secret
 @ecosystem_tests.options.encoded_secrets
+@ecosystem_tests.options.plugin
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -20,7 +21,8 @@ def local_blueprint_test(blueprint_path,
                          license,
                          secret,
                          file_secret,
-                         encoded_secret):
+                         encoded_secret,
+                         plugin):
 
 
     bp_test_ids = validate_and_generate_test_ids(blueprint_path,test_id)

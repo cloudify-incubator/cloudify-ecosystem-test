@@ -18,17 +18,21 @@ LICENSE = 'Licence for the manager, should be either path to licence file ' \
           'or base64 encoded licence string.'
 
 SECRETS = 'A secret to update on the manager, should be provided as' \
-          ' secret_key:secret_value. This argument can be used multiple times.'
+          ' secret_key=secret_value. This argument can be used multiple times.'
 
 FILE_SECRETS = 'A secret to update on the manager, should be provided as' \
-               ' secret_key:file_path. This argument can be used' \
+               ' secret_key=file_path. This argument can be used' \
                ' multiple times.'
 
 ENCODED_SECRETS ='Base 64 encoded secret to update on the manager, ' \
                  'should be provided as ' \
-                 'secret_key:secret_value_base_64_encoded. This argument can' \
+                 'secret_key=secret_value_base_64_encoded. This argument can' \
                  ' be used multiple times.'
 
 CONTAINER_NAME = 'Manager docker container name. ' \
                  'Default: MANAGER_CONTAINER environment variable or ' \
                 '"cfy_manager" if there is no such environment variable.'
+
+PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
+          '--plugin plugin_wagon_url plugin.yaml_url. ' \
+          'This argument can be used multiple times.'

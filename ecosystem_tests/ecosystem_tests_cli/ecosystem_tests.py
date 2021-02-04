@@ -3,6 +3,9 @@ import click
 import base64
 
 from .inputs import inputs_to_dict
+from .secrets import (secrets_to_dict,
+                      file_secrets_to_dict,
+                      encoded_secrets_to_dict)
 from ..ecosystem_tests_cli import helptexts
 from .exceptions import EcosystemTestCliException
 from .constants import (TIMEOUT,
@@ -56,26 +59,34 @@ def license_callback(ctx, param, value):
 
 
 def secrets_callback(ctx, param, value):
-    """Prepare secrets as base64 encoded string for dorkl"""
-    # TODO: Handle not base64 secrets
+    """
+    Prepare secrets as base64 encoded string for dorkl
+    :return dictonary contains {secret_key:secret_base_64_encoded}
+    """
     if not value or ctx.resilient_parsing:
         return {}
-    return value
+    return secrets_to_dict(value)
 
 
 def file_secrets_callback(ctx, param, value):
     """Prepare secrets from file as base64 encoded string for dorkl"""
     if not value or ctx.resilient_parsing:
         return {}
-    return value
+    return file_secrets_to_dict(value)
 
 
 def encoded_secrets_callback(ctx, param, value):
-    """Prepare encoded secrets from file as base64 encoded string for dorkl"""
+    """Prepare encoded secrets for dorkl"""
     if not value or ctx.resilient_parsing:
         return {}
-    return value
+    return encoded_secrets_to_dict(value)
 
+def plugins_callback(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return {}
+    click.echo(value)
+    # return create_plugins_list(value)
+    return value
 
 class Options(object):
     def __init__(self):
@@ -96,7 +107,6 @@ class Options(object):
                                            multiple=True,
                                            show_default=DEFAULT_BLUEPRINT_PATH)
 
-        # TODO:handle inputs!
         self.inputs = click.option(
             '-i',
             '--inputs',
@@ -114,6 +124,7 @@ class Options(object):
         self.test_id = click.option('--test-id',
                                     type=click.STRING,
                                     help=helptexts.TEST_ID)
+
         self.nested_test = click.option('--nested-test',
                                         type=click.STRING,
                                         help=helptexts.NESTED_TEST)
@@ -124,20 +135,23 @@ class Options(object):
                                           default=False,
                                           help=helptexts.VALIDATE_ONLY)
 
-        self.license = click.option('-l', '--license',
+        self.license = click.option('-l',
+                                    '--license',
                                     type=click.STRING,
                                     help=helptexts.LICENSE,
                                     callback=license_callback,
                                     default=DEFAULT_LICENSE_PATH,
                                     show_default=DEFAULT_LICENSE_PATH)
 
-        self.secret = click.option('-s', '--secret',
+        self.secret = click.option('-s',
+                                   '--secret',
                                    multiple=True,
                                    type=click.STRING,
                                    help=helptexts.SECRETS,
                                    callback=secrets_callback)
 
-        self.file_secret = click.option('-fs', '--file-secret',
+        self.file_secret = click.option('-fs',
+                                        '--file-secret',
                                         type=click.STRING,
                                         multiple=True,
                                         help=helptexts.FILE_SECRETS,
@@ -145,11 +159,12 @@ class Options(object):
 
         # TODO: Add note that we Assume all secrets that encoded are from
         #  file(even if they are not), need to test that .
-        self.encoded_secrets = click.option('-es', '--encoded-secret',
+        self.encoded_secrets = click.option('-es',
+                                            '--encoded-secret',
                                             multiple=True,
                                             type=click.STRING,
                                             help=helptexts.ENCODED_SECRETS,
-                                            # callback=encoded_secrets_callback,
+                                            callback=encoded_secrets_callback,
                                             )
 
         self.container_name = click.option('-c',
@@ -158,5 +173,13 @@ class Options(object):
                                            default=MANAGER_CONTAINER_NAME,
                                            help=helptexts.CONTAINER_NAME)
 
+        self.plugin = click.option('-pl',
+                                   '--plugin',
+                                   multiple=True,
+                                   nargs=2,
+                                   type=click.STRING,
+                                   help=helptexts.PLUGINS,
+                                   callback=plugins_callback,
+                                   show_default='plugins-bundle')
 
 options = Options()
