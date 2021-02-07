@@ -3,11 +3,12 @@ import click
 import base64
 
 from .inputs import inputs_to_dict
+from .plugins import create_plugins_list
+from ..ecosystem_tests_cli import helptexts
+from .exceptions import EcosystemTestCliException
 from .secrets import (secrets_to_dict,
                       file_secrets_to_dict,
                       encoded_secrets_to_dict)
-from ..ecosystem_tests_cli import helptexts
-from .exceptions import EcosystemTestCliException
 from .constants import (TIMEOUT,
                         DEFAULT_LICENSE_PATH,
                         DEFAULT_BLUEPRINT_PATH,
@@ -83,10 +84,9 @@ def encoded_secrets_callback(ctx, param, value):
 
 def plugins_callback(ctx, param, value):
     if not value or ctx.resilient_parsing:
-        return {}
+        return []
     click.echo(value)
-    # return create_plugins_list(value)
-    return value
+    return create_plugins_list(value)
 
 class Options(object):
     def __init__(self):
@@ -100,7 +100,7 @@ class Options(object):
         """
         # TODO: Maybe not multiple because of test id? or ignore the test id
         #  from user in case of some blueprints??
-        self.blueprint_path = click.option('-p',
+        self.blueprint_path = click.option('-b',
                                            '--blueprint-path',
                                            default=[DEFAULT_BLUEPRINT_PATH],
                                            type=click.Path(exists=True),
@@ -173,7 +173,7 @@ class Options(object):
                                            default=MANAGER_CONTAINER_NAME,
                                            help=helptexts.CONTAINER_NAME)
 
-        self.plugin = click.option('-pl',
+        self.plugin = click.option('-p',
                                    '--plugin',
                                    multiple=True,
                                    nargs=2,
@@ -181,5 +181,17 @@ class Options(object):
                                    help=helptexts.PLUGINS,
                                    callback=plugins_callback,
                                    show_default='plugins-bundle')
+
+        self.plugins_bundle = click.option('--bundle-path',
+                                           type=click.Path(exists=True),
+                                           default=None,
+                                           help=helptexts.BUNDLE)
+
+        self.no_bundle= click.option('--no-bundle-upload',
+                                     is_flag = True,
+                                     default=False,
+                                     show_default='False',
+                                     help=helptexts.NO_BUNDLE)
+
 
 options = Options()

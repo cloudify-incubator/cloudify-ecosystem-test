@@ -36,3 +36,8 @@ CONTAINER_NAME = 'Manager docker container name. ' \
 PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
           '--plugin plugin_wagon_url plugin.yaml_url. ' \
           'This argument can be used multiple times.'
+
+BUNDLE = 'Plugins bundle tgz file path.'
+
+NO_BUNDLE = 'Specify --no-bundle-upload for not uploading plugins bundle' \
+            ' before the test.'
