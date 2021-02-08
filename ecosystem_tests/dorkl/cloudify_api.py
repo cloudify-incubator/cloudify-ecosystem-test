@@ -34,7 +34,8 @@ from ecosystem_cicd_tools.packaging import (
     get_workspace_files,
     find_wagon_local_path,
     get_bundle_from_workspace)
-from ecosystem_tests.dorkl.constansts import logger
+from ecosystem_tests.dorkl.constansts import (logger,
+                                              LICENSE_ENVAR_NAME)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.commands import (cloudify_exec,
@@ -74,7 +75,7 @@ def license_upload():
 
     logger.info('Uploading manager license.')
     try:
-        license = base64.b64decode(os.environ['TEST_LICENSE'])
+        license = base64.b64decode(os.environ[LICENSE_ENVAR_NAME])
     except KeyError:
         raise EcosystemTestException('License env var not set {0}.')
     file_temp = NamedTemporaryFile(delete=False)
@@ -209,14 +210,16 @@ def secrets_create(name, is_file=False):
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
-        file_temp = NamedTemporaryFile(delete=False)
-        with open(file_temp.name, 'w') as outfile:
+        with NamedTemporaryFile(mode='w+',delete=True)  as outfile:
             outfile.write(value)
-        return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
-            name,
-            copy_file_to_docker(file_temp.name)),
-            get_json=False,
-            log=False)
+            outfile.flush()
+            cmd = 'cfy secrets create -u {0} -f {1}'.format(
+                name,
+                copy_file_to_docker(outfile.name))
+            return cloudify_exec(cmd,
+                get_json=False,
+                log=False)
+
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)
 
