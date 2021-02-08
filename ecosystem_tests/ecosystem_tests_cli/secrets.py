@@ -66,3 +66,24 @@ def encoded_secrets_to_dict(secrets):
         key, val = parse_key_value_pair(secret, ERR_MSG_ENCODED_SECRET.format(secret))
         secrets_dict.update({key: val})
     return secrets_dict
+
+
+def prepare_secrets_dict_for_prepare_test(regular_secrets,
+                                          file_secrets,
+                                          encoded_secrets):
+    secrets_dict = {}
+    secrets_dict.update(
+        create_single_secrets_dict_for_prepare_test(regular_secrets, False))
+    secrets_dict.update(
+        create_single_secrets_dict_for_prepare_test(file_secrets, True))
+    # From our prspective all the encoded secres are file secrets.
+    secrets_dict.update(
+        create_single_secrets_dict_for_prepare_test(encoded_secrets, True))
+    return secrets_dict
+
+
+def create_single_secrets_dict_for_prepare_test(secret_dict, file_secret):
+    prepare_test_secrets_dict = {}
+    for key in secret_dict:
+        prepare_test_secrets_dict.update({key: file_secret})
+    return prepare_test_secrets_dict

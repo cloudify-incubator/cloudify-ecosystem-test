@@ -70,14 +70,18 @@ def secrets_callback(ctx, param, value):
 
 
 def file_secrets_callback(ctx, param, value):
-    """Prepare secrets from file as base64 encoded string for dorkl"""
+    """Prepare secrets from file as base64 encoded string for dorkl
+    return dictonary contains {secret_key:file_content_base_64_encoded}
+    """
     if not value or ctx.resilient_parsing:
         return {}
     return file_secrets_to_dict(value)
 
 
 def encoded_secrets_callback(ctx, param, value):
-    """Prepare encoded secrets for dorkl"""
+    """Prepare encoded secrets for dorkl
+    :return dictonary contains {secret_key:secret_base_64_encoded}
+    """
     if not value or ctx.resilient_parsing:
         return {}
     return encoded_secrets_to_dict(value)
@@ -157,8 +161,6 @@ class Options(object):
                                         help=helptexts.FILE_SECRETS,
                                         callback=file_secrets_callback)
 
-        # TODO: Add note that we Assume all secrets that encoded are from
-        #  file(even if they are not), need to test that .
         self.encoded_secrets = click.option('-es',
                                             '--encoded-secret',
                                             multiple=True,
@@ -171,6 +173,7 @@ class Options(object):
                                            '--container-name',
                                            type=click.STRING,
                                            default=MANAGER_CONTAINER_NAME,
+                                           show_default='MANAGER_CONTAINER environment variable or cfy_manager if it no exists',
                                            help=helptexts.CONTAINER_NAME)
 
         self.plugin = click.option('-p',
