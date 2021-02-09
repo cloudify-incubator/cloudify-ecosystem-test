@@ -90,7 +90,6 @@ def encoded_secrets_callback(ctx, param, value):
 def plugins_callback(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return []
-    click.echo(value)
     return create_plugins_list(value)
 
 
@@ -104,8 +103,7 @@ class Options(object):
         a developer sees an option. It it can receive arguments, it's a
         method - if not, it's an attribute.
         """
-        # TODO: Maybe not multiple because of test id? or ignore the test id
-        #  from user in case of some blueprints??
+
         self.blueprint_path = click.option('-b',
                                            '--blueprint-path',
                                            default=[DEFAULT_BLUEPRINT_PATH],
