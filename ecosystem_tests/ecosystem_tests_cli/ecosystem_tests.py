@@ -86,11 +86,13 @@ def encoded_secrets_callback(ctx, param, value):
         return {}
     return encoded_secrets_to_dict(value)
 
+
 def plugins_callback(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return []
     click.echo(value)
     return create_plugins_list(value)
+
 
 class Options(object):
     def __init__(self):
@@ -107,7 +109,7 @@ class Options(object):
         self.blueprint_path = click.option('-b',
                                            '--blueprint-path',
                                            default=[DEFAULT_BLUEPRINT_PATH],
-                                           type=click.Path(exists=True),
+                                           type=click.Path(),
                                            multiple=True,
                                            show_default=DEFAULT_BLUEPRINT_PATH)
 
@@ -173,7 +175,11 @@ class Options(object):
                                            '--container-name',
                                            type=click.STRING,
                                            default=MANAGER_CONTAINER_NAME,
-                                           show_default='MANAGER_CONTAINER environment variable or cfy_manager if it no exists',
+                                           show_default='MANAGER_CONTAINER '
+                                                        'environment '
+                                                        'variable or '
+                                                        'cfy_manager if it '
+                                                        'no exists',
                                            help=helptexts.CONTAINER_NAME)
 
         self.plugin = click.option('-p',
@@ -190,11 +196,35 @@ class Options(object):
                                            default=None,
                                            help=helptexts.BUNDLE)
 
-        self.no_bundle= click.option('--no-bundle-upload',
-                                     is_flag = True,
-                                     default=False,
-                                     show_default='False',
-                                     help=helptexts.NO_BUNDLE)
+        self.no_bundle = click.option('--no-bundle-upload',
+                                      is_flag=True,
+                                      default=False,
+                                      show_default='False',
+                                      help=helptexts.NO_BUNDLE)
 
+        self.on_subsequent_invoke = click.option(
+            '--on-subsequent-invoke',
+            type=click.Choice(['resume', 'rerun', 'update'],
+                              case_sensitive=False),
+            default='rerun',
+            show_default='rerun',
+            help=helptexts.SUBSEQUENT_INVOKE)
+
+        self.on_failure = click.option('--on-failure',
+                                       type=click.Choice(['False',
+                                                          'rollback-full',
+                                                          'rollback-partial',
+                                                          'uninstall-force'],
+                                                         case_sensitive=False),
+                                       default='rollback-partial',
+                                       show_default='rollback-partial',
+                                       help=helptexts.ON_FAILURE)
+
+        self.uninstall_on_success = click.option(
+            '--uninstall-on-success',
+            type=click.BOOL,
+            default=True,
+            show_default='True',
+            help=helptexts.UNINSTALL_ON_SUCCESS)
 
 options = Options()

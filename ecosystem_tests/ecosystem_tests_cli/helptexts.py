@@ -24,14 +24,15 @@ FILE_SECRETS = 'A secret to update on the manager, should be provided as' \
                ' secret_key=file_path. This argument can be used' \
                ' multiple times.'
 
-ENCODED_SECRETS ='Base 64 encoded secret to update on the manager, ' \
-                 'should be provided as ' \
-                 'secret_key=secret_value_base_64_encoded. This argument can' \
-                 ' be used multiple times.'
+ENCODED_SECRETS = 'Base 64 encoded secret to update on the manager, ' \
+                  'should be provided as ' \
+                  'secret_key=secret_value_base_64_encoded. This argument ' \
+                  'can' \
+                  ' be used multiple times.'
 
 CONTAINER_NAME = 'Manager docker container name. ' \
                  'Default: MANAGER_CONTAINER environment variable or ' \
-                '"cfy_manager" if there is no such environment variable.'
+                 '"cfy_manager" if there is no such environment variable.'
 
 PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
           '--plugin plugin_wagon_url plugin.yaml_url. ' \
@@ -41,3 +42,14 @@ BUNDLE = 'Plugins bundle tgz file path.'
 
 NO_BUNDLE = 'Specify --no-bundle-upload for not uploading plugins bundle' \
             ' before the test.'
+
+SUBSEQUENT_INVOKE = 'Which action to perform on subsequent invocation of ' \
+                    'the test (same test id).Should be one of: ' \
+                    'resume, rerun, update.'
+
+ON_FAILURE = 'Which action to perform on test failure.' \
+             'Should be one of: false(do nothing), rollback-full, ' \
+             'rollback-partial, uninstall-force'
+
+UNINSTALL_ON_SUCCESS = 'Whehter to perform uninstall if the test succeeded,' \
+                       'and delete the test blueprint.'

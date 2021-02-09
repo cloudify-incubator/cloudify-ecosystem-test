@@ -1,6 +1,8 @@
 import click
 import random
 import string
+
+from ...dorkl.runners import basic_blueprint_test_dev
 from ..exceptions import EcosystemTestCliException
 from ...ecosystem_tests_cli import ecosystem_tests
 
@@ -9,32 +11,33 @@ from ...ecosystem_tests_cli import ecosystem_tests
 @ecosystem_tests.options.test_id
 @ecosystem_tests.options.inputs
 @ecosystem_tests.options.timeout
-@ecosystem_tests.options.license
-@ecosystem_tests.options.secret
-@ecosystem_tests.options.file_secret
-@ecosystem_tests.options.encoded_secrets
-@ecosystem_tests.options.plugin
-@ecosystem_tests.options.plugins_bundle
-@ecosystem_tests.options.no_bundle
+@ecosystem_tests.options.on_failure
+@ecosystem_tests.options.uninstall_on_success
+@ecosystem_tests.options.on_subsequent_invoke
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
                          timeout,
-                         license,
-                         secret,
-                         file_secret,
-                         encoded_secret,
-                         plugin,
-                         bundle_path,
-                         no_bundle_upload):
-
+                         on_failure,
+                         uninstall_on_success,
+                         on_subsequent_invoke
+                         ):
+    on_failure = False if on_failure=='False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path,test_id)
+    for blueprint,test_id in bp_test_ids:
+        basic_blueprint_test_dev(blueprint_file_name=blueprint,
+                                 test_name=test_id,
+                                 inputs=inputs,
+                                 timeout=timeout,
+                                 on_subsequent_invoke=on_subsequent_invoke,
+                                 on_failure=on_failure,
+                                 uninstall_on_success=uninstall_on_success)
 
 
 def validate_and_generate_test_ids(blueprint_path,test_id):
     """
     Validate that if user pass mupltiple bluprints paths so test_id is not provided.
-    If the user pass multiple blueprints to test , generate list of test_ids.
+    If the user pass multiple blueprints to test , generate list of tuples: [(bp1,id1),(bp2,id2)].
     """
     if test_id:
         if len(blueprint_path) > 1:
@@ -45,11 +48,10 @@ def validate_and_generate_test_ids(blueprint_path,test_id):
     else:
         # Generate test ids for all blueprints.
         test_ids= [id_generator() for _ in range(len(blueprint_path)) ]
-        click.echo("test_ids: {}".format(test_ids))
 
     return list(zip(blueprint_path, test_ids))
 
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+def id_generator(size=6, chars=string.ascii_lowercase + string.digits):
+    return 'test_' + ''.join(random.choice(chars) for _ in range(size))
 
