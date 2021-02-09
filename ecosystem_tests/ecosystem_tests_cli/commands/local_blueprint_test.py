@@ -1,6 +1,7 @@
 import click
 import random
 import string
+from nose.tools import nottest
 
 from ..exceptions import EcosystemTestCliException
 from ...ecosystem_tests_cli import ecosystem_tests
@@ -8,6 +9,7 @@ from ...dorkl.runners import (blueprint_validate,
                               basic_blueprint_test_dev)
 
 
+@nottest
 @ecosystem_tests.command(name='local-blueprint-test',
                          short_help='Test blueprint locally.')
 @ecosystem_tests.options.blueprint_path
@@ -43,6 +45,7 @@ def local_blueprint_test(blueprint_path,
                                      uninstall_on_success=uninstall_on_success)
 
 
+@nottest
 def validate_and_generate_test_ids(blueprint_path, test_id):
     """
     Validate that if user pass mupltiple bluprints paths so test_id is not

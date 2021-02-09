@@ -1,4 +1,5 @@
 import os
+from nose.tools import nottest
 from contextlib import contextmanager
 
 from .exceptions import EcosystemTestCliException
@@ -17,6 +18,7 @@ def parse_key_value_pair(mapped_input, error_msg):
             error_msg)
 
 
+@nottest
 @contextmanager
 def prepare_test_env(license,
                      secret,

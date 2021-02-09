@@ -17,9 +17,10 @@ import os
 import base64
 import traceback
 from time import sleep
+from datetime import datetime
+from nose.tools import nottest
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
-from datetime import datetime
 
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,
@@ -101,6 +102,7 @@ def prepare_test(plugins=None,
         docker_exec('mv {0} {1}'.format(docker_path, VPN_CONFIG_PATH))
 
 
+@nottest
 def _basic_blueprint_test(blueprint_file_name,
                           test_name,
                           inputs=None,
@@ -176,6 +178,7 @@ def vpn():
         proc.terminate()
 
 
+@nottest
 def basic_blueprint_test(blueprint_file_name,
                          test_name,
                          inputs=None,
@@ -238,6 +241,7 @@ def validate_on_subsequent_invoke_param(on_subsequent_invoke=None):
             ' resume, rerun, update')
 
 
+@nottest
 def basic_blueprint_test_dev(blueprint_file_name,
                              test_name,
                              inputs=None,
@@ -307,6 +311,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
                     test_id=test_name))
 
 
+@nottest
 def first_invocation_test_path(blueprint_file_name,
                                test_name,
                                inputs=None,
@@ -328,6 +333,7 @@ def first_invocation_test_path(blueprint_file_name,
         handle_uninstall_on_success(test_name, timeout)
 
 
+@nottest
 def subsequent_invocation_test_path(blueprint_file_name,
                                     test_name,
                                     on_subsequent_invoke,
@@ -503,6 +509,7 @@ def find_executions_to_cancel(deployment_id):
     return filtered_executions
 
 
+@nottest
 def handle_test_failure(test_name, on_failure, timeout):
     """
     rollback-full,rollback-partial,uninstall-force
@@ -529,6 +536,7 @@ def handle_test_failure(test_name, on_failure, timeout):
                                      ' the manager manually.')
 
 
+@nottest
 def prepare_test_dev(plugins=None,
                      secrets=None,
                      execute_bundle_upload=True,

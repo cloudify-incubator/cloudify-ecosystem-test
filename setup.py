@@ -1,4 +1,3 @@
-
 from setuptools import setup,find_packages
 
 setup(
@@ -27,6 +26,7 @@ setup(
         'progressbar',
         'pyyaml',
         'requests',
-        'click>7,<8'
+        'click>7,<8',
+        'nose>=1.3'
     ]
 )

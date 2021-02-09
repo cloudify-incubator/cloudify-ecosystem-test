@@ -1,5 +1,6 @@
 import os
 import base64
+from nose.tools import nottest
 
 from .logger import logger
 from .utilities import parse_key_value_pair
@@ -69,6 +70,7 @@ def encoded_secrets_to_dict(secrets):
     return secrets_dict
 
 
+@nottest
 def prepare_secrets_dict_for_prepare_test(regular_secrets,
                                           file_secrets,
                                           encoded_secrets):
@@ -83,6 +85,7 @@ def prepare_secrets_dict_for_prepare_test(regular_secrets,
     return secrets_dict
 
 
+@nottest
 def create_single_secrets_dict_for_prepare_test(secret_dict, file_secret):
     prepare_test_secrets_dict = {}
     for key in secret_dict:
