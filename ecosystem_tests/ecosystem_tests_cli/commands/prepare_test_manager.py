@@ -1,4 +1,3 @@
-import click
 
 from ..utilities import prepare_test_env
 from ...dorkl.runners import prepare_test_dev

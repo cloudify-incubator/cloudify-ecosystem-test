@@ -562,3 +562,10 @@ def run_user_defined_check(user_defined_check, user_defined_check_params):
             user_defined_check(**params)
         else:
             raise EcosystemTestException('User defined check is not callable!')
+
+def blueprint_validate(blueprint_file_name,blueprint_id):
+    """
+    Blueprint upload for validation.
+    """
+    blueprints_upload(blueprint_file_name,blueprint_id)
+    blueprints_delete(blueprint_id)

@@ -5,9 +5,10 @@ from .logger import logger
 from .utilities import parse_key_value_pair
 from .exceptions import EcosystemTestCliException
 
+ERR_MSG = "Invalid input format: {0}, the expected format is: " \
+          "key1=value1;key2=value2"
 
-ERR_MSG="Invalid input format: {0}, the expected format is: " \
-        "key1=value1;key2=value2"
+
 def inputs_to_dict(resources):
     """Returns a dictionary of inputs
     `resources` can be:
@@ -31,14 +32,13 @@ def inputs_to_dict(resources):
                 "Valid values can be one of:\n" \
                 "- A path to a YAML file\n" \
                 "- A string formatted as JSON/YAML\n" \
-                "- A string formatted as key1=value1;key2=value2\n"\
-                .format(resource)
+                "- A string formatted as key1=value1;key2=value2\n" \
+                    .format(resource)
             if str(ex):
                 ex_msg += "\nRoot cause: {0}".format(ex)
             raise EcosystemTestCliException(ex_msg)
 
     return parsed_dict
-
 
 
 def _parse_single_input(resource):
@@ -52,7 +52,6 @@ def _parse_single_input(resource):
 
 
 def _parse_yaml_path(resource):
-
     try:
         # if resource is a path - parse as a yaml file
         if os.path.isfile(resource):
@@ -62,15 +61,16 @@ def _parse_yaml_path(resource):
             # parse resource content as yaml
             content = yaml.safe_load(resource)
     except yaml.error.YAMLError as e:
-        raise EcosystemTestCliException("'{0}' is not a valid YAML. {1}".format(
-            resource, str(e)))
+        raise EcosystemTestCliException(
+            "'{0}' is not a valid YAML. {1}".format(
+                resource, str(e)))
 
     # Emtpy files return None
     content = content or dict()
     if not isinstance(content, dict):
         raise EcosystemTestCliException('Resource is valid YAML, but does not '
-                               'represent a dictionary (content: {0})'
-                               .format(content))
+                                        'represent a dictionary (content: {0})'
+                                        .format(content))
 
     return content
 
@@ -102,10 +102,11 @@ def plain_string_to_dict(input_string):
             continue
 
         if _is_not_plain_string_input(mapped_input):
-            raise EcosystemTestCliException('The input {0} is not a plain string '
-                                   'key'.format(mapped_input))
-        key, value = parse_key_value_pair(mapped_input, ERR_MSG.format(input_string))
+            raise EcosystemTestCliException(
+                'The input {0} is not a plain string '
+                'key'.format(mapped_input))
+        key, value = parse_key_value_pair(mapped_input,
+                                          ERR_MSG.format(input_string))
 
         input_dict[key] = value
     return input_dict
-

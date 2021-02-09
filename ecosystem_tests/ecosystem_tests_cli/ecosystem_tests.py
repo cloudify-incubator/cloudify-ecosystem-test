@@ -135,10 +135,10 @@ class Options(object):
                                         type=click.STRING,
                                         help=helptexts.NESTED_TEST)
 
-        # TODO: consider add this option as a command.
         self.validate_only = click.option('--validate-only',
-                                          type=click.BOOL,
+                                          is_flag=True,
                                           default=False,
+                                          show_default='False',
                                           help=helptexts.VALIDATE_ONLY)
 
         self.license = click.option('-l',
@@ -226,5 +226,6 @@ class Options(object):
             default=True,
             show_default='True',
             help=helptexts.UNINSTALL_ON_SUCCESS)
+
 
 options = Options()

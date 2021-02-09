@@ -1,6 +1,8 @@
 from .logger import logger
-from .commands import local_blueprint_test, prepare_test_manager
 from ..ecosystem_tests_cli import ecosystem_tests
+from .commands import (local_blueprint_test,
+                       prepare_test_manager)
+
 
 @ecosystem_tests.group(name='ecosystem-test')
 def _ecosystem_test():
@@ -14,7 +16,6 @@ def _register_commands():
 
 
 _register_commands()
-
 
 if __name__ == "__main__":
     _ecosystem_test()

@@ -17,6 +17,7 @@ def create_plugins_list(plugins):
         plugins_list.append((wagon, yaml))
     return plugins_list
 
+
 def check_valid_urls(plugin_tuple):
     for url in plugin_tuple:
         request = requests.head(url)
@@ -29,9 +30,11 @@ def check_valid_urls(plugin_tuple):
 def find_wagon_yaml_url(plugin_tuple):
     try:
         wagon = \
-        [element for element in plugin_tuple if element.endswith('.wgn')][0]
+            [element for element in plugin_tuple if element.endswith('.wgn')][
+                0]
         pl_yaml = \
-        [element for element in plugin_tuple if element.endswith('.yaml')][0]
+            [element for element in plugin_tuple if element.endswith('.yaml')][
+                0]
         return wagon, pl_yaml
     except IndexError:
         raise EcosystemTestCliException(
