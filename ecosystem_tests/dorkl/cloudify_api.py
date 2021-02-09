@@ -231,6 +231,11 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
     :param blueprint_id:
     :return:
     """
+    if not os.path.isfile(blueprint_file_name):
+        raise EcosystemTestException(
+            'Cant upload blueprint {path} because the file doesn`t '
+            'exists.'.format(
+                path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
     blueprint_file = os.path.basename(blueprint_file_name)
     return cloudify_exec(

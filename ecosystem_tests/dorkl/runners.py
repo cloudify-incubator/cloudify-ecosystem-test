@@ -284,7 +284,9 @@ def basic_blueprint_test_dev(blueprint_file_name,
         except Exception:
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
-            raise EcosystemTestException('Test failed first invoke!')
+            raise EcosystemTestException(
+                'Test {test_id} failed first invoke!'.format(
+                    test_id=test_name))
     else:
         validate_on_subsequent_invoke_param(on_subsequent_invoke)
         try:
@@ -300,7 +302,9 @@ def basic_blueprint_test_dev(blueprint_file_name,
         except Exception:
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
-            raise EcosystemTestException('Test failed subsequent invoke!')
+            raise EcosystemTestException(
+                'Test {test_id} failed subsequent invoke!'.format(
+                    test_id=test_name))
 
 
 def first_invocation_test_path(blueprint_file_name,
@@ -346,8 +350,13 @@ def subsequent_invocation_test_path(blueprint_file_name,
     """
     logger.debug('on subsequent_invocation_test_path')
     if on_subsequent_invoke == 'resume':
+        logger.warning('Resuming install workflow of existing test! '
+                        'blueprint_file_name and inputs are ignored!!!!')
         resume_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'rerun':
+        logger.warning(
+            'Rerunning install workflow of existing test! '
+            'blueprint_file_name and inputs are ignored!!!!')
         start_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'update':
         update_bp_name = test_name + '-' + datetime.now().strftime(
