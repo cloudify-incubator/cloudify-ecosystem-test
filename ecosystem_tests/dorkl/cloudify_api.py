@@ -210,15 +210,15 @@ def secrets_create(name, is_file=False):
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
-        with NamedTemporaryFile(mode='w+',delete=True)  as outfile:
+        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
             outfile.write(value)
             outfile.flush()
             cmd = 'cfy secrets create -u {0} -f {1}'.format(
                 name,
                 copy_file_to_docker(outfile.name))
             return cloudify_exec(cmd,
-                get_json=False,
-                log=False)
+                                 get_json=False,
+                                 log=False)
 
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)

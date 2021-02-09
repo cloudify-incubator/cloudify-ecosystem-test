@@ -20,7 +20,8 @@ logger = logging.getLogger('logger')
 logger.setLevel(logging.DEBUG)
 
 MANAGER_CONTAINER_ENVAR_NAME = 'MANAGER_CONTAINER'
-MANAGER_CONTAINER_NAME = os.environ.get(MANAGER_CONTAINER_ENVAR_NAME, 'cfy_manager')
+MANAGER_CONTAINER_NAME = os.environ.get(MANAGER_CONTAINER_ENVAR_NAME,
+                                        'cfy_manager')
 TIMEOUT = 1800
 VPN_CONFIG_PATH = '/tmp/vpn.conf'
 LICENSE_ENVAR_NAME = 'TEST_LICENSE'

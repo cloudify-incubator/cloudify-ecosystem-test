@@ -351,12 +351,11 @@ def subsequent_invocation_test_path(blueprint_file_name,
     logger.debug('on subsequent_invocation_test_path')
     if on_subsequent_invoke == 'resume':
         logger.warning('Resuming install workflow of existing test! '
-                        'blueprint_file_name and inputs are ignored!!!!')
+                       'blueprint_file_name and inputs are ignored!!!!')
         resume_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'rerun':
-        logger.warning(
-            'Rerunning install workflow of existing test! '
-            'blueprint_file_name and inputs are ignored!!!!')
+        logger.warning('Rerunning install workflow of existing test! '
+                       'blueprint_file_name and inputs are ignored!!!!')
         start_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'update':
         update_bp_name = test_name + '-' + datetime.now().strftime(
@@ -563,9 +562,10 @@ def run_user_defined_check(user_defined_check, user_defined_check_params):
         else:
             raise EcosystemTestException('User defined check is not callable!')
 
-def blueprint_validate(blueprint_file_name,blueprint_id):
+
+def blueprint_validate(blueprint_file_name, blueprint_id):
     """
     Blueprint upload for validation.
     """
-    blueprints_upload(blueprint_file_name,blueprint_id)
+    blueprints_upload(blueprint_file_name, blueprint_id)
     blueprints_delete(blueprint_id)

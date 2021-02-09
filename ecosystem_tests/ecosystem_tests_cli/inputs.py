@@ -32,8 +32,8 @@ def inputs_to_dict(resources):
                 "Valid values can be one of:\n" \
                 "- A path to a YAML file\n" \
                 "- A string formatted as JSON/YAML\n" \
-                "- A string formatted as key1=value1;key2=value2\n" \
-                    .format(resource)
+                "- A string formatted as key1=value1;key2=value2\n".format(
+                    resource)
             if str(ex):
                 ex_msg += "\nRoot cause: {0}".format(ex)
             raise EcosystemTestCliException(ex_msg)

@@ -63,7 +63,8 @@ def encoded_secrets_to_dict(secrets):
     """
     secrets_dict = {}
     for secret in secrets:
-        key, val = parse_key_value_pair(secret, ERR_MSG_ENCODED_SECRET.format(secret))
+        key, val = parse_key_value_pair(secret,
+                                        ERR_MSG_ENCODED_SECRET.format(secret))
         secrets_dict.update({key: val})
     return secrets_dict
 
