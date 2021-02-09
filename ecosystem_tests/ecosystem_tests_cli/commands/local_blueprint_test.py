@@ -16,8 +16,11 @@
 import click
 import random
 import string
+
+import pytest
 from nose.tools import nottest
 
+from ..logger import logger
 from ..exceptions import EcosystemTestCliException
 from ...ecosystem_tests_cli import ecosystem_tests
 from ...dorkl.runners import (blueprint_validate,
@@ -35,6 +38,7 @@ from ...dorkl.runners import (blueprint_validate,
 @ecosystem_tests.options.uninstall_on_success
 @ecosystem_tests.options.on_subsequent_invoke
 @ecosystem_tests.options.validate_only
+@ecosystem_tests.options.nested_test
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -42,22 +46,27 @@ def local_blueprint_test(blueprint_path,
                          on_failure,
                          uninstall_on_success,
                          on_subsequent_invoke,
-                         validate_only
+                         validate_only,
+                         nested_test
                          ):
     on_failure = False if on_failure == 'False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
-    for blueprint, test_id in bp_test_ids:
-        if validate_only:
-            blueprint_validate(blueprint_file_name=blueprint,
-                               blueprint_id=test_id)
-        else:
-            basic_blueprint_test_dev(blueprint_file_name=blueprint,
-                                     test_name=test_id,
-                                     inputs=inputs,
-                                     timeout=timeout,
-                                     on_subsequent_invoke=on_subsequent_invoke,
-                                     on_failure=on_failure,
-                                     uninstall_on_success=uninstall_on_success)
+    # for blueprint, test_id in bp_test_ids:
+    #     if validate_only:
+    #         blueprint_validate(blueprint_file_name=blueprint,
+    #                            blueprint_id=test_id)
+    #     else:
+    #         basic_blueprint_test_dev(blueprint_file_name=blueprint,
+    #                                  test_name=test_id,
+    #                                  inputs=inputs,
+    #                                  timeout=timeout,
+    #                                  on_subsequent_invoke=on_subsequent_invoke,
+    #                                  on_failure=on_failure,
+    #                                  uninstall_on_success=uninstall_on_success)
+    for test in nested_test:
+        logger.info(
+            'Executing nested test: {test_path} '.format(test_path=test))
+        pytest.main(['-s',test])
 
 
 @nottest
