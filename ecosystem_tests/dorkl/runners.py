@@ -18,9 +18,10 @@ import base64
 import traceback
 from time import sleep
 from datetime import datetime
-from nose.tools import nottest
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+
+from nose.tools import nottest
 
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,

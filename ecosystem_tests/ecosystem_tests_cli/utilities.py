@@ -1,6 +1,7 @@
 import os
-from nose.tools import nottest
 from contextlib import contextmanager
+
+from nose.tools import nottest
 
 from .exceptions import EcosystemTestCliException
 from .constants import (LICENSE_ENVAR_NAME,

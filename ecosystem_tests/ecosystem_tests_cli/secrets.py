@@ -1,5 +1,6 @@
 import os
 import base64
+
 from nose.tools import nottest
 
 from .logger import logger
