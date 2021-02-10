@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -234,8 +234,7 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
     if not os.path.isfile(blueprint_file_name):
         raise EcosystemTestException(
             'Cant upload blueprint {path} because the file doesn`t '
-            'exists.'.format(
-                path=blueprint_file_name))
+            'exists.'.format(path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
     blueprint_file = os.path.basename(blueprint_file_name)
     return cloudify_exec(

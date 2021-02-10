@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
 
 BUNDLE = 'Plugins bundle tgz file path.'
 
-NO_BUNDLE = 'Specify --no-bundle-upload for not uploading plugins bundle' \
+NO_BUNDLE = 'Specify --skip-bundle-upload for not uploading plugins bundle' \
             ' before the test.'
 
 SUBSEQUENT_INVOKE = 'Which action to perform on subsequent invocation of ' \

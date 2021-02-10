@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -290,7 +290,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
-                'Test {test_id} failed first invoke!'.format(
+                'Test {test_id} failed first invoke.'.format(
                     test_id=test_name))
     else:
         validate_on_subsequent_invoke_param(on_subsequent_invoke)
@@ -308,7 +308,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
-                'Test {test_id} failed subsequent invoke!'.format(
+                'Test {test_id} failed subsequent invoke.'.format(
                     test_id=test_name))
 
 
@@ -357,12 +357,12 @@ def subsequent_invocation_test_path(blueprint_file_name,
     """
     logger.debug('on subsequent_invocation_test_path')
     if on_subsequent_invoke == 'resume':
-        logger.warning('Resuming install workflow of existing test! '
-                       'blueprint_file_name and inputs are ignored!!!!')
+        logger.warning('Resuming install workflow of existing test. '
+                       'blueprint_file_name and inputs are ignored!!')
         resume_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'rerun':
-        logger.warning('Rerunning install workflow of existing test! '
-                       'blueprint_file_name and inputs are ignored!!!!')
+        logger.warning('Rerunning install workflow of existing test. '
+                       'blueprint_file_name and inputs are ignored!!')
         start_install_workflow(test_name, timeout)
     elif on_subsequent_invoke == 'update':
         update_bp_name = test_name + '-' + datetime.now().strftime(
