@@ -48,7 +48,6 @@ def prepare_test_env(func):
         os.environ.update(kwargs.get('secret', {}))
         os.environ.update(kwargs.get('file_secret', {}))
         os.environ.update(kwargs.get('encoded_secret', {}))
-        print(os.environ)
         try:
             ret = func(*args, **kwargs)
         finally:
