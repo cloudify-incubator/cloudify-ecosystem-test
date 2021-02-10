@@ -187,12 +187,8 @@ class Options(object):
         self.container_name = click.option('-c',
                                            '--container-name',
                                            type=click.STRING,
-                                           default=MANAGER_CONTAINER_NAME,
-                                           show_default='MANAGER_CONTAINER '
-                                                        'environment '
-                                                        'variable or '
-                                                        'cfy_manager if it '
-                                                        'no exists',
+                                           default='cfy_manager',
+                                           show_default='cfy_manager',
                                            help=helptexts.CONTAINER_NAME)
 
         self.plugin = click.option('-p',
@@ -208,7 +204,7 @@ class Options(object):
                                            default=None,
                                            help=helptexts.BUNDLE)
 
-        self.no_bundle = click.option('--skip-bundle-upload',
+        self.skip_bundle_upload = click.option('--skip-bundle-upload',
                                       is_flag=True,
                                       default=False,
                                       show_default='False',
