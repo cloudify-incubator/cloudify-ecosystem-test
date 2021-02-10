@@ -205,10 +205,10 @@ class Options(object):
                                            help=helptexts.BUNDLE)
 
         self.skip_bundle_upload = click.option('--skip-bundle-upload',
-                                      is_flag=True,
-                                      default=False,
-                                      show_default='False',
-                                      help=helptexts.NO_BUNDLE)
+                                               is_flag=True,
+                                               default=False,
+                                               show_default='False',
+                                               help=helptexts.NO_BUNDLE)
 
         self.on_subsequent_invoke = click.option(
             '--on-subsequent-invoke',

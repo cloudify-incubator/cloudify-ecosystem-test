@@ -18,6 +18,7 @@ from ...ecosystem_tests_cli import ecosystem_tests
 from ..utilities import (prepare_test_env,
                          validate_and_generate_test_ids)
 
+
 @ecosystem_tests.command(name='validate-blueprint',
                          short_help='Validate blueprints.')
 @prepare_test_env
