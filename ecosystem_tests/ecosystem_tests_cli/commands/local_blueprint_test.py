@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from nose.tools import nottest
 
+from ..logger import logger
 from ..exceptions import EcosystemTestCliException
 from ...ecosystem_tests_cli import ecosystem_tests
 from ...dorkl.runners import basic_blueprint_test_dev
