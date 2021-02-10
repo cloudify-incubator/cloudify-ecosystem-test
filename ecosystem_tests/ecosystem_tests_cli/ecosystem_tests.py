@@ -140,6 +140,7 @@ class Options(object):
                                     default=TIMEOUT,
                                     help=helptexts.TEST_TIMEOUT,
                                     show_default=TIMEOUT)
+
         self.test_id = click.option('--test-id',
                                     type=click.STRING,
                                     help=helptexts.TEST_ID)
