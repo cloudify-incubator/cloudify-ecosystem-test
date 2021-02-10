@@ -58,27 +58,3 @@ def local_blueprint_test(blueprint_path,
         logger.info(
             'Executing nested test: {test_path} '.format(test_path=test))
         pytest.main(['-s',test])
-
-@nottest
-def validate_and_generate_test_ids(blueprint_path, test_id):
-    """
-    Validate that if user pass mupltiple bluprints paths so test_id is not
-    provided.
-    If the user pass multiple blueprints to test , generate list of tuples:
-    [(bp1,id1),(bp2,id2)].
-    """
-    if test_id:
-        if len(blueprint_path) > 1:
-            raise EcosystemTestCliException(
-                'Please not provide test-id with multiple blueprints to test.')
-        test_ids = [test_id]
-
-    else:
-        # Generate test ids for all blueprints.
-        test_ids = [id_generator() for _ in range(len(blueprint_path))]
-
-    return list(zip(blueprint_path, test_ids))
-
-
-def id_generator(size=6, chars=string.ascii_lowercase + string.digits):
-    return 'test_' + ''.join(random.choice(chars) for _ in range(size))
