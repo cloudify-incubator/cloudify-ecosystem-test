@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -140,6 +140,7 @@ class Options(object):
                                     default=TIMEOUT,
                                     help=helptexts.TEST_TIMEOUT,
                                     show_default=TIMEOUT)
+
         self.test_id = click.option('--test-id',
                                     type=click.STRING,
                                     help=helptexts.TEST_ID)
@@ -188,12 +189,8 @@ class Options(object):
         self.container_name = click.option('-c',
                                            '--container-name',
                                            type=click.STRING,
-                                           default=MANAGER_CONTAINER_NAME,
-                                           show_default='MANAGER_CONTAINER '
-                                                        'environment '
-                                                        'variable or '
-                                                        'cfy_manager if it '
-                                                        'no exists',
+                                           default='cfy_manager',
+                                           show_default='cfy_manager',
                                            help=helptexts.CONTAINER_NAME)
 
         self.plugin = click.option('-p',
@@ -202,19 +199,18 @@ class Options(object):
                                    nargs=2,
                                    type=click.STRING,
                                    help=helptexts.PLUGINS,
-                                   callback=plugins_callback,
-                                   show_default='plugins-bundle')
+                                   callback=plugins_callback)
 
         self.plugins_bundle = click.option('--bundle-path',
                                            type=click.Path(exists=True),
                                            default=None,
                                            help=helptexts.BUNDLE)
 
-        self.no_bundle = click.option('--no-bundle-upload',
-                                      is_flag=True,
-                                      default=False,
-                                      show_default='False',
-                                      help=helptexts.NO_BUNDLE)
+        self.skip_bundle_upload = click.option('--skip-bundle-upload',
+                                               is_flag=True,
+                                               default=False,
+                                               show_default='False',
+                                               help=helptexts.NO_BUNDLE)
 
         self.on_subsequent_invoke = click.option(
             '--on-subsequent-invoke',

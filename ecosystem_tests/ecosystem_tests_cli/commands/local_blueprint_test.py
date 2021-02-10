@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,23 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
-import random
-import string
-
-import pytest
 from nose.tools import nottest
 
-from ..logger import logger
 from ..exceptions import EcosystemTestCliException
 from ...ecosystem_tests_cli import ecosystem_tests
-from ...dorkl.runners import (blueprint_validate,
-                              basic_blueprint_test_dev)
+from ...dorkl.runners import basic_blueprint_test_dev
+from ..utilities import (prepare_test_env,
+                         validate_and_generate_test_ids)
 
 
 @nottest
 @ecosystem_tests.command(name='local-blueprint-test',
                          short_help='Test blueprint locally.')
+@prepare_test_env
 @ecosystem_tests.options.blueprint_path
 @ecosystem_tests.options.test_id
 @ecosystem_tests.options.inputs
@@ -37,7 +33,7 @@ from ...dorkl.runners import (blueprint_validate,
 @ecosystem_tests.options.on_failure
 @ecosystem_tests.options.uninstall_on_success
 @ecosystem_tests.options.on_subsequent_invoke
-@ecosystem_tests.options.validate_only
+@ecosystem_tests.options.container_name
 @ecosystem_tests.options.nested_test
 def local_blueprint_test(blueprint_path,
                          test_id,
@@ -46,28 +42,22 @@ def local_blueprint_test(blueprint_path,
                          on_failure,
                          uninstall_on_success,
                          on_subsequent_invoke,
-                         validate_only,
-                         nested_test
-                         ):
+                         container_name,
+                         nested_test):
     on_failure = False if on_failure == 'False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
-    # for blueprint, test_id in bp_test_ids:
-    #     if validate_only:
-    #         blueprint_validate(blueprint_file_name=blueprint,
-    #                            blueprint_id=test_id)
-    #     else:
-    #         basic_blueprint_test_dev(blueprint_file_name=blueprint,
-    #                                  test_name=test_id,
-    #                                  inputs=inputs,
-    #                                  timeout=timeout,
-    #                                  on_subsequent_invoke=on_subsequent_invoke,
-    #                                  on_failure=on_failure,
-    #                                  uninstall_on_success=uninstall_on_success)
+    for blueprint, test_id in bp_test_ids:
+        basic_blueprint_test_dev(blueprint_file_name=blueprint,
+                                 test_name=test_id,
+                                 inputs=inputs,
+                                 timeout=timeout,
+                                 on_subsequent_invoke=on_subsequent_invoke,
+                                 on_failure=on_failure,
+                                 uninstall_on_success=uninstall_on_success)
     for test in nested_test:
         logger.info(
             'Executing nested test: {test_path} '.format(test_path=test))
         pytest.main(['-s',test])
-
 
 @nottest
 def validate_and_generate_test_ids(blueprint_path, test_id):

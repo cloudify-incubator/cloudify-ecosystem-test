@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,15 @@
 # limitations under the License.
 
 import os
-from contextlib import contextmanager
+import random
+import string
+import functools
 
 from nose.tools import nottest
 
 from .exceptions import EcosystemTestCliException
 from .constants import (LICENSE_ENVAR_NAME,
+                        MANAGER_CONTAINER_NAME,
                         MANAGER_CONTAINER_ENVAR_NAME)
 
 
@@ -35,23 +38,46 @@ def parse_key_value_pair(mapped_input, error_msg):
 
 
 @nottest
-@contextmanager
-def prepare_test_env(license,
-                     secret,
-                     file_secret,
-                     encoded_secret,
-                     container_name):
+def prepare_test_env(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        old_environ = dict(os.environ)
+        os.environ.update({LICENSE_ENVAR_NAME: kwargs.get('license', '')})
+        os.environ.update({MANAGER_CONTAINER_ENVAR_NAME: kwargs.get(
+            'container_name', MANAGER_CONTAINER_NAME)})
+        os.environ.update(kwargs.get('secret', {}))
+        os.environ.update(kwargs.get('file_secret', {}))
+        os.environ.update(kwargs.get('encoded_secret', {}))
+        try:
+            ret = func(*args, **kwargs)
+        finally:
+            os.environ.clear()
+            os.environ.update(old_environ)
+        return ret
+
+    return wrapper
+
+
+@nottest
+def validate_and_generate_test_ids(blueprint_path, test_id):
     """
-        prepare environment for prepare test.
+    Validate that if user pass mupltiple bluprints paths so test_id is not
+    provided.
+    If the user pass multiple blueprints to test , generate list of tuples:
+    [(bp1,id1),(bp2,id2)].
     """
-    old_environ = dict(os.environ)
-    os.environ.update({LICENSE_ENVAR_NAME: license})
-    os.environ.update({MANAGER_CONTAINER_ENVAR_NAME: container_name})
-    os.environ.update(secret)
-    os.environ.update(file_secret)
-    os.environ.update(encoded_secret)
-    try:
-        yield
-    finally:
-        os.environ.clear()
-        os.environ.update(old_environ)
+    if test_id:
+        if len(blueprint_path) > 1:
+            raise EcosystemTestCliException(
+                'Please not provide test-id with multiple blueprints to test.')
+        test_ids = [test_id]
+
+    else:
+        # Generate test ids for all blueprints.
+        test_ids = [id_generator() for _ in range(len(blueprint_path))]
+
+    return list(zip(blueprint_path, test_ids))
+
+
+def id_generator(size=6, chars=string.ascii_lowercase + string.digits):
+    return 'test_' + ''.join(random.choice(chars) for _ in range(size))
