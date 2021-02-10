@@ -60,4 +60,4 @@ def local_blueprint_test(blueprint_path,
     for test in nested_test:
         logger.info(
             'Executing nested test: {test_path} '.format(test_path=test))
-        pytest.main(['-s',test])
+        pytest.main(['-s', test])
