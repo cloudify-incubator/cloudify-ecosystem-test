@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,
-                                              MANAGER_CONTAINER_NAME)
+                                              MANAGER_CONTAINER_ENVAR_NAME)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_cicd_tools.validations import validate_plugin_version
@@ -98,8 +98,7 @@ def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
     :return: The command output.
     """
 
-    container_name = os.environ.get(
-        'DOCKER_CONTAINER_ID', MANAGER_CONTAINER_NAME)
+    container_name = get_manager_container_name()
     return handle_process(
         'docker exec {container_name} {cmd}'.format(
             container_name=container_name, cmd=cmd), timeout, log, detach)
@@ -173,7 +172,7 @@ def copy_file_to_docker(local_file_path):
     docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
-                                       MANAGER_CONTAINER_NAME,
+                                       get_manager_container_name(),
                                        docker_path))
     return docker_path
 
@@ -195,7 +194,7 @@ def copy_directory_to_docker(local_file_path):
     try:
         handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,
-                                            MANAGER_CONTAINER_NAME))
+                                            get_manager_container_name()))
     except EcosystemTestException:
         pass
     return remote_dir
@@ -239,3 +238,7 @@ def export_secret_to_environment(name):
     if isinstance(value, bytes):
         value = value.decode(encoding='UTF-8')
     os.environ[name.upper()] = value
+
+
+def get_manager_container_name():
+    return os.environ.get(MANAGER_CONTAINER_ENVAR_NAME, 'cfy_manager')

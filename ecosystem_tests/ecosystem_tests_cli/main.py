@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .logger import logger
 from ..ecosystem_tests_cli import ecosystem_tests
 from .commands import (validate_blueprint,
                        local_blueprint_test,

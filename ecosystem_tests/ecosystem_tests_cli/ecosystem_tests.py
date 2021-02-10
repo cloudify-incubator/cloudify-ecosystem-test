@@ -26,8 +26,7 @@ from .secrets import (secrets_to_dict,
                       encoded_secrets_to_dict)
 from .constants import (TIMEOUT,
                         DEFAULT_LICENSE_PATH,
-                        DEFAULT_BLUEPRINT_PATH,
-                        MANAGER_CONTAINER_NAME)
+                        DEFAULT_BLUEPRINT_PATH)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
