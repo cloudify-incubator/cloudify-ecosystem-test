@@ -95,15 +95,16 @@ def handle_dry_run(bp_test_ids,
                        'On failure: {on_failure} \n' \
                        'Uninstall on success: {uninstall_on_success}\n' \
                        'On subsequent invoke: {on_subsequent_invoke} \n' \
-                       '--------------------\n'.format(id=test_id,
-                                                       bp=blueprint,
-                                                       inputs=yaml.dump(inputs, default_flow_style=False).replace('\n','\n\t'),
-                                                       timeout=timeout,
-                                                       on_failure=on_failure,
-                                                       uninstall_on_success=
-                                                       uninstall_on_success,
-                                                       on_subsequent_invoke=
-                                                       on_subsequent_invoke)
+                       '--------------------' \
+                       '\n'.format(id=test_id,
+                                   bp=blueprint,
+                                   inputs=yaml.dump(inputs,
+                                                    default_flow_style=False)
+                                   .replace('\n', '\n\t'),
+                                   timeout=timeout,
+                                   on_failure=on_failure,
+                                   uninstall_on_success=uninstall_on_success,
+                                   on_subsequent_invoke=on_subsequent_invoke)
 
     for test in nested_test:
         dry_run_str += 'Nested test: {test} \n' \
@@ -118,4 +119,3 @@ def handle_dry_run(bp_test_ids,
                    '  - inputs '
 
     logger.info(dry_run_str)
-
