@@ -236,5 +236,10 @@ class Options(object):
             show_default='True',
             help=helptexts.UNINSTALL_ON_SUCCESS)
 
+        self.dry_run = click.option('--dry-run',
+                                    is_flag=True,
+                                    default=False,
+                                    show_default=False)
+
 
 options = Options()

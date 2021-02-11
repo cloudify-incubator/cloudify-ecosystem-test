@@ -15,6 +15,7 @@
 
 import pytest
 
+import yaml
 from nose.tools import nottest
 
 from ..logger import logger
@@ -37,6 +38,7 @@ from ..utilities import (prepare_test_env,
 @ecosystem_tests.options.on_subsequent_invoke
 @ecosystem_tests.options.container_name
 @ecosystem_tests.options.nested_test
+@ecosystem_tests.options.dry_run
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -45,9 +47,19 @@ def local_blueprint_test(blueprint_path,
                          uninstall_on_success,
                          on_subsequent_invoke,
                          container_name,
-                         nested_test):
+                         nested_test,
+                         dry_run):
     on_failure = False if on_failure == 'False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
+    if dry_run:
+        return handle_dry_run(bp_test_ids,
+                              inputs,
+                              timeout,
+                              on_failure,
+                              uninstall_on_success,
+                              on_subsequent_invoke,
+                              container_name,
+                              nested_test)
     for blueprint, test_id in bp_test_ids:
         basic_blueprint_test_dev(blueprint_file_name=blueprint,
                                  test_name=test_id,
@@ -60,3 +72,50 @@ def local_blueprint_test(blueprint_path,
         logger.info(
             'Executing nested test: {test_path} '.format(test_path=test))
         pytest.main(['-s', test])
+
+
+def handle_dry_run(bp_test_ids,
+                   inputs,
+                   timeout,
+                   on_failure,
+                   uninstall_on_success,
+                   on_subsequent_invoke,
+                   container_name,
+                   nested_test):
+    dry_run_str = '\nDry run:\n' \
+                  'Manager container name: {container_name} \n' \
+                  'Tests: \n\n'.format(container_name=container_name)
+
+    for blueprint, test_id in bp_test_ids:
+        dry_run_str += 'Test ID: {id} \n' \
+                       'Test Blueprint: {bp} \n' \
+                       'Test inputs: \n' \
+                       '\t{inputs} \n' \
+                       'Timeout: {timeout} \n' \
+                       'On failure: {on_failure} \n' \
+                       'Uninstall on success: {uninstall_on_success}\n' \
+                       'On subsequent invoke: {on_subsequent_invoke} \n' \
+                       '--------------------' \
+                       '\n'.format(id=test_id,
+                                   bp=blueprint,
+                                   inputs=yaml.dump(inputs,
+                                                    default_flow_style=False)
+                                   .replace('\n', '\n\t'),
+                                   timeout=timeout,
+                                   on_failure=on_failure,
+                                   uninstall_on_success=uninstall_on_success,
+                                   on_subsequent_invoke=on_subsequent_invoke)
+
+    for test in nested_test:
+        dry_run_str += 'Nested test: {test} \n' \
+                       '--------------------\n'.format(test=test)
+
+    dry_run_str += 'Notes:\n' \
+                   '* Tests id`s might change if they randomized by the ' \
+                   'tool.\n' \
+                   '* On subsequent invoke with rerun/resume the following ' \
+                   'are ignored if provided:\n' \
+                   '  - blueprint path\n' \
+                   '  - inputs '
+
+    logger.info(dry_run_str)
