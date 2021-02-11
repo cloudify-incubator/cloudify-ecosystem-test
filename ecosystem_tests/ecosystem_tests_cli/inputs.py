@@ -38,7 +38,6 @@ def inputs_to_dict(resources):
     parsed_dict = {}
 
     for resource in resources:
-        logger.debug('Processing inputs source: {0}'.format(resource))
         try:
             parsed_dict.update(_parse_single_input(resource))
         except EcosystemTestCliException as ex:
