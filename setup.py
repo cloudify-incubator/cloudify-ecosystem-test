@@ -22,6 +22,7 @@ setup(
         'pyyaml',
         'requests',
         'click>7,<8',
-        'nose>=1.3'
+        'nose>=1.3',
+        'pytest==4.6.11'
     ]
 )

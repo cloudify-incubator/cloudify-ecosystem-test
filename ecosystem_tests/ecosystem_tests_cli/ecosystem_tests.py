@@ -146,6 +146,7 @@ class Options(object):
 
         self.nested_test = click.option('--nested-test',
                                         type=click.STRING,
+                                        multiple=True,
                                         help=helptexts.NESTED_TEST)
 
         self.validate_only = click.option('--validate-only',

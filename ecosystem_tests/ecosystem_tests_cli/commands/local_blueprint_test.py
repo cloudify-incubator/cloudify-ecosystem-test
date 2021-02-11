@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from nose.tools import nottest
 
+from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 from ...dorkl.runners import basic_blueprint_test_dev
 from ..utilities import (prepare_test_env,
@@ -33,6 +36,7 @@ from ..utilities import (prepare_test_env,
 @ecosystem_tests.options.uninstall_on_success
 @ecosystem_tests.options.on_subsequent_invoke
 @ecosystem_tests.options.container_name
+@ecosystem_tests.options.nested_test
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -40,7 +44,8 @@ def local_blueprint_test(blueprint_path,
                          on_failure,
                          uninstall_on_success,
                          on_subsequent_invoke,
-                         container_name):
+                         container_name,
+                         nested_test):
     on_failure = False if on_failure == 'False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
     for blueprint, test_id in bp_test_ids:
@@ -51,3 +56,7 @@ def local_blueprint_test(blueprint_path,
                                  on_subsequent_invoke=on_subsequent_invoke,
                                  on_failure=on_failure,
                                  uninstall_on_success=uninstall_on_success)
+    for test in nested_test:
+        logger.info(
+            'Executing nested test: {test_path} '.format(test_path=test))
+        pytest.main(['-s', test])
