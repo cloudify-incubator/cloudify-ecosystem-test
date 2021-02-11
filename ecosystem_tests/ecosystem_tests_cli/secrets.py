@@ -18,7 +18,6 @@ import base64
 
 from nose.tools import nottest
 
-from .logger import logger
 from .utilities import parse_key_value_pair
 from .exceptions import EcosystemTestCliException
 

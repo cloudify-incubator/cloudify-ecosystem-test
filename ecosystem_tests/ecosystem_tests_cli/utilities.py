@@ -21,8 +21,8 @@ import functools
 from nose.tools import nottest
 
 from .exceptions import EcosystemTestCliException
+from ..dorkl.commands import get_manager_container_name
 from .constants import (LICENSE_ENVAR_NAME,
-                        MANAGER_CONTAINER_NAME,
                         MANAGER_CONTAINER_ENVAR_NAME)
 
 
@@ -44,7 +44,7 @@ def prepare_test_env(func):
         old_environ = dict(os.environ)
         os.environ.update({LICENSE_ENVAR_NAME: kwargs.get('license', '')})
         os.environ.update({MANAGER_CONTAINER_ENVAR_NAME: kwargs.get(
-            'container_name', MANAGER_CONTAINER_NAME)})
+            'container_name', get_manager_container_name())})
         os.environ.update(kwargs.get('secret', {}))
         os.environ.update(kwargs.get('file_secret', {}))
         os.environ.update(kwargs.get('encoded_secret', {}))
