@@ -256,7 +256,7 @@ def deployments_create(blueprint_id, inputs):
     :param inputs:
     :return:
     """
-    if inputs == '' or inputs is None:
+    if not inputs:
         return cloudify_exec('cfy deployments create -b {0}'.format(
             blueprint_id), get_json=False)
     with prepare_inputs(inputs) as handled_inputs:
