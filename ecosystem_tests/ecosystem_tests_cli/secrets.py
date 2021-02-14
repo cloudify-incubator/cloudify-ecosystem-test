@@ -15,6 +15,7 @@
 
 import os
 import base64
+import binascii
 
 from nose.tools import nottest
 
@@ -56,7 +57,7 @@ def file_secrets_to_dict(secrets):
                                          ERR_MSG_FILE_SECRET.format(secret))
         if not os.path.isfile(path):
             raise EcosystemTestCliException(
-                'Secret file {path} dosen`t exists!'.format(path=path))
+                'Secret file {path} dosen`t exist!'.format(path=path))
         encoded_content = _encode_file_content(path)
         secrets_dict.update({key: encoded_content})
     return secrets_dict
@@ -81,6 +82,12 @@ def encoded_secrets_to_dict(secrets):
     for secret in secrets:
         key, val = parse_key_value_pair(secret,
                                         ERR_MSG_ENCODED_SECRET.format(secret))
+        try:
+            base64.b64decode(val.encode('utf-8')).decode('ascii')
+        except (TypeError, binascii.Error):
+            raise EcosystemTestCliException(
+                'value {val} for key {key} is not base64 encoded '
+                'properly'.format(val=val, key=key))
         secrets_dict.update({key: val})
     return secrets_dict
 
@@ -94,7 +101,7 @@ def prepare_secrets_dict_for_prepare_test(regular_secrets,
         create_single_secrets_dict_for_prepare_test(regular_secrets, False))
     secrets_dict.update(
         create_single_secrets_dict_for_prepare_test(file_secrets, True))
-    # From our prspective all the encoded secres are file secrets.
+    # From our perspective all the encoded secrets are file secrets.
     secrets_dict.update(
         create_single_secrets_dict_for_prepare_test(encoded_secrets, True))
     return secrets_dict
