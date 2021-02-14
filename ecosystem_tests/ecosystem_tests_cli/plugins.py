@@ -53,6 +53,6 @@ def find_wagon_yaml_url(plugin_tuple):
         return wagon, pl_yaml
     except IndexError:
         raise EcosystemTestCliException(
-            'Plugin input -Could not find which url is for wagon and which '
+            'Plugin input - Could not find which url is for wagon and which '
             'is for plugin.yaml for: {plugins}'.format(
                 plugins=plugin_tuple))
