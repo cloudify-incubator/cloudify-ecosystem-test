@@ -19,3 +19,7 @@ from ..dorkl.constansts import (TIMEOUT,
 
 DEFAULT_BLUEPRINT_PATH = 'blueprint.yaml'
 DEFAULT_LICENSE_PATH = 'license.yaml'
+DEFAULT_CONTAINER_NAME = 'cfy_manager'
+DEFAULT_ON_SUBSEQUENT_INVOKE = 'rerun'
+DEFAULT_ON_FAILURE = 'rollback-partial'
+DEFAULT_UNINSTALL_ON_SUCCESS = True

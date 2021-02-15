@@ -1,3 +1,4 @@
+mock==3.0.5
 flake8
 nose-testconfig>=0.9
 nose-cov>=1.3
