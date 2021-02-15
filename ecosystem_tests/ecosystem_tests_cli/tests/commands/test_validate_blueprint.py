@@ -5,7 +5,7 @@ from ...commands.validate_blueprint import validate_blueprint
 from ...constants import DEFAULT_BLUEPRINT_PATH
 
 
-class LocalBlueprintTest(BaseCliCommandTest):
+class ValidateBlueprintTest(BaseCliCommandTest):
 
     @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
     @patch('ecosystem_tests.ecosystem_tests_cli.commands.validate_blueprint'
