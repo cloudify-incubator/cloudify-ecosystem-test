@@ -22,3 +22,4 @@ class BaseCliCommandTest(TestCase):
     def setUp(self):
         super(BaseCliCommandTest, self).setUp()
         self.runner = CliRunner()
+        self.test_id = 'test'

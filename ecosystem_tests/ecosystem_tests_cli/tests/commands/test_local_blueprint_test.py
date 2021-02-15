@@ -26,27 +26,26 @@ from ...constants import (TIMEOUT,
 
 ERROR_EXIT_CODE = 2
 
-TEST_ID = 'test'
-
 
 class LocalBlueprintTest(BaseCliCommandTest):
     def setUp(self):
         super(LocalBlueprintTest, self).setUp()
         self.basic_blueprint_test_defaults = {
             'blueprint_file_name': DEFAULT_BLUEPRINT_PATH,
-            'test_name': TEST_ID,
+            'test_name': self.test_id,
             'inputs': {},
             'timeout': TIMEOUT,
             'on_subsequent_invoke': DEFAULT_ON_SUBSEQUENT_INVOKE,
             'on_failure': DEFAULT_ON_FAILURE,
             'uninstall_on_success': DEFAULT_UNINSTALL_ON_SUCCESS}
 
-    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator',
-           return_value=TEST_ID)
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.basic_blueprint_test_dev')
-    def test_default_values(self, mock_basic_blueprint_test, *_):
+    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.basic_blueprint_test_dev')
+    def test_default_values(self,
+                            mock_basic_blueprint_test,
+                            mock_id_generator):
+        mock_id_generator.return_value = self.test_id
         self.runner.invoke(local_blueprint_test, [])
         mock_basic_blueprint_test.assert_called_once_with(
             **self.basic_blueprint_test_defaults)
@@ -60,12 +59,10 @@ class LocalBlueprintTest(BaseCliCommandTest):
                                  ['--test_id=test1', '--test_id=test2'])
         self.assertEqual(res.exit_code, ERROR_EXIT_CODE)
 
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.basic_blueprint_test_dev')
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.pytest.main')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.basic_blueprint_test_dev')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.pytest.main')
     def test_multiple_nested_tests(self,
                                    fake_pytest_main,
                                    *_):
@@ -86,33 +83,35 @@ class LocalBlueprintTest(BaseCliCommandTest):
                                  ['--on_failure=not_allowed_val'])
         self.assertEqual(res.exit_code, ERROR_EXIT_CODE)
 
-    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator',
-           return_value=TEST_ID)
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.handle_dry_run')
-    def test_dry_run(self, dry_run_mock, *_):
-        res = self.runner.invoke(local_blueprint_test,
-                                 ['--dry-run'])
+    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.handle_dry_run')
+    def test_dry_run(self,
+                     dry_run_mock,
+                     mock_id_generator):
+        mock_id_generator.return_value = self.test_id
+        self.runner.invoke(local_blueprint_test, ['--dry-run'])
         dry_run_mock.assert_called_once()
 
-    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator',
-           return_value=TEST_ID)
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.basic_blueprint_test_dev')
-    def test_single_input(self, mock_basic_blueprint_test, *_):
+    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.basic_blueprint_test_dev')
+    def test_single_input(self,
+                          mock_basic_blueprint_test,
+                          mock_id_generator):
+        mock_id_generator.return_value = self.test_id
         self.runner.invoke(local_blueprint_test, ['--inputs', 'key1=value1'])
         self.basic_blueprint_test_defaults['inputs'] = {'key1': 'value1'}
         mock_basic_blueprint_test.assert_called_once_with(
             **self.basic_blueprint_test_defaults)
 
-    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator',
-           return_value=TEST_ID)
-    @patch(
-        'ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
-        '.basic_blueprint_test_dev')
-    def test_multiple_inputs(self, mock_basic_blueprint_test, *_):
+    @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.local_blueprint_test'
+           '.basic_blueprint_test_dev')
+    def test_multiple_inputs(self,
+                             mock_basic_blueprint_test,
+                             mock_id_generator):
+        mock_id_generator.return_value = self.test_id
         self.runner.invoke(local_blueprint_test,
                            ['-i', 'key1=value1', '-i', 'key2=value2'])
         self.basic_blueprint_test_defaults['inputs'] = {'key1': 'value1',
@@ -127,4 +126,5 @@ class LocalBlueprintTest(BaseCliCommandTest):
             self.runner.invoke(local_blueprint_test,
                                ['--blueprint-path', '/path/to/bp1.yaml',
                                 '--blueprint-path', '/path/to/bp2.yaml',
-                                '--test-id', TEST_ID], catch_exceptions=False)
+                                '--test-id', self.test_id],
+                               catch_exceptions=False)
