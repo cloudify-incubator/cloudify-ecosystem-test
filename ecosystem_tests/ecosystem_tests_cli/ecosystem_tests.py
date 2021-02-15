@@ -127,7 +127,8 @@ class Options(object):
                                            default=[DEFAULT_BLUEPRINT_PATH],
                                            type=click.Path(),
                                            multiple=True,
-                                           show_default=DEFAULT_BLUEPRINT_PATH)
+                                           show_default=DEFAULT_BLUEPRINT_PATH,
+                                           help=helptexts.BLUEPRINT_PATH)
 
         self.inputs = click.option(
             '-i',
