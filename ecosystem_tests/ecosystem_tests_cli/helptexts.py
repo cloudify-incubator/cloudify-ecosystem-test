@@ -27,8 +27,6 @@ TEST_ID = 'Test id, the name of the test deployment.'
 NESTED_TEST = 'Nested tests, will run by pytest, should be specified in the ' \
               'pytest notation like: path/to/module.py::TestClass::test_method'
 
-VALIDATE_ONLY = 'Perform blueprint validation only on the given blueprints.'
-
 LICENSE = 'Licence for the manager, should be either path to licence file ' \
           'or base64 encoded licence string.'
 

@@ -26,6 +26,9 @@ from ..utilities import (prepare_test_env,
 @ecosystem_tests.options.container_name
 def validate_blueprint(blueprint_path,
                        container_name):
+    """
+    Perform blueprint validation on the given blueprints.
+    """
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, None)
     for blueprint, test_id in bp_test_ids:
         blueprint_validate(blueprint_file_name=blueprint,
