@@ -16,7 +16,6 @@
 from mock import patch
 
 from ...exceptions import EcosystemTestCliException
-
 from ..commands import BaseCliCommandTest
 from ...commands.local_blueprint_test import local_blueprint_test
 from ...constants import (TIMEOUT,
