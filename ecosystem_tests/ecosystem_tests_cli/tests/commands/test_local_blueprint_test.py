@@ -15,6 +15,7 @@
 
 from mock import patch
 
+from . import ERROR_EXIT_CODE
 from ...exceptions import EcosystemTestCliException
 from ..commands import BaseCliCommandTest
 from ...commands.local_blueprint_test import local_blueprint_test
@@ -24,7 +25,7 @@ from ...constants import (TIMEOUT,
                           DEFAULT_ON_SUBSEQUENT_INVOKE,
                           DEFAULT_UNINSTALL_ON_SUCCESS)
 
-ERROR_EXIT_CODE = 2
+
 
 
 class LocalBlueprintTest(BaseCliCommandTest):

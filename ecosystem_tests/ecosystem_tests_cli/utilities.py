@@ -16,6 +16,8 @@
 import os
 import random
 import string
+import base64
+import binascii
 import functools
 
 from nose.tools import nottest
@@ -81,3 +83,16 @@ def validate_and_generate_test_ids(blueprint_path, test_id):
 
 def id_generator(size=6, chars=string.ascii_lowercase + string.digits):
     return 'test_' + ''.join(random.choice(chars) for _ in range(size))
+
+
+def validate_string_is_base64_encoded(encoded_string):
+    """
+    This function try's to decode the received string.
+    If it fails so the string is not base64 encoded.
+    """
+    try:
+        base64.b64decode(encoded_string.encode('utf-8')).decode('ascii')
+    except (TypeError, binascii.Error):
+        raise EcosystemTestCliException(
+            'string: {val} is not base64 encoded.'.format(
+                val=encoded_string))

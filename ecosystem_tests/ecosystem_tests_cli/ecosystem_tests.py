@@ -21,6 +21,7 @@ from .inputs import inputs_to_dict
 from .plugins import create_plugins_list
 from ..ecosystem_tests_cli import helptexts
 from .exceptions import EcosystemTestCliException
+from .utilities import validate_string_is_base64_encoded
 from .secrets import (secrets_to_dict,
                       file_secrets_to_dict,
                       encoded_secrets_to_dict)
@@ -74,6 +75,7 @@ def license_callback(ctx, param, value):
         raise EcosystemTestCliException(
             'Liscence not found in default location: {path}'.format(
                 path=DEFAULT_LICENSE_PATH))
+    validate_string_is_base64_encoded(value)
     return value
 
 

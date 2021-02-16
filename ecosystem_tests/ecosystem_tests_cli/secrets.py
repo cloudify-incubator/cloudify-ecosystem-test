@@ -19,8 +19,10 @@ import binascii
 
 from nose.tools import nottest
 
-from .utilities import parse_key_value_pair
 from .exceptions import EcosystemTestCliException
+from .utilities import (parse_key_value_pair,
+                        validate_string_is_base64_encoded)
+
 
 ERR_MSG = 'Invalid input format for secret: {0}, the expected format is: ' \
           'key=value'
@@ -82,12 +84,7 @@ def encoded_secrets_to_dict(secrets):
     for secret in secrets:
         key, val = parse_key_value_pair(secret,
                                         ERR_MSG_ENCODED_SECRET.format(secret))
-        try:
-            base64.b64decode(val.encode('utf-8')).decode('ascii')
-        except (TypeError, binascii.Error):
-            raise EcosystemTestCliException(
-                'value {val} for key {key} is not base64 encoded '
-                'properly'.format(val=val, key=key))
+        validate_string_is_base64_encoded(val)
         secrets_dict.update({key: val})
     return secrets_dict
 

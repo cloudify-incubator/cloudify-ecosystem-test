@@ -16,6 +16,8 @@
 from testtools import TestCase
 from click.testing import CliRunner
 
+ERROR_EXIT_CODE = 2
+
 
 class BaseCliCommandTest(TestCase):
 
