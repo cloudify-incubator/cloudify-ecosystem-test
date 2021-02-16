@@ -15,11 +15,14 @@
 
 import os
 import base64
+import binascii
 
 from nose.tools import nottest
 
-from .utilities import parse_key_value_pair
 from .exceptions import EcosystemTestCliException
+from .utilities import (parse_key_value_pair,
+                        validate_string_is_base64_encoded)
+
 
 ERR_MSG = 'Invalid input format for secret: {0}, the expected format is: ' \
           'key=value'
@@ -56,7 +59,7 @@ def file_secrets_to_dict(secrets):
                                          ERR_MSG_FILE_SECRET.format(secret))
         if not os.path.isfile(path):
             raise EcosystemTestCliException(
-                'Secret file {path} dosen`t exists!'.format(path=path))
+                'Secret file {path} dosen`t exist!'.format(path=path))
         encoded_content = _encode_file_content(path)
         secrets_dict.update({key: encoded_content})
     return secrets_dict
@@ -81,6 +84,7 @@ def encoded_secrets_to_dict(secrets):
     for secret in secrets:
         key, val = parse_key_value_pair(secret,
                                         ERR_MSG_ENCODED_SECRET.format(secret))
+        validate_string_is_base64_encoded(val)
         secrets_dict.update({key: val})
     return secrets_dict
 
@@ -94,7 +98,7 @@ def prepare_secrets_dict_for_prepare_test(regular_secrets,
         create_single_secrets_dict_for_prepare_test(regular_secrets, False))
     secrets_dict.update(
         create_single_secrets_dict_for_prepare_test(file_secrets, True))
-    # From our prspective all the encoded secres are file secrets.
+    # From our perspective all the encoded secrets are file secrets.
     secrets_dict.update(
         create_single_secrets_dict_for_prepare_test(encoded_secrets, True))
     return secrets_dict

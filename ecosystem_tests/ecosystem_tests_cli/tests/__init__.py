@@ -12,14 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from ..dorkl.constansts import (TIMEOUT,
-                                LICENSE_ENVAR_NAME,
-                                MANAGER_CONTAINER_ENVAR_NAME)
-
-DEFAULT_BLUEPRINT_PATH = 'blueprint.yaml'
-DEFAULT_LICENSE_PATH = 'license.yaml'
-DEFAULT_CONTAINER_NAME = 'cfy_manager'
-DEFAULT_ON_SUBSEQUENT_INVOKE = 'rerun'
-DEFAULT_ON_FAILURE = 'rollback-partial'
-DEFAULT_UNINSTALL_ON_SUCCESS = True

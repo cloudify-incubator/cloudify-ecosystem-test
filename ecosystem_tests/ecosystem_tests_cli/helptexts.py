@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+BLUEPRINT_PATH = 'Blueprint path, This option can be used multiple times.'
+
 INPUTS_PARAMS_USAGE = (
     '(Can be provided as path to YAML file, or as '
     '\'key1=value1;key2=value2\'). This argument can be used multiple times.'
@@ -26,8 +28,6 @@ TEST_ID = 'Test id, the name of the test deployment.'
 
 NESTED_TEST = 'Nested tests, will run by pytest, should be specified in the ' \
               'pytest notation like: path/to/module.py::TestClass::test_method'
-
-VALIDATE_ONLY = 'Perform blueprint validation only on the given blueprints.'
 
 LICENSE = 'Licence for the manager, should be either path to licence file ' \
           'or base64 encoded licence string.'

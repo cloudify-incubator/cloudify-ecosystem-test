@@ -21,12 +21,17 @@ from .inputs import inputs_to_dict
 from .plugins import create_plugins_list
 from ..ecosystem_tests_cli import helptexts
 from .exceptions import EcosystemTestCliException
+from .utilities import validate_string_is_base64_encoded
 from .secrets import (secrets_to_dict,
                       file_secrets_to_dict,
                       encoded_secrets_to_dict)
 from .constants import (TIMEOUT,
+                        DEFAULT_ON_FAILURE,
                         DEFAULT_LICENSE_PATH,
-                        DEFAULT_BLUEPRINT_PATH)
+                        DEFAULT_BLUEPRINT_PATH,
+                        DEFAULT_CONTAINER_NAME,
+                        DEFAULT_ON_SUBSEQUENT_INVOKE,
+                        DEFAULT_UNINSTALL_ON_SUCCESS)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
@@ -70,6 +75,7 @@ def license_callback(ctx, param, value):
         raise EcosystemTestCliException(
             'Liscence not found in default location: {path}'.format(
                 path=DEFAULT_LICENSE_PATH))
+    validate_string_is_base64_encoded(value)
     return value
 
 
@@ -123,7 +129,8 @@ class Options(object):
                                            default=[DEFAULT_BLUEPRINT_PATH],
                                            type=click.Path(),
                                            multiple=True,
-                                           show_default=DEFAULT_BLUEPRINT_PATH)
+                                           show_default=DEFAULT_BLUEPRINT_PATH,
+                                           help=helptexts.BLUEPRINT_PATH)
 
         self.inputs = click.option(
             '-i',
@@ -148,12 +155,6 @@ class Options(object):
                                         type=click.STRING,
                                         multiple=True,
                                         help=helptexts.NESTED_TEST)
-
-        self.validate_only = click.option('--validate-only',
-                                          is_flag=True,
-                                          default=False,
-                                          show_default='False',
-                                          help=helptexts.VALIDATE_ONLY)
 
         self.license = click.option('-l',
                                     '--license',
@@ -189,7 +190,7 @@ class Options(object):
                                            '--container-name',
                                            type=click.STRING,
                                            default='cfy_manager',
-                                           show_default='cfy_manager',
+                                           show_default=DEFAULT_CONTAINER_NAME,
                                            help=helptexts.CONTAINER_NAME)
 
         self.plugin = click.option('-p',
@@ -215,8 +216,8 @@ class Options(object):
             '--on-subsequent-invoke',
             type=click.Choice(['resume', 'rerun', 'update'],
                               case_sensitive=False),
-            default='rerun',
-            show_default='rerun',
+            default=DEFAULT_ON_SUBSEQUENT_INVOKE,
+            show_default=DEFAULT_ON_SUBSEQUENT_INVOKE,
             help=helptexts.SUBSEQUENT_INVOKE)
 
         self.on_failure = click.option('--on-failure',
@@ -225,15 +226,15 @@ class Options(object):
                                                           'rollback-partial',
                                                           'uninstall-force'],
                                                          case_sensitive=False),
-                                       default='rollback-partial',
-                                       show_default='rollback-partial',
+                                       default=DEFAULT_ON_FAILURE,
+                                       show_default=DEFAULT_ON_FAILURE,
                                        help=helptexts.ON_FAILURE)
 
         self.uninstall_on_success = click.option(
             '--uninstall-on-success',
             type=click.BOOL,
-            default=True,
-            show_default='True',
+            default=DEFAULT_UNINSTALL_ON_SUCCESS,
+            show_default=DEFAULT_UNINSTALL_ON_SUCCESS,
             help=helptexts.UNINSTALL_ON_SUCCESS)
 
         self.dry_run = click.option('--dry-run',

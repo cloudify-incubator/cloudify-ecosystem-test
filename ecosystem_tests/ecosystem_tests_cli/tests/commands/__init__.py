@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..dorkl.constansts import (TIMEOUT,
-                                LICENSE_ENVAR_NAME,
-                                MANAGER_CONTAINER_ENVAR_NAME)
+from testtools import TestCase
+from click.testing import CliRunner
 
-DEFAULT_BLUEPRINT_PATH = 'blueprint.yaml'
-DEFAULT_LICENSE_PATH = 'license.yaml'
-DEFAULT_CONTAINER_NAME = 'cfy_manager'
-DEFAULT_ON_SUBSEQUENT_INVOKE = 'rerun'
-DEFAULT_ON_FAILURE = 'rollback-partial'
-DEFAULT_UNINSTALL_ON_SUCCESS = True
+ERROR_EXIT_CODE = 2
+
+
+class BaseCliCommandTest(TestCase):
+
+    def setUp(self):
+        super(BaseCliCommandTest, self).setUp()
+        self.runner = CliRunner()
+        self.test_id = 'test'
