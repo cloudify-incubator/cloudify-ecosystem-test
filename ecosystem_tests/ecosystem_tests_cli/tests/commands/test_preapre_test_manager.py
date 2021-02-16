@@ -30,10 +30,11 @@ class PrepareTestManagerTest(BaseCliCommandTest):
            '.prepare_test_dev')
     def test_prepare_manager_license_only(self, mock_prepare_test_dev):
         self.runner.invoke(prepare_test_manager, ['--license', DEMO_LICENCE])
-        mock_prepare_test_dev.assert_called_once_with(plugins=[],
-                                                      secrets={},
-                                                      execute_bundle_upload=True,
-                                                      bundle_path=None)
+        mock_prepare_test_dev.assert_called_once_with(
+            plugins=[],
+            secrets={},
+            execute_bundle_upload=True,
+            bundle_path=None)
 
     def test_prepare_manager_not_base64_encoded_licence(self):
         with self.assertRaisesRegexp(EcosystemTestCliException,

@@ -26,8 +26,6 @@ from ...constants import (TIMEOUT,
                           DEFAULT_UNINSTALL_ON_SUCCESS)
 
 
-
-
 class LocalBlueprintTest(BaseCliCommandTest):
     def setUp(self):
         super(LocalBlueprintTest, self).setUp()
