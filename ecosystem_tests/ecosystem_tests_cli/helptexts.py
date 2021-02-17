@@ -62,8 +62,9 @@ SUBSEQUENT_INVOKE = 'Which action to perform on subsequent invocation of ' \
                     'the test (same test id).Should be one of: ' \
                     'resume, rerun, update.'
 
-ON_FAILURE = 'Which action to perform on test failure.' \
-             'Should be one of: false(do nothing), rollback-full, ' \
+ON_FAILURE = 'Which action to perform on test failure. ' \
+             'Should be one of: donothing(do nothing), cancel(cancel ' \
+             'install/update workflows if test fails), rollback-full, ' \
              'rollback-partial, uninstall-force'
 
 UNINSTALL_ON_SUCCESS = 'Whehter to perform uninstall if the test succeeded,' \

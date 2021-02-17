@@ -25,12 +25,18 @@ from .utilities import validate_string_is_base64_encoded
 from .secrets import (secrets_to_dict,
                       file_secrets_to_dict,
                       encoded_secrets_to_dict)
-from .constants import (TIMEOUT,
-                        DEFAULT_ON_FAILURE,
+from .constants import (RERUN,
+                        RESUME,
+                        UPDATE,
+                        CANCEL,
+                        TIMEOUT,
+                        DONOTHING,
+                        ROLLBACK_FULL,
+                        UNINSTALL_FORCE,
+                        ROLLBACK_PARTIAL,
                         DEFAULT_LICENSE_PATH,
                         DEFAULT_BLUEPRINT_PATH,
                         DEFAULT_CONTAINER_NAME,
-                        DEFAULT_ON_SUBSEQUENT_INVOKE,
                         DEFAULT_UNINSTALL_ON_SUCCESS)
 
 CLICK_CONTEXT_SETTINGS = dict(
@@ -73,7 +79,7 @@ def license_callback(ctx, param, value):
         return base64.b64encode(content.encode('utf-8')).decode('ascii')
     elif value == DEFAULT_LICENSE_PATH:
         raise EcosystemTestCliException(
-            'Liscence not found in default location: {path}'.format(
+            'License not found in default location: {path}'.format(
                 path=DEFAULT_LICENSE_PATH))
     validate_string_is_base64_encoded(value)
     return value
@@ -214,20 +220,21 @@ class Options(object):
 
         self.on_subsequent_invoke = click.option(
             '--on-subsequent-invoke',
-            type=click.Choice(['resume', 'rerun', 'update'],
+            type=click.Choice([RESUME, RERUN, UPDATE],
                               case_sensitive=False),
-            default=DEFAULT_ON_SUBSEQUENT_INVOKE,
-            show_default=DEFAULT_ON_SUBSEQUENT_INVOKE,
+            default=RERUN,
+            show_default=RERUN,
             help=helptexts.SUBSEQUENT_INVOKE)
 
         self.on_failure = click.option('--on-failure',
-                                       type=click.Choice(['False',
-                                                          'rollback-full',
-                                                          'rollback-partial',
-                                                          'uninstall-force'],
+                                       type=click.Choice([CANCEL,
+                                                          DONOTHING,
+                                                          ROLLBACK_FULL,
+                                                          ROLLBACK_PARTIAL,
+                                                          UNINSTALL_FORCE],
                                                          case_sensitive=False),
-                                       default=DEFAULT_ON_FAILURE,
-                                       show_default=DEFAULT_ON_FAILURE,
+                                       default=ROLLBACK_PARTIAL,
+                                       show_default=ROLLBACK_PARTIAL,
                                        help=helptexts.ON_FAILURE)
 
         self.uninstall_on_success = click.option(

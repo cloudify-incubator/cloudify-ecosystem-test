@@ -49,7 +49,6 @@ def local_blueprint_test(blueprint_path,
                          container_name,
                          nested_test,
                          dry_run):
-    on_failure = False if on_failure == 'False' else on_failure
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
     if dry_run:
         return handle_dry_run(bp_test_ids,
