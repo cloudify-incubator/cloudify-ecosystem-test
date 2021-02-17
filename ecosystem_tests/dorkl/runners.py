@@ -23,9 +23,17 @@ from tempfile import NamedTemporaryFile
 
 from nose.tools import nottest
 
-from ecosystem_tests.dorkl.constansts import (logger,
+from ecosystem_tests.dorkl.constansts import (RERUN,
+                                              logger,
+                                              RESUME,
+                                              UPDATE,
+                                              CANCEL,
                                               TIMEOUT,
-                                              VPN_CONFIG_PATH)
+                                              DONOTHING,
+                                              ROLLBACK_FULL,
+                                              UNINSTALL_FORCE,
+                                              VPN_CONFIG_PATH,
+                                              ROLLBACK_PARTIAL)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
@@ -235,11 +243,18 @@ def is_first_invocation(test_name):
 
 
 def validate_on_subsequent_invoke_param(on_subsequent_invoke=None):
-    if on_subsequent_invoke and on_subsequent_invoke not in ['resume', 'rerun',
-                                                             'update']:
+    if on_subsequent_invoke not in [RESUME, RERUN, UPDATE]:
         raise EcosystemTestException(
             'on_subsequent_invoke param must be one of:'
             ' resume, rerun, update')
+
+
+def validate_on_failure_param(on_failure=None):
+    if on_failure not in [DONOTHING, CANCEL, ROLLBACK_FULL,
+                          ROLLBACK_PARTIAL, UNINSTALL_FORCE]:
+        raise EcosystemTestException(
+            'on_failure param should be one of: donothing, cancel, '
+            'rollback-full, rollback-partial, uninstall-force')
 
 
 @nottest
@@ -248,7 +263,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
                              inputs=None,
                              timeout=None,
                              on_subsequent_invoke=None,
-                             on_failure='rollback-partial',
+                             on_failure=ROLLBACK_PARTIAL,
                              uninstall_on_success=True,
                              user_defined_check=None,
                              user_defined_check_params=None
@@ -263,8 +278,8 @@ def basic_blueprint_test_dev(blueprint_file_name,
     :param timeout:
     :param on_subsequent_invoke: Should be one of: resume,rerun,update
     :param on_failure:  What should test do in failure.
-    Should be one of: False(do nothing),rollback-full,rollback-partial,
-    uninstall-force.
+    Should be one of: donothing(do nothing), cancel(cancel install/update
+    workflow if test fails), rollback-full, rollback-partial, uninstall-force.
     The default value is rollback-partial.
     :param uninstall_on_success: Perform uninstall if the test succeeded,
     and delete the test blueprint.
@@ -275,6 +290,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
     :return:
     """
     timeout = timeout or TIMEOUT
+    validate_on_failure_param(on_failure)
     if is_first_invocation(test_name):
         try:
             first_invocation_test_path(
@@ -356,15 +372,15 @@ def subsequent_invocation_test_path(blueprint_file_name,
     and delete the test blueprint.
     """
     logger.debug('on subsequent_invocation_test_path')
-    if on_subsequent_invoke == 'resume':
+    if on_subsequent_invoke == RESUME:
         logger.warning('Resuming install workflow of existing test. '
                        'blueprint_file_name and inputs are ignored!!')
         resume_install_workflow(test_name, timeout)
-    elif on_subsequent_invoke == 'rerun':
+    elif on_subsequent_invoke == RERUN:
         logger.warning('Rerunning install workflow of existing test. '
                        'blueprint_file_name and inputs are ignored!!')
         start_install_workflow(test_name, timeout)
-    elif on_subsequent_invoke == 'update':
+    elif on_subsequent_invoke == UPDATE:
         update_bp_name = test_name + '-' + datetime.now().strftime(
             "%d-%m-%Y-%H-%M-%S")
         handle_deployment_update(blueprint_file_name,
@@ -517,18 +533,18 @@ def handle_test_failure(test_name, on_failure, timeout):
     """
     logger.info('Handling test failure...')
     executions_to_cancel = find_executions_to_cancel(test_name)
-    if on_failure is False:
+    if on_failure is DONOTHING:
         return
-    elif on_failure == 'rollback-full':
+    elif on_failure is CANCEL:
+        cancel_multiple_executions(executions_to_cancel, timeout, force=False)
+    elif on_failure == ROLLBACK_FULL:
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
         executions_start('rollback', test_name, timeout,
                          params='full_rollback=true')
-        pass
-    elif on_failure == 'rollback-partial':
+    elif on_failure == ROLLBACK_PARTIAL:
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
         executions_start('rollback', test_name, timeout)
-        pass
-    elif on_failure == 'uninstall-force':
+    elif on_failure == UNINSTALL_FORCE:
         cancel_multiple_executions(executions_to_cancel, timeout, force=False)
         cleanup_on_failure(test_name)
     else:

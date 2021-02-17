@@ -380,7 +380,7 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
         executions = executions_list(deployment_id)
         try:
             ex = [e for e in executions
-                  if workflow_id == e['workflow_id']][0]
+                  if workflow_id == e['workflow_id']][-1]
         except (IndexError, KeyError):
             raise EcosystemTestException(
                 'Workflow {0} for deployment {1} was not found.'.format(

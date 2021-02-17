@@ -19,10 +19,10 @@ from . import ERROR_EXIT_CODE
 from ...exceptions import EcosystemTestCliException
 from ..commands import BaseCliCommandTest
 from ...commands.local_blueprint_test import local_blueprint_test
-from ...constants import (TIMEOUT,
-                          DEFAULT_ON_FAILURE,
+from ...constants import (RERUN,
+                          TIMEOUT,
+                          ROLLBACK_PARTIAL,
                           DEFAULT_BLUEPRINT_PATH,
-                          DEFAULT_ON_SUBSEQUENT_INVOKE,
                           DEFAULT_UNINSTALL_ON_SUCCESS)
 
 
@@ -34,8 +34,8 @@ class LocalBlueprintTest(BaseCliCommandTest):
             'test_name': self.test_id,
             'inputs': {},
             'timeout': TIMEOUT,
-            'on_subsequent_invoke': DEFAULT_ON_SUBSEQUENT_INVOKE,
-            'on_failure': DEFAULT_ON_FAILURE,
+            'on_subsequent_invoke': RERUN,
+            'on_failure': ROLLBACK_PARTIAL,
             'uninstall_on_success': DEFAULT_UNINSTALL_ON_SUCCESS}
 
     @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
