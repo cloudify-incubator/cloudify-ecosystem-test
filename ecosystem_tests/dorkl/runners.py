@@ -53,7 +53,8 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
                                                 create_test_secrets,
                                                 upload_test_plugins_dev,
                                                 cancel_multiple_executions,
-                                                get_deployment_output_by_name)
+                                                get_deployment_output_by_name,
+                                                get_blueprint_id_of_deployment)
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
                                             copy_file_to_docker)
@@ -426,14 +427,7 @@ def handle_uninstall_on_success(test_name, timeout):
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
     try:
-        deployments_list = cloudify_exec('cfy deployments list')
-
-        def _get_blueprint_id(dep_dict):
-            if dep_dict['id'] == test_name:
-                return dep_dict["blueprint_id"]
-
-        blueprint_of_deployment = [_get_blueprint_id(deployment) for
-                                   deployment in deployments_list][0]
+        blueprint_of_deployment = get_blueprint_id_of_deployment(test_name)
         logger.info(
             "Blueprint id of deployment {dep_id} is : {blueprint_id}".format(
                 dep_id=test_name, blueprint_id=blueprint_of_deployment))
