@@ -45,9 +45,7 @@ ENCODED_SECRETS = 'Base 64 encoded secret to update on the manager, ' \
                   'can' \
                   ' be used multiple times.'
 
-CONTAINER_NAME = 'Manager docker container name. ' \
-                 'Default: MANAGER_CONTAINER environment variable or ' \
-                 '"cfy_manager" if there is no such environment variable.'
+CONTAINER_NAME = 'Manager docker container name.'
 
 PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
           '--plugin plugin_wagon_url plugin.yaml_url. ' \

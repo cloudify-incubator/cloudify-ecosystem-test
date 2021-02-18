@@ -21,7 +21,7 @@ from .commands import (validate_blueprint,
 
 @ecosystem_tests.group(name='ecosystem-test')
 def _ecosystem_test():
-    """Ecosystetm tests Command Line Interface."""
+    """Ecosystem tests Command Line Interface."""
     ecosystem_tests.init()
 
 
