@@ -282,6 +282,13 @@ def get_deployment_output_by_name(deployment_id, output_id):
     return outputs.get(output_id, {}).get('value')
 
 
+def get_blueprint_id_of_deployment(deployment_id):
+    deployments_list = cloudify_exec('cfy deployments list')
+    for deployment in deployments_list:
+        if deployment['id'] == deployment_id:
+            return deployment["blueprint_id"]
+
+
 def executions_start(workflow_id, deployment_id, timeout, params=None):
     """
     Start an execution on the manager.

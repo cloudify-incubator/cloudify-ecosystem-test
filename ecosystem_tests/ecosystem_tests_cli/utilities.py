@@ -71,7 +71,8 @@ def validate_and_generate_test_ids(blueprint_path, test_id):
     if test_id:
         if len(blueprint_path) > 1:
             raise EcosystemTestCliException(
-                'Please not provide test-id with multiple blueprints to test.')
+                'Please do not provide test-id with multiple blueprints to '
+                'test.')
         test_ids = [test_id]
 
     else:

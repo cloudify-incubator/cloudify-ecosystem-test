@@ -120,7 +120,7 @@ class LocalBlueprintTest(BaseCliCommandTest):
 
     def test_multiple_blueprints_and_test_id(self):
         with self.assertRaisesRegexp(EcosystemTestCliException,
-                                     'Please not provide test-id with '
+                                     'Please do not provide test-id with '
                                      'multiple blueprints to test.'):
             self.runner.invoke(local_blueprint_test,
                                ['--blueprint-path', '/path/to/bp1.yaml',

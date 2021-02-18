@@ -38,7 +38,7 @@ class UtilitiesTest(TestCase):
 
     def test_validate_and_generate_test_ids_multiple_bps_one_test_id(self):
         with self.assertRaisesRegexp(EcosystemTestCliException,
-                                     'Please not provide test-id with '
+                                     'Please do not provide test-id with '
                                      'multiple blueprints to test.'):
             utilities.validate_and_generate_test_ids(self.blueprints,
                                                      self.test_id)
