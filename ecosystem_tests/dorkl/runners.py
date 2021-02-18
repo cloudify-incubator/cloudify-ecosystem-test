@@ -426,11 +426,11 @@ def handle_uninstall_on_success(test_name, timeout):
     logger.info('Uninstalling...')
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
+    blueprint_of_deployment = get_blueprint_id_of_deployment(test_name)
+    logger.info(
+        "Blueprint id of deployment {dep_id} is : {blueprint_id}".format(
+            dep_id=test_name, blueprint_id=blueprint_of_deployment))
     try:
-        blueprint_of_deployment = get_blueprint_id_of_deployment(test_name)
-        logger.info(
-            "Blueprint id of deployment {dep_id} is : {blueprint_id}".format(
-                dep_id=test_name, blueprint_id=blueprint_of_deployment))
         deployment_delete(test_name)
         blueprints_delete(blueprint_of_deployment)
     except Exception as e:
