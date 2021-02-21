@@ -22,6 +22,8 @@ import functools
 
 from nose.tools import nottest
 
+from cloudify._compat import text_type
+
 from .exceptions import EcosystemTestCliException
 from ..dorkl.commands import get_manager_container_name
 from .constants import (LICENSE_ENVAR_NAME,
@@ -31,8 +33,8 @@ from .constants import (LICENSE_ENVAR_NAME,
 def parse_key_value_pair(mapped_input, error_msg):
     split_mapping = mapped_input.split('=', 1)
     try:
-        key = str(split_mapping[0].strip())
-        value = str(split_mapping[1].strip())
+        key = text_type(split_mapping[0].strip())
+        value = text_type(split_mapping[1].strip())
         return key, value
     except IndexError:
         raise EcosystemTestCliException(
