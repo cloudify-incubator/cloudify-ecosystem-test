@@ -60,6 +60,7 @@ def local_blueprint_test(blueprint_path,
                               container_name,
                               nested_test)
     for blueprint, test_id in bp_test_ids:
+        logger.info("the inputs from the cli:{}".format(inputs))
         basic_blueprint_test_dev(blueprint_file_name=blueprint,
                                  test_name=test_id,
                                  inputs=inputs,
