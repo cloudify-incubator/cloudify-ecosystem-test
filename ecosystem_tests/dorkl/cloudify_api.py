@@ -469,7 +469,7 @@ def prepare_inputs(inputs):
     if not inputs:
         yield
     elif type(inputs) is dict:
-        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
+        with NamedTemporaryFile(mode='w+', delete=False) as outfile:
             yaml.dump(inputs, outfile, allow_unicode=True)
             logger.debug(
                 "temporary inputs file path {p}".format(p=outfile.name))
