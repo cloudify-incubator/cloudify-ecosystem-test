@@ -34,7 +34,8 @@ class PrepareTestManagerTest(BaseCliCommandTest):
             plugins=[],
             secrets={},
             execute_bundle_upload=True,
-            bundle_path=None)
+            bundle_path=None,
+            yum_packages=[])
 
     def test_prepare_manager_not_base64_encoded_licence(self):
         with self.assertRaisesRegexp(EcosystemTestCliException,
@@ -58,7 +59,8 @@ class PrepareTestManagerTest(BaseCliCommandTest):
             plugins=[],
             secrets=expected_secrets_dict,
             execute_bundle_upload=True,
-            bundle_path=None)
+            bundle_path=None,
+            yum_packages=[])
 
     def test_prepare_manager_missing_arg_plugin(self):
         res = self.runner.invoke(prepare_test_manager,
@@ -82,7 +84,8 @@ class PrepareTestManagerTest(BaseCliCommandTest):
             plugins=[('wagon', 'yaml')],
             secrets={},
             execute_bundle_upload=True,
-            bundle_path=None)
+            bundle_path=None,
+            yum_packages=[])
 
     def test_prepare_test_bundle_path_not_exists(self):
         res = self.runner.invoke(prepare_test_manager,
