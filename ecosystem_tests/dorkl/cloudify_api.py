@@ -470,7 +470,7 @@ def prepare_inputs(inputs):
         yield
     elif type(inputs) is dict:
         with NamedTemporaryFile(mode='w+', delete=True) as outfile:
-            yaml.dump(inputs, outfile, allow_unicode=True)
+            yaml.dump(inputs, outfile, allow_unicode=False)
             logger.debug(
                 "temporary inputs file path {p}".format(p=outfile.name))
             inputs_on_docker = copy_file_to_docker(outfile.name)
@@ -505,6 +505,8 @@ def upload_test_plugins_dev(plugins,
     bundle_path = bundle_path or ''
     if execute_bundle_upload:
         if os.path.isfile(bundle_path):
+            logger.info("Using plugins bundle found at: {path}".format(
+                path=bundle_path))
             cloudify_exec(
                 'cfy plugins bundle-upload --path {bundle_path}'.format(
                     bundle_path=copy_file_to_docker(bundle_path)),

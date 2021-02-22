@@ -31,8 +31,8 @@ from .constants import (LICENSE_ENVAR_NAME,
 def parse_key_value_pair(mapped_input, error_msg):
     split_mapping = mapped_input.split('=', 1)
     try:
-        key = split_mapping[0].strip()
-        value = split_mapping[1].strip()
+        key = str(split_mapping[0].strip())
+        value = str(split_mapping[1].strip())
         return key, value
     except IndexError:
         raise EcosystemTestCliException(

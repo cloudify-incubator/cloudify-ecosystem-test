@@ -119,6 +119,12 @@ def plugins_callback(ctx, param, value):
     return create_plugins_list(value)
 
 
+def yum_packages_callback(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return []
+    return value
+
+
 class Options(object):
     def __init__(self):
         """The options api is nicer when you use each option by calling
@@ -248,6 +254,12 @@ class Options(object):
                                     is_flag=True,
                                     default=False,
                                     show_default=False)
+
+        self.yum_packages = click.option('--yum-package',
+                                         multiple=True,
+                                         type=click.STRING,
+                                         help=helptexts.YUM_PACKAGES,
+                                         callback=yum_packages_callback)
 
 
 options = Options()

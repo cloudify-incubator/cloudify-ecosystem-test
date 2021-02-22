@@ -551,7 +551,8 @@ def handle_test_failure(test_name, on_failure, timeout):
 def prepare_test_dev(plugins=None,
                      secrets=None,
                      execute_bundle_upload=True,
-                     bundle_path=None):
+                     bundle_path=None,
+                     yum_packages=None):
     """
     Prepare the environment for executing a blueprint test.
 
@@ -560,10 +561,13 @@ def prepare_test_dev(plugins=None,
     :param plugins: A list of plugins to install. `plugin_test` must be True.
     :param secrets: A list of secrets to create.
     :param execute_bundle_upload: Whether to upload the plugins bundle.
-    :param bundle_path: THe path to the build directory if not circleci
+    :param bundle_path: The path to the build directory if not circleci
+    :param yum_packages: A list of packages to install (on manger) with yum.
     :return:
     """
-
+    yum_packages = yum_packages or []
+    if yum_packages:
+        docker_exec('yum install -y ' + ' '.join(yum_packages))
     use_cfy()
     license_upload()
     upload_test_plugins_dev(plugins,
