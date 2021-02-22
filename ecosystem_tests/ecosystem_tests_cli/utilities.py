@@ -22,8 +22,6 @@ import functools
 
 from nose.tools import nottest
 
-from cloudify._compat import text_type
-
 from .exceptions import EcosystemTestCliException
 from ..dorkl.commands import get_manager_container_name
 from .constants import (LICENSE_ENVAR_NAME,
