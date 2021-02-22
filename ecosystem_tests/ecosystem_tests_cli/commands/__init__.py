@@ -12,23 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import logging
-logging.basicConfig()
-logger = logging.getLogger('logger')
-logger.setLevel(logging.DEBUG)
-
-MANAGER_CONTAINER_ENVAR_NAME = 'MANAGER_CONTAINER'
-TIMEOUT = 1800
-VPN_CONFIG_PATH = '/tmp/vpn.conf'
-LICENSE_ENVAR_NAME = 'TEST_LICENSE'
-
-RESUME = 'resume'
-RERUN = 'rerun'
-UPDATE = 'update'
-
-CANCEL = 'cancel'
-DONOTHING = 'donothing'
-UNINSTALL_FORCE = 'uninstall-force'
-ROLLBACK_FULL = 'rollback-full'
-ROLLBACK_PARTIAL = 'rollback-partial'

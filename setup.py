@@ -1,16 +1,16 @@
-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.3.2',
+    version='2.4.0',
     license='LICENSE',
-    packages=[
-        'ecosystem_tests',
-        'ecosystem_tests/dorkl',
-        'ecosystem_cicd_tools',
-    ],
+    packages=find_packages(),
     description='Stuff that Ecosystem Tests Use',
+    entry_points={
+        "console_scripts": [
+            "ecosystem-test = ecosystem_tests.ecosystem_tests_cli.main:_ecosystem_test"
+        ]
+    },
     install_requires=[
         'testtools',
         'cloudify-common>=5.1.0',
@@ -21,5 +21,8 @@ setup(
         'progressbar',
         'pyyaml',
         'requests',
+        'click>7,<8',
+        'nose>=1.3',
+        'pytest==4.6.11'
     ]
 )

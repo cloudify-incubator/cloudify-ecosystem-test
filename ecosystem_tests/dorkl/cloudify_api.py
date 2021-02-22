@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2019 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ from ecosystem_cicd_tools.packaging import (
     get_workspace_files,
     find_wagon_local_path,
     get_bundle_from_workspace)
-from ecosystem_tests.dorkl.constansts import logger
+from ecosystem_tests.dorkl.constansts import (logger,
+                                              LICENSE_ENVAR_NAME)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.commands import (cloudify_exec,
@@ -74,7 +75,7 @@ def license_upload():
 
     logger.info('Uploading manager license.')
     try:
-        license = base64.b64decode(os.environ['TEST_LICENSE'])
+        license = base64.b64decode(os.environ[LICENSE_ENVAR_NAME])
     except KeyError:
         raise EcosystemTestException('License env var not set {0}.')
     file_temp = NamedTemporaryFile(delete=False)
@@ -209,14 +210,16 @@ def secrets_create(name, is_file=False):
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
-        file_temp = NamedTemporaryFile(delete=False)
-        with open(file_temp.name, 'w') as outfile:
+        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
             outfile.write(value)
-        return cloudify_exec('cfy secrets create -u {0} -f {1}'.format(
-            name,
-            copy_file_to_docker(file_temp.name)),
-            get_json=False,
-            log=False)
+            outfile.flush()
+            cmd = 'cfy secrets create -u {0} -f {1}'.format(
+                name,
+                copy_file_to_docker(outfile.name))
+            return cloudify_exec(cmd,
+                                 get_json=False,
+                                 log=False)
+
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)
 
@@ -228,6 +231,10 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
     :param blueprint_id:
     :return:
     """
+    if not os.path.isfile(blueprint_file_name):
+        raise EcosystemTestException(
+            'Cant upload blueprint {path} because the file doesn`t '
+            'exists.'.format(path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
     blueprint_file = os.path.basename(blueprint_file_name)
     return cloudify_exec(
@@ -249,7 +256,7 @@ def deployments_create(blueprint_id, inputs):
     :param inputs:
     :return:
     """
-    if inputs == '' or inputs is None:
+    if not inputs:
         return cloudify_exec('cfy deployments create -b {0}'.format(
             blueprint_id), get_json=False)
     with prepare_inputs(inputs) as handled_inputs:
@@ -273,6 +280,13 @@ def get_deployment_output_by_name(deployment_id, output_id):
         output_id=output_id))
     outputs = get_deployment_outputs(deployment_id)
     return outputs.get(output_id, {}).get('value')
+
+
+def get_blueprint_id_of_deployment(deployment_id):
+    deployments_list = cloudify_exec('cfy deployments list')
+    for deployment in deployments_list:
+        if deployment['id'] == deployment_id:
+            return deployment["blueprint_id"]
 
 
 def executions_start(workflow_id, deployment_id, timeout, params=None):
@@ -373,7 +387,7 @@ def wait_for_execution(deployment_id, workflow_id, timeout):
         executions = executions_list(deployment_id)
         try:
             ex = [e for e in executions
-                  if workflow_id == e['workflow_id']][0]
+                  if workflow_id == e['workflow_id']][-1]
         except (IndexError, KeyError):
             raise EcosystemTestException(
                 'Workflow {0} for deployment {1} was not found.'.format(
@@ -456,7 +470,7 @@ def prepare_inputs(inputs):
         yield
     elif type(inputs) is dict:
         with NamedTemporaryFile(mode='w+', delete=True) as outfile:
-            yaml.dump(inputs, outfile, allow_unicode=True)
+            yaml.dump(inputs, outfile, allow_unicode=False)
             logger.debug(
                 "temporary inputs file path {p}".format(p=outfile.name))
             inputs_on_docker = copy_file_to_docker(outfile.name)
@@ -491,6 +505,8 @@ def upload_test_plugins_dev(plugins,
     bundle_path = bundle_path or ''
     if execute_bundle_upload:
         if os.path.isfile(bundle_path):
+            logger.info("Using plugins bundle found at: {path}".format(
+                path=bundle_path))
             cloudify_exec(
                 'cfy plugins bundle-upload --path {bundle_path}'.format(
                     bundle_path=copy_file_to_docker(bundle_path)),
