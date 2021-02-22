@@ -249,5 +249,10 @@ class Options(object):
                                     default=False,
                                     show_default=False)
 
+        self.yum_packages = click.option('--yum-package',
+                                         multiple=True,
+                                         type=click.STRING,
+                                         help=helptexts.YUM_PACKAGES)
+
 
 options = Options()

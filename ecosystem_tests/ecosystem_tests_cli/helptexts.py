@@ -67,3 +67,5 @@ ON_FAILURE = 'Which action to perform on test failure. ' \
 
 UNINSTALL_ON_SUCCESS = 'Whehter to perform uninstall if the test succeeded,' \
                        'and delete the test blueprint.'
+
+YUM_PACKAGES = 'Yum package to install on the manager container.'

@@ -31,6 +31,7 @@ from ..secrets import prepare_secrets_dict_for_prepare_test
 @ecosystem_tests.options.plugins_bundle
 @ecosystem_tests.options.skip_bundle_upload
 @ecosystem_tests.options.container_name
+@ecosystem_tests.options.yum_packages
 def prepare_test_manager(license,
                          secret,
                          file_secret,
@@ -38,7 +39,8 @@ def prepare_test_manager(license,
                          plugin,
                          bundle_path,
                          skip_bundle_upload,
-                         container_name):
+                         container_name,
+                         yum_package):
     """
     This command responsible for prepare test manager.
     """
@@ -49,4 +51,5 @@ def prepare_test_manager(license,
     prepare_test_dev(plugins=plugin,
                      secrets=secrets_dict,
                      execute_bundle_upload=not skip_bundle_upload,
-                     bundle_path=bundle_path)
+                     bundle_path=bundle_path,
+                     yum_packages=yum_package)
