@@ -342,14 +342,86 @@ plugins bundle before the test. Default: False.
 
 `--yum-package TEXT` - Yum package to install on the manager container.
 
+**Notes**:
+
+* Use `-n` when creating base64 encoded values like:
+``bash
+echo -n  secret_value | base64
+``
+* To create base64 encoded string of file content use:
+```bash
+base64 /path/to/file/with/secret/content -w0
+```
+
 ### Example
 
 ```bash
 ecosystem-test prepare-test-manager -l $TEST_LICENSE -s aws_access_key_id=<your aws access key id> -s aws_secret_access_key=<your aws secret access key>  --yum-package git
 ```
+
 This command will:
 * Upload license which its content resides in `$TEST_LICENSE` environment variable(base64 encoded!).
 * Create two secrets on the manager - `aws_access_key_id` and `aws_secret_access_key`.
 * Upload plugins bundle(default value).
 * Install `git` package on the manager container using `yum`.
 
+## local-blueprint-test command
+
+This command invokes blueprint tests.
+You can invoke multiple blueprints tests in a single command.
+
+### Options:
+`-b, --blueprint-path PATH` - Blueprint path, This option can be used multiple times.
+Default: blueprint.yaml.
+
+`--test-id TEXT`  -  Test id, the name of the test deployment. CLI will randomize test id if not provided.
+
+`-i, --inputs TEXT` - Test inputs (Can be provided as path to YAML file,
+or as 'key1=value1;key2=value2'). This argument can be used multiple times.
+
+`-t, --timeout INTEGER` - Test timeout (seconds). Default: 1800.
+
+`--on-failure` - Which action to perform on test failure.
+Should be one of: donothing(do nothing), cancel(cancel install/update workflows if test fails),
+rollback-full, rollback-partial, uninstall-force. Default: rollback-partial.
+
+`--uninstall-on-success BOOLEAN` - Whether to perform uninstall if the test 
+succeeded,and delete the test blueprint. Default: True.
+
+`--on-subsequent-invoke` - Which action to perform on subsequent invocation of
+the test (same test id). Should be one of: resume, rerun, update. Default: rerun.
+
+`-c, --container-name TEXT` - Manager docker container name. Default: cfy_manager.
+
+`--nested-test TEXT` - Nested tests, will run by pytest, should be specified in 
+the pytest notation like: path/to/module.py::TestClass::test_method.
+
+`--dry-run` - Perform dry run means process the inputs and settings for the test
+and print this information.
+
+**Notes:**
+
+* If multiple blueprints provided in a single test command, do not provide --test-id.
+
+* `--on-failure`  default value is `rollback-partial`, although currently 
+  Rollback workflow is part of the Utilities plugin and not built in workflow, so 
+  it recommended to use different value for this option while invoking tests. 
+
+* When providing `rerun`,`resume` for `--on-subsequent-invoke` and the tool recognize the test exists,
+  inputs like `-b`,`-i` will be ignored because an install workflow will be executed/resumed for the existing deployment.
+  it's recommended to provide only `--test-id` in such cases.
+  
+# Example
+
+```bash
+ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/aws-cloudformation.yaml --test-id=virtual-machine -i aws_region_name=us-east-1 -i resource_suffix=$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
+```
+
+This command will:
+* Upload aws-cloudformation.yaml blueprint. The name of the blueprint on the manager is `virtual-machine`.
+  
+* Deploy the blueprint with specified inputs. The name of the deployment on the manager is `virtual-machine`.
+
+* If the blueprint upload/install workflow fails(timeout/error), uninstall workflow will be performed,
+  and the blueprint will be deleted from the manager.
+  
