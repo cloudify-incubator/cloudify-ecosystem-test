@@ -311,7 +311,7 @@ The CLI has three commands:
 
 ## prepare-test-manager command
 
-prepare-test-manager command responsible for uploading license, plugins and create secrets on the manager before test invocation.
+`prepare-test-manager` command responsible for uploading license, plugins and create secrets on the manager before test invocation.
 If the manager has all the assets needed for the test, you can skip this command.
 
 ### Options:
@@ -367,12 +367,12 @@ This command will:
 
 ## local-blueprint-test command
 
-This command invokes blueprint tests.
-You can invoke multiple blueprints tests in a single command.
+This command invokes blueprint tests, multiple blueprints tests can 
+be invoked in a single command.
 
 ### Options:
 `-b, --blueprint-path PATH` - Blueprint path, This option can be used multiple times.
-Default: blueprint.yaml.
+Default: `blueprint.yaml`.
 
 `--test-id TEXT`  -  Test id, the name of the test deployment. CLI will randomize test id if not provided.
 
@@ -382,46 +382,70 @@ or as 'key1=value1;key2=value2'). This argument can be used multiple times.
 `-t, --timeout INTEGER` - Test timeout (seconds). Default: 1800.
 
 `--on-failure` - Which action to perform on test failure.
-Should be one of: donothing(do nothing), cancel(cancel install/update workflows if test fails),
-rollback-full, rollback-partial, uninstall-force. Default: rollback-partial.
+Should be one of: `donothing`(do nothing), `cancel`(cancel install/update workflows if test fails),
+`rollback-full`, `rollback-partial`, `uninstall-force`. Default: `rollback-partial`.
 
-`--uninstall-on-success BOOLEAN` - Whether to perform uninstall if the test 
-succeeded,and delete the test blueprint. Default: True.
+`--uninstall-on-success BOOLEAN` - Whether to perform uninstall if the test  
+succeeded,and delete the test blueprint. Default: `True`.
 
 `--on-subsequent-invoke` - Which action to perform on subsequent invocation of
-the test (same test id). Should be one of: resume, rerun, update. Default: rerun.
+the test (same test id). Should be one of: `resume`, `rerun`, `update`. Default: `rerun`.
 
-`-c, --container-name TEXT` - Manager docker container name. Default: cfy_manager.
+`-c, --container-name TEXT` - Manager docker container name. Default: `cfy_manager`.
 
 `--nested-test TEXT` - Nested tests, will run by pytest, should be specified in 
-the pytest notation like: path/to/module.py::TestClass::test_method.
+the pytest notation like: `path/to/module.py::TestClass::test_method`.
 
 `--dry-run` - Perform dry run means process the inputs and settings for the test
 and print this information.
 
 **Notes:**
 
-* If multiple blueprints provided in a single test command, do not provide --test-id.
+* If multiple blueprints provided in a single test command, do not provide `--test-id`.
 
 * `--on-failure`  default value is `rollback-partial`, although currently 
   Rollback workflow is part of the Utilities plugin and not built in workflow, so 
-  it recommended to use different value for this option while invoking tests. 
+  it's recommended to use different value for this option while invoking tests. 
 
 * When providing `rerun`,`resume` for `--on-subsequent-invoke` and the tool recognize the test exists,
   inputs like `-b`,`-i` will be ignored because an install workflow will be executed/resumed for the existing deployment.
   it's recommended to provide only `--test-id` in such cases.
   
-# Example
+### Example
 
 ```bash
 ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/aws-cloudformation.yaml --test-id=virtual-machine -i aws_region_name=us-east-1 -i resource_suffix=$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
 ```
 
 This command will:
+
 * Upload aws-cloudformation.yaml blueprint. The name of the blueprint on the manager is `virtual-machine`.
   
 * Deploy the blueprint with specified inputs. The name of the deployment on the manager is `virtual-machine`.
 
 * If the blueprint upload/install workflow fails(timeout/error), uninstall workflow will be performed,
   and the blueprint will be deleted from the manager.
+  
+## local-blueprint-test command
+
+This command perform blueprint validation on the given blueprints.
+The validation done by upload each blueprint to the manager.
+
+### Options:
+
+`-b, --blueprint-path PATH` - Blueprint path, This option can be used multiple
+times. Default: `blueprint.yaml`
+
+`-c, --container-name TEXT` - Manager docker container name. Default: `cfy_manager`.
+
+### Example
+
+```bash
+ecosystem-test validate-blueprint  -b /path/to/bp1.yaml -b /path/to/bp2.yaml 
+```
+
+This command will:
+
+* Upload `bp1.yaml`, `bp2.yaml` to the manager and if succeed then delete the blueprint.
+The upload of the blueprints done sequentially.
   
