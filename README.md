@@ -1,5 +1,7 @@
 # Cloudify Ecosystem Test
 
+[![CircleCI](https://circleci.com/gh/cloudify-incubator/cloudify-ecosystem-test.svg?style=shield&circle-token=cad0039061d763209714b1728f4e28453e0c56a8)](https://circleci.com/gh/cloudify-incubator/cloudify-ecosystem-test)
+
 This is the Cloudify Ecosystem CICD toolkit. These are testing tools for Cloudify. However, there is really more here. Also, you will find tools for building and packaging and publishing Cloudify Ecosystem assets.
 
 1) Blueprint testing tools.
@@ -294,3 +296,66 @@ INFO:logger:Command docker exec cfy_manager cfy executions start --timeout 3000 
 
   * pytest
   * pytest-logger, add this to your test runner configuration: `--log-cli-level debug -s -v`.
+
+
+# Ecosystem tests CLI
+
+Ecosystem tests CLI introduced in order to improve blueprint testing and continuous development of blueprints.
+Moreover, it makes testing blueprints and plugins via CI tools very intuitive.
+
+The CLI has three commands:
+
+* prepare-test-manager
+* local-blueprint-test
+* validate-blueprint
+
+## prepare-test-manager command
+
+prepare-test-manager command responsible for uploading license, plugins and create secrets on the manager before test invocation.
+If the manager has all the assets needed for the test, you can skip this command.
+
+### Options:
+
+  -l, --license TEXT          Licence for the manager, should be either path
+                              to licence file or base64 encoded licence
+                              string. [default: (license.yaml)]
+
+  -s, --secret TEXT           A secret to update on the manager, should be
+                              provided as secret_key=secret_value. This
+                              argument can be used multiple times.
+
+  -fs, --file-secret TEXT     A secret to update on the manager, should be
+                              provided as secret_key=file_path. This argument
+                              can be used multiple times.
+
+  -es, --encoded-secret TEXT  Base 64 encoded secret to update on the manager,
+                              should be provided as
+                              secret_key=secret_value_base_64_encoded. This
+                              argument can be used multiple times.
+
+  -p, --plugin TEXT           Plugin to upload before test invocation, should be
+                              provided as --plugin plugin_wagon_url
+                              plugin.yaml_url. This argument can be used
+                              multiple times.
+
+  --bundle-path PATH          Plugins bundle tgz file path.
+  --skip-bundle-upload        Specify --skip-bundle-upload for not uploading
+                              plugins bundle before the test. [default:
+                              (False)]
+
+  -c, --container-name TEXT   Manager docker container name. [default:
+                              (cfy_manager)]
+
+  --yum-package TEXT          Yum package to install on the manager container.
+
+### Example
+
+```bash
+ecosystem-test prepare-test-manager -l $TEST_LICENSE -s aws_access_key_id=<your aws access key id> -s aws_secret_access_key=<your aws secret access key>  --yum-package git
+```
+This command will:
+* Upload license which its content resides in `$TEST_LICENSE` environment variable(base64 encoded!).
+* Create two secrets on the manager - `aws_access_key_id` and `aws_secret_access_key`.
+* Upload plugins bundle(default value).
+* Install `git` package on the manager container using `yum`.
+

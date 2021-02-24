@@ -47,7 +47,7 @@ ENCODED_SECRETS = 'Base 64 encoded secret to update on the manager, ' \
 
 CONTAINER_NAME = 'Manager docker container name.'
 
-PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
+PLUGINS = 'Plugin to upload before test invocation, should be provided as ' \
           '--plugin plugin_wagon_url plugin.yaml_url. ' \
           'This argument can be used multiple times.'
 
