@@ -298,7 +298,7 @@ INFO:logger:Command docker exec cfy_manager cfy executions start --timeout 3000 
   * pytest-logger, add this to your test runner configuration: `--log-cli-level debug -s -v`.
 
 
-# Ecosystem tests CLI
+# Ecosystem test CLI
 
 Ecosystem tests CLI introduced in order to improve blueprint testing and continuous development of blueprints.
 Moreover, it makes testing blueprints and plugins via CI tools very intuitive.
@@ -316,37 +316,31 @@ If the manager has all the assets needed for the test, you can skip this command
 
 ### Options:
 
-  -l, --license TEXT          Licence for the manager, should be either path
-                              to licence file or base64 encoded licence
-                              string. [default: (license.yaml)]
+`l, --license TEXT` - Licence for the manager, should be either path 
+to licence file or base64 encoded licence string. Default: license.yaml
 
-  -s, --secret TEXT           A secret to update on the manager, should be
-                              provided as secret_key=secret_value. This
-                              argument can be used multiple times.
+`-s, --secret TEXT` - A secret to update on the manager, should be provided 
+as secret_key=secret_value. This argument can be used multiple times.
 
-  -fs, --file-secret TEXT     A secret to update on the manager, should be
-                              provided as secret_key=file_path. This argument
-                              can be used multiple times.
+ `-fs, --file-secret TEXT` - A secret to update on the manager, should be 
+ provided as secret_key=file_path. This argument can be used multiple times.
 
-  -es, --encoded-secret TEXT  Base 64 encoded secret to update on the manager,
-                              should be provided as
-                              secret_key=secret_value_base_64_encoded. This
-                              argument can be used multiple times.
+`-es, --encoded-secret TEXT` - Base 64 encoded secret to update on the manager,
+should be provided as secret_key=secret_value_base_64_encoded. 
+This argument can be used multiple times.
 
-  -p, --plugin TEXT           Plugin to upload before test invocation, should be
-                              provided as --plugin plugin_wagon_url
-                              plugin.yaml_url. This argument can be used
-                              multiple times.
+`-p, --plugin TEXT` - Plugin to upload before test invocation, should be
+provided as --plugin plugin_wagon_url plugin.yaml_url. This argument can be used
+multiple times.
 
-  --bundle-path PATH          Plugins bundle tgz file path.
-  --skip-bundle-upload        Specify --skip-bundle-upload for not uploading
-                              plugins bundle before the test. [default:
-                              (False)]
+`--bundle-path PATH` - Plugins bundle tgz file path.
 
-  -c, --container-name TEXT   Manager docker container name. [default:
-                              (cfy_manager)]
+`--skip-bundle-upload` - Specify --skip-bundle-upload for not uploading
+plugins bundle before the test. Default: False.
 
-  --yum-package TEXT          Yum package to install on the manager container.
+`-c, --container-name TEXT` - Manager docker container name. Default: cfy_manager.
+
+`--yum-package TEXT` - Yum package to install on the manager container.
 
 ### Example
 
