@@ -345,12 +345,12 @@ This argument can be used multiple times.
 
 **Notes**:
 
-* On Linux, Use `-n` when creating base64 encoded values like:
+* On Linux, use `-n` when creating base64 encoded values like:
 ``bash
 echo -n  secret_value | base64
 ``
   
-In addition, this is command will create base64 encoded string of file content:
+* In addition, this command will create base64 encoded string of file content:
 
 ```bash
 base64 /path/to/file/with/secret/content -w0
