@@ -347,9 +347,9 @@ This argument can be used multiple times.
 
 * On Linux, use `-n` when creating base64 encoded values like:
 
-``bash
+```bash
 echo -n  secret_value | base64
-``
+````
   
 * In addition, this command will create base64 encoded string of file content:
 
