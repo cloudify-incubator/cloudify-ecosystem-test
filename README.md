@@ -346,6 +346,7 @@ This argument can be used multiple times.
 **Notes**:
 
 * On Linux, use `-n` when creating base64 encoded values like:
+
 ``bash
 echo -n  secret_value | base64
 ``
