@@ -330,7 +330,7 @@ should be provided as secret_key=secret_value_base_64_encoded.
 This argument can be used multiple times.
 
 `-p, --plugin TEXT` - Plugin to upload before test invocation, should be
-provided as --plugin plugin_wagon_url plugin.yaml_url. This argument can be used
+provided as --plugin plugin_wagon_URL plugin_yaml_URL. This argument can be used
 multiple times.
 
 `--bundle-path PATH` - Plugins bundle tgz file path.
@@ -340,15 +340,18 @@ plugins bundle before the test. Default: False.
 
 `-c, --container-name TEXT` - Manager docker container name. Default: cfy_manager.
 
-`--yum-package TEXT` - Yum package to install on the manager container.
+`--yum-package TEXT` - Yum package to install on the manager container. 
+This argument can be used multiple times.
 
 **Notes**:
 
-* Use `-n` when creating base64 encoded values like:
+* On Linux, Use `-n` when creating base64 encoded values like:
 ``bash
 echo -n  secret_value | base64
 ``
-* To create base64 encoded string of file content use:
+  
+In addition, this is command will create base64 encoded string of file content:
+
 ```bash
 base64 /path/to/file/with/secret/content -w0
 ```
