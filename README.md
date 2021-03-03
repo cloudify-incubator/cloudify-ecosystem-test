@@ -1,5 +1,7 @@
 # Cloudify Ecosystem Test
 
+[![CircleCI](https://circleci.com/gh/cloudify-incubator/cloudify-ecosystem-test.svg?style=shield&circle-token=cad0039061d763209714b1728f4e28453e0c56a8)](https://circleci.com/gh/cloudify-incubator/cloudify-ecosystem-test)
+
 This is the Cloudify Ecosystem CICD toolkit. These are testing tools for Cloudify. However, there is really more here. Also, you will find tools for building and packaging and publishing Cloudify Ecosystem assets.
 
 1) Blueprint testing tools.
@@ -294,3 +296,162 @@ INFO:logger:Command docker exec cfy_manager cfy executions start --timeout 3000 
 
   * pytest
   * pytest-logger, add this to your test runner configuration: `--log-cli-level debug -s -v`.
+
+
+# Ecosystem test CLI
+
+Ecosystem tests CLI introduced in order to improve blueprint testing and continuous development of blueprints.
+Moreover, it makes testing blueprints and plugins via CI tools very intuitive.
+
+The CLI has three commands:
+
+* prepare-test-manager
+* local-blueprint-test
+* validate-blueprint
+
+## prepare-test-manager command
+
+`prepare-test-manager` command responsible for uploading license, plugins and create secrets on the manager before test invocation.
+If the manager has all the assets needed for the test, you can skip this command.
+
+### Options:
+
+`l, --license TEXT` - Licence for the manager, should be either path 
+to licence file or base64 encoded licence string. Default: license.yaml
+
+`-s, --secret TEXT` - A secret to update on the manager, should be provided 
+as secret_key=secret_value. This argument can be used multiple times.
+
+ `-fs, --file-secret TEXT` - A secret to update on the manager, should be 
+ provided as secret_key=file_path. This argument can be used multiple times.
+
+`-es, --encoded-secret TEXT` - Base 64 encoded secret to update on the manager,
+should be provided as secret_key=secret_value_base_64_encoded. 
+This argument can be used multiple times.
+
+`-p, --plugin TEXT` - Plugin to upload before test invocation, should be
+provided as --plugin plugin_wagon_URL plugin_yaml_URL. This argument can be used
+multiple times.
+
+`--bundle-path PATH` - Plugins bundle tgz file path.
+
+`--skip-bundle-upload` - Specify --skip-bundle-upload for not uploading
+plugins bundle before the test. Default: False.
+
+`-c, --container-name TEXT` - Manager docker container name. Default: cfy_manager.
+
+`--yum-package TEXT` - Yum package to install on the manager container. 
+This argument can be used multiple times.
+
+**Notes**:
+
+* On Linux, use `-n` when creating base64 encoded values like:
+
+```bash
+echo -n  secret_value | base64
+````
+  
+* In addition, this command will create base64 encoded string of file content:
+
+```bash
+base64 /path/to/file/with/secret/content -w0
+```
+
+* `--skip-bundle-upload` is in higher priority than `--bundle-path`, means if both provided than `--skip-bundle-upload` will take place.
+
+### Example
+
+```bash
+ecosystem-test prepare-test-manager -l $TEST_LICENSE -s aws_access_key_id=<your aws access key id> -s aws_secret_access_key=<your aws secret access key>  --yum-package git
+```
+
+This command will:
+* Upload license which its content resides in `$TEST_LICENSE` environment variable(base64 encoded!).
+* Create two secrets on the manager - `aws_access_key_id` and `aws_secret_access_key`.
+* Upload plugins bundle(default value).
+* Install `git` package on the manager container using `yum`.
+
+## local-blueprint-test command
+
+This command invokes blueprint tests, multiple blueprints tests can 
+be invoked in a single command.
+
+### Options:
+`-b, --blueprint-path PATH` - Blueprint path, This option can be used multiple times.
+Default: `blueprint.yaml`.
+
+`--test-id TEXT`  -  Test id, the name of the test deployment. CLI will randomize test id if not provided.
+
+`-i, --inputs TEXT` - Test inputs (Can be provided as path to YAML file,
+or as 'key1=value1;key2=value2'). This argument can be used multiple times.
+
+`-t, --timeout INTEGER` - Test timeout (seconds). Default: 1800.
+
+`--on-failure` - Which action to perform on test failure.
+Should be one of: `donothing`(do nothing), `cancel`(cancel install/update workflows if test fails),
+`rollback-full`, `rollback-partial`, `uninstall-force`. Default: `rollback-partial`.
+
+`--uninstall-on-success BOOLEAN` - Whether to perform uninstall if the test  
+succeeded,and delete the test blueprint. Default: `True`.
+
+`--on-subsequent-invoke` - Which action to perform on subsequent invocation of
+the test (same test id). Should be one of: `resume`, `rerun`, `update`. Default: `rerun`.
+
+`-c, --container-name TEXT` - Manager docker container name. Default: `cfy_manager`.
+
+`--nested-test TEXT` - Nested tests, will run by pytest, should be specified in 
+the pytest notation like: `path/to/module.py::TestClass::test_method`.
+
+`--dry-run` - Perform dry run means process the inputs and settings for the test
+and print this information.
+
+**Notes:**
+
+* If multiple blueprints provided in a single test command, do not provide `--test-id`.
+
+* `--on-failure`  default value is `rollback-partial`, although currently 
+  Rollback workflow is part of the Utilities plugin and not built in workflow, so 
+  it's recommended to use different value for this option while invoking tests. 
+
+* When providing `rerun`,`resume` for `--on-subsequent-invoke` and the tool recognize the test exists,
+  inputs like `-b`,`-i` will be ignored because an install workflow will be executed/resumed for the existing deployment.
+  it's recommended to provide only `--test-id` in such cases.
+  
+### Example
+
+```bash
+ecosystem-test local-blueprint-test  -b examples/blueprint-examples/virtual-machine/aws-cloudformation.yaml --test-id=virtual-machine -i aws_region_name=us-east-1 -i resource_suffix=$CIRCLE_BUILD_NUM --on-failure=uninstall-force --timeout=3000
+```
+
+This command will:
+
+* Upload aws-cloudformation.yaml blueprint. The name of the blueprint on the manager is `virtual-machine`.
+  
+* Deploy the blueprint with specified inputs. The name of the deployment on the manager is `virtual-machine`.
+
+* If the blueprint upload/install workflow fails(timeout/error), uninstall workflow will be performed,
+  and the blueprint will be deleted from the manager.
+  
+## local-blueprint-test command
+
+This command perform blueprint validation on the given blueprints.
+The validation done by upload each blueprint to the manager.
+
+### Options:
+
+`-b, --blueprint-path PATH` - Blueprint path, This option can be used multiple
+times. Default: `blueprint.yaml`
+
+`-c, --container-name TEXT` - Manager docker container name. Default: `cfy_manager`.
+
+### Example
+
+```bash
+ecosystem-test validate-blueprint  -b /path/to/bp1.yaml -b /path/to/bp2.yaml 
+```
+
+This command will:
+
+* Upload `bp1.yaml`, `bp2.yaml` to the manager and if succeed then delete the blueprint.
+The upload of the blueprints done sequentially.
+  

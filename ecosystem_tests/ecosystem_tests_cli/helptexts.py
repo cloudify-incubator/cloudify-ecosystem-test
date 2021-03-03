@@ -47,7 +47,7 @@ ENCODED_SECRETS = 'Base 64 encoded secret to update on the manager, ' \
 
 CONTAINER_NAME = 'Manager docker container name.'
 
-PLUGINS = 'Plugin to upload before test ivocation, shuld be provided as ' \
+PLUGINS = 'Plugin to upload before test invocation, should be provided as ' \
           '--plugin plugin_wagon_url plugin.yaml_url. ' \
           'This argument can be used multiple times.'
 
@@ -57,7 +57,7 @@ NO_BUNDLE = 'Specify --skip-bundle-upload for not uploading plugins bundle' \
             ' before the test.'
 
 SUBSEQUENT_INVOKE = 'Which action to perform on subsequent invocation of ' \
-                    'the test (same test id).Should be one of: ' \
+                    'the test (same test id). Should be one of: ' \
                     'resume, rerun, update.'
 
 ON_FAILURE = 'Which action to perform on test failure. ' \
@@ -65,7 +65,8 @@ ON_FAILURE = 'Which action to perform on test failure. ' \
              'install/update workflows if test fails), rollback-full, ' \
              'rollback-partial, uninstall-force'
 
-UNINSTALL_ON_SUCCESS = 'Whehter to perform uninstall if the test succeeded,' \
+UNINSTALL_ON_SUCCESS = 'Whether to perform uninstall if the test succeeded,' \
                        'and delete the test blueprint.'
 
-YUM_PACKAGES = 'Yum package to install on the manager container.'
+YUM_PACKAGES = 'Yum package to install on the manager container. ' \
+               'This argument can be used multiple times.'
