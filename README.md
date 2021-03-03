@@ -357,6 +357,8 @@ echo -n  secret_value | base64
 base64 /path/to/file/with/secret/content -w0
 ```
 
+* `--skip-bundle-upload` is in higher priority than `--bundle-path`, means if both provided than `--skip-bundle-upload` will take place.
+
 ### Example
 
 ```bash
