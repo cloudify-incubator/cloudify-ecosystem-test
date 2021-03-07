@@ -1,4 +1,4 @@
-2.4.1: Add functions to handle search changed files in pull request.
+2.5.0: Add functions to handle search changed files in pull request.
 2.4.0: Add CLI for ecosystem_tests.
 2.3.2: Expose export_secret_to_environment in dorkl init.
 2.3.1: Expose handle_process in dorkl init.
