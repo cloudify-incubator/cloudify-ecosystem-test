@@ -7,11 +7,11 @@ from yaml import safe_load
 from yaml.parser import ParserError
 
 from .github_stuff import (
-    get_branch_pr,
     raise_if_unmergeable,
     get_pull_request_jira_ids,
     get_repository,
     get_pull_request,
+    find_pull_request_number,
     validate_docs_requirement)
 
 VERSION_EXAMPLE = """
@@ -173,16 +173,7 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
 
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
-
-    if branch == 'master':
-        # Get the Jira IDs from master.
-        pull_request_number = get_branch_pr(branch, repo)
-    else:
-        # Get the Jira IDs from current branch.
-        pr_url = os.environ.get('CIRCLE_PULL_REQUEST', '/0')
-        pr = pr_url.split('/')[-1]
-        pull_request_number = int(pr)
-
+    pull_request_number = find_pull_request_number(branch, repo)
     if not pull_request_number and branch != 'master':
         logging.info('A PR has not yet been opened.')
         return
