@@ -23,6 +23,7 @@ from ecosystem_tests.dorkl.commands import (
 from ecosystem_tests.dorkl.runners import (
     prepare_test,
     prepare_test_dev,
+    blueprint_validate,
     basic_blueprint_test,
     basic_blueprint_test_dev)
 from ecosystem_tests.dorkl.cloudify_api import (

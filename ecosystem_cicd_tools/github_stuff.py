@@ -282,3 +282,40 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
             return
     jira_ids = get_pull_request_jira_ids(pr_number)
     _merge_documentation_pulls(docs_repo, jira_ids)
+
+
+def find_pull_request_number(branch, repo):
+    """
+    Finds PR number associated with a branch.
+    If the branch is master then then pr returned is the pr associated with the
+    latest merge commit which contains the PR number.
+    """
+    if branch == 'master':
+        pull_request_number = get_branch_pr(branch, repo)
+    else:
+        pr_url = environ.get('CIRCLE_PULL_REQUEST', '/0')
+        pr = pr_url.split('/')[-1]
+        pull_request_number = int(pr)
+
+    return pull_request_number
+
+
+def get_files_changed_in_pr(pr_number, repo):
+    pr = get_pull_request(pr_number, repo)
+    return [pr_file.filename for pr_file in pr.get_files()]
+
+
+def find_changed_files_in_branch_pr_or_master(repo=None, branch_name=None):
+    """
+    Finds the changed files in the current branch pr.
+    If the branch is master then it finds the files that changed
+    in the last pr merged to master.
+    """
+    repo = repo or get_repository()
+    branch = branch_name or environ['CIRCLE_BRANCH']
+    pr_number = find_pull_request_number(branch, repo)
+    if not pr_number and branch != 'master':
+        logging.info('No PR found, list of changed files is empty.')
+        return []
+    return get_files_changed_in_pr(pr_number, repo)
+
