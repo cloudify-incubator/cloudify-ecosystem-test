@@ -1,3 +1,4 @@
+2.5.1: Support params as dict in executions start.
 2.5.0: Add functions to handle search changed files in pull request.
 2.4.0: Add CLI for ecosystem_tests.
 2.3.2: Expose export_secret_to_environment in dorkl init.

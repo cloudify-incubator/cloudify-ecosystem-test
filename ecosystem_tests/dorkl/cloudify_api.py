@@ -301,8 +301,16 @@ def executions_start(workflow_id, deployment_id, timeout, params=None):
     :return:
     """
     cmd = 'cfy executions start --timeout {0} -d {1} {2}'
-    if params:
-        cmd = cmd + ' -p {params}'.format(params=params)
+    if isinstance(params, str):
+        pstr = ' -p ' + '{params}'.format(params=params)
+        cmd = cmd + pstr
+    elif isinstance(params, dict) and len(params) > 0:
+        pstr = ''
+        for key, val in params.items():
+            pstr = pstr + ' -p {key}={val}'.format(key=key, val=val)
+        cmd = cmd + pstr
+    elif isinstance(params, list) and len(params) > 0:
+        cmd = cmd + ' -p ' + ' -p '.join(params)
     return cloudify_exec(
         cmd.format(timeout, deployment_id, workflow_id),
         get_json=False, timeout=timeout)
