@@ -243,6 +243,18 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
             blueprint_id), get_json=False)
 
 
+def blueprints_get(blueprint_id):
+    return cloudify_exec('cfy blueprints get {0}'.format(blueprint_id))
+
+
+def blueprint_exists(blueprint_id):
+    try:
+        blueprints_get(blueprint_id)
+        return True
+    except EcosystemTestException:
+        return False
+
+
 def blueprints_delete(blueprint_id):
     return cloudify_exec(
         'cfy blueprints delete {0}'.format(
