@@ -41,6 +41,7 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
                                                 verify_endpoint,
                                                 executions_list,
                                                 executions_start,
+                                                blueprint_exists,
                                                 deployment_delete,
                                                 deployment_update,
                                                 executions_resume,
@@ -586,10 +587,18 @@ def run_user_defined_check(user_defined_check, user_defined_check_params):
             raise EcosystemTestException('User defined check is not callable!')
 
 
-def blueprint_validate(blueprint_file_name, blueprint_id, skip_delete=False):
+def blueprint_validate(blueprint_file_name,
+                       blueprint_id,
+                       skip_delete=False,
+                       skip_duplicate=False):
     """
     Blueprint upload for validation.
     """
-    blueprints_upload(blueprint_file_name, blueprint_id)
+    if not blueprint_exists(blueprint_id):
+        blueprints_upload(blueprint_file_name, blueprint_id)
+    elif not skip_duplicate:
+        raise EcosystemTestException(
+            'Blueprint {b} exists and skip_duplicates is False.'.format(
+                b=blueprint_id))
     if not skip_delete:
         blueprints_delete(blueprint_id)
