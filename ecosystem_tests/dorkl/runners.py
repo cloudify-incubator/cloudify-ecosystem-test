@@ -586,9 +586,10 @@ def run_user_defined_check(user_defined_check, user_defined_check_params):
             raise EcosystemTestException('User defined check is not callable!')
 
 
-def blueprint_validate(blueprint_file_name, blueprint_id):
+def blueprint_validate(blueprint_file_name, blueprint_id, skip_delete=False):
     """
     Blueprint upload for validation.
     """
     blueprints_upload(blueprint_file_name, blueprint_id)
-    blueprints_delete(blueprint_id)
+    if not skip_delete:
+        blueprints_delete(blueprint_id)
