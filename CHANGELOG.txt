@@ -1,3 +1,4 @@
+2.5.4: Add StarlingX to the bundle.
 2.5.3: Permit skip duplicate in blueprint validate
 2.5.2: Permit skip delete in blueprints validate.
 2.5.1: Support params as dict in executions start.
