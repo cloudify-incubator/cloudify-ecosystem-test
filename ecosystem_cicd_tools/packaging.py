@@ -33,6 +33,7 @@ PLUGINS_TO_BUNDLE = ['vSphere',
                      'Ansible',
                      'Kubernetes',
                      'Utilities',
+                     'StarlingX',
                      'Helm']
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
