@@ -22,20 +22,23 @@ BUCKET_FOLDER = 'cloudify/wagons'
 PLUGINS_JSON_PATH = os.path.join(BUCKET_FOLDER, 'plugins.json')
 EXAMPLES_JSON = 'resources/examples.json'
 PLUGINS_JSON = 'resources/plugins.json'
-PLUGINS_TO_BUNDLE = ['vSphere',
-                     'Terraform',
-                     'Docker',
-                     'OpenStack',
-                     'OpenStack v3',
-                     'Fabric',
-                     'GCP',
-                     'AWS',
-                     'Azure',
-                     'Ansible',
-                     'Kubernetes',
-                     'Utilities',
-                     'StarlingX',
-                     'Helm']
+PLUGINS_TO_BUNDLE = [
+    'vsphere',
+    'terraform',
+    'docker',
+    'openstack',
+    'openstackv3',
+    'fabric',
+    'gcp',
+    'aws',
+    'azure',
+    'ansible',
+    'kubernetes',
+    'utilities',
+    'starlingx',
+    'helm'
+]
+
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
 DISTROS_TO_BUNDLE = [CENTOS, REDHAT]
@@ -421,7 +424,7 @@ def configure_bundle_archive(plugins_json=None):
         plugins=pformat(plugins_json)))
 
     for plugin in plugins_json:
-        if plugin['title'] in PLUGINS_TO_BUNDLE:
+        if plugin['title'].lower() in PLUGINS_TO_BUNDLE:
             plugin_yaml = plugin['link']
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
