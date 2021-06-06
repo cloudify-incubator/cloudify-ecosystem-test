@@ -1,3 +1,4 @@
+2.5.6: Update to use lower for plugin bundle comparison.
 2.5.5: Add Openstack v3 to plugin bundle.
 2.5.4: Add StarlingX to the bundle.
 2.5.3: Permit skip duplicate in blueprint validate
