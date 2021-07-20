@@ -40,9 +40,15 @@ def get_commit(commit_id=None, repo=None):
 def create_release(name, version, message, commit, repo=None):
     logging.info('Attempting to create new release {name}.'.format(name=name))
     repo = repo or get_repository()
+    logging.info('Got repo {repo}'.format(repo=repo))
     if isinstance(commit, Commit.Commit):
         commit = commit.commit
     try:
+        logging.info('Create release params {tag}, {name}, {message}, {commit}'.format(
+            tag=version,
+            name=name,
+            message=message,
+            target_commitish=commit))
         return repo.create_git_release(
             tag=version, name=name, message=message,
             target_commitish=commit)
