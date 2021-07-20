@@ -44,11 +44,12 @@ def create_release(name, version, message, commit, repo=None):
     if isinstance(commit, Commit.Commit):
         commit = commit.commit
     try:
-        logging.info('Create release params {tag}, {name}, {message}, {commit}'.format(
+        logging.info('Create release params '
+                     '{tag}, {name}, {message}, {commit}'.format(
             tag=version,
             name=name,
             message=message,
-            target_commitish=commit))
+            commit=commit))
         return repo.create_git_release(
             tag=version, name=name, message=message,
             target_commitish=commit)
