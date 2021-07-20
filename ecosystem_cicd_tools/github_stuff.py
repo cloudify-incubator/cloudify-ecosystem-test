@@ -32,7 +32,7 @@ def get_commit(commit_id=None, repo=None):
         commit_id = commit_id.commit
     try:
         return repo.get_commit(commit_id)
-    except (GithubException, AssertionError):
+    except (UnknownObjectException, GithubException, AssertionError):
         logging.info('Commit {commit_id} not found.'.format(
             commit_id=commit_id))
 
