@@ -6,6 +6,11 @@ from re import match
 from yaml import safe_load
 from yaml.parser import ParserError
 
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    from distutils.version import LooseVersion as parse_version
+
 from .github_stuff import (
     raise_if_unmergeable,
     get_pull_request_jira_ids,
@@ -61,10 +66,20 @@ def read_yaml_file(file_path):
 
 
 def check_changelog_version(version, file_path):
-    if version not in read_yaml_file(file_path):
+    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
+    if not check_is_latest_version(version, file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
-    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
+
+
+def check_is_latest_version(version, file_path):
+    dict_file = read_yaml_file(file_path)
+    list_of_versions = []
+    for i in dict_file:
+        list_of_versions.append(str(i))
+
+    sorted_l = sorted(list_of_versions, key=parse_version)
+    return version == sorted_l.pop()
 
 
 def check_setuppy_version(version, plugin_directory):
@@ -119,8 +134,8 @@ def get_plugin_yaml_version(file_path):
         if package_source and package_version not in package_source:
             raise Exception('Version {version} '
                             'does not match {package_source}.'.format(
-                                version=package_version,
-                                package_source=package_source))
+                version=package_version,
+                package_source=package_source))
     return package_version
 
 
