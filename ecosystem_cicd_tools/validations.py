@@ -11,7 +11,7 @@ try:
 except ImportError:
     from distutils.version import LooseVersion as parse_version
 
-from github_stuff import (
+from .github_stuff import (
     raise_if_unmergeable,
     get_pull_request_jira_ids,
     get_repository,
