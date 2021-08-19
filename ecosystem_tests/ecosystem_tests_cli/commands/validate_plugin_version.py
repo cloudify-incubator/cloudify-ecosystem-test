@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import validation
+from ecosystem_cicd_tools import validations
 
 from ...dorkl.runners import blueprint_validate
 from ...ecosystem_tests_cli import ecosystem_tests
