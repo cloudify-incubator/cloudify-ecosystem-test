@@ -70,3 +70,5 @@ UNINSTALL_ON_SUCCESS = 'Whether to perform uninstall if the test succeeded,' \
 
 YUM_PACKAGES = 'Yum package to install on the manager container. ' \
                'This argument can be used multiple times.'
+
+DIRECTORY_PATH = 'directory to execute to command inside'

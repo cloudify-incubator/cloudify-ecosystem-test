@@ -22,6 +22,7 @@ from ..utilities import (prepare_test_env,
 
 @ecosystem_tests.command(name='validate_plugin_version',
                          short_help='Validate plugin version.')
-@ecosystem_tests.options.plugin_path
-def validate_plugin_version(plugin_path):
-    validation.validate_plugin_version(plugin_path)
+@ecosystem_tests.options.directory
+def validate_plugin_version(directory):
+    validations.validate_plugin_version(directory)
+
