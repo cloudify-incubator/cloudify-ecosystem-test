@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from ecosystem_cicd_tools import validations
+from ecosystem_cicd_tools.validations import \
+    validate_plugin_version as validate
 
 from ...ecosystem_tests_cli import ecosystem_tests
 
@@ -21,4 +22,4 @@ from ...ecosystem_tests_cli import ecosystem_tests
                          short_help='Validate plugin version.')
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
-    validations.validate_plugin_version(directory)
+    validate(directory)

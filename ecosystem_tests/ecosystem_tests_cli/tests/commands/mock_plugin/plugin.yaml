@@ -1,0 +1,5 @@
+plugins:
+  mock:
+    executor: central_deployment_agent
+    package_name: cloudify-mock-plugin
+    package_version: '1.0'
