@@ -25,4 +25,3 @@ from ..utilities import (prepare_test_env,
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
     validations.validate_plugin_version(directory)
-
