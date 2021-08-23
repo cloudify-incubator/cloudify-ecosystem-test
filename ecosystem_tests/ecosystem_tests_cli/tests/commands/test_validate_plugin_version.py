@@ -15,6 +15,8 @@ class ValidatePluginVersionTest(BaseCliCommandTest):
                                      mock_id_generator):
         mock_id_generator.return_value = self.test_id
         self.runner.invoke(validate_plugin_version, [])
-        mock_validate_plugin_version.assert_called_once_with(
-            blueprint_file_name=DEFAULT_DIRECTORY_PATH,
-            blueprint_id=self.test_id)
+        mock_validate_plugin_version.assert_called_once_with()
+
+        # mock_validate_plugin_version.assert_called_once_with(
+        #    plugin_version_file_name=DEFAULT_DIRECTORY_PATH,
+        #    plugin_version_id=self.test_id)
