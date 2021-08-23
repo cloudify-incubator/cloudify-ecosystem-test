@@ -59,6 +59,7 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
                                             copy_file_to_docker)
+from ecosystem_tests.dorkl.colors import (PrintColors)
 
 
 def prepare_test(plugins=None,
@@ -140,7 +141,8 @@ def _basic_blueprint_test(blueprint_file_name,
         cloudify_exec('cfy deployments list')))
     deployments_create(test_name, inputs)
     sleep(5)
-    logger.info('Installing...')
+    # TODO add color: GREEN
+    logger.info(color.GREEN + 'Installing...' + color.RESET)
     try:
         executions_list(test_name)
         executions_start('install', test_name, timeout)
@@ -156,15 +158,17 @@ def _basic_blueprint_test(blueprint_file_name,
                 test_name,
                 endpoint_name
             ), endpoint_value)
-    logger.info('Uninstalling...')
+    # TODO add color: BLUE
+    logger.info(color.BLUE + 'Uninstalling...' + color.RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
     try:
         deployment_delete(test_name)
         blueprints_delete(test_name)
     except Exception as e:
-        logger.info('Failed to delete blueprint, '
-                    '{0}'.format(str(e)))
+        # TODO add color: RED
+        logger.info(color.RED + 'Failed to delete blueprint, '
+                    '{0}'.format(str(e)) + color.RESET)
 
 
 @contextmanager
@@ -181,7 +185,8 @@ def vpn():
         yield proc
     except Exception as e:
         # TODO: Learn about potential Exceptions here.
-        logger.info('VPN error {0}'.format(str(e)))
+        # TODO add color: RED
+        logger.info(color.RED + 'VPN error {0}'.format(str(e)) + color.RESET)
         pass
         # Apparently CircleCI does not support VPNs. !!!!
     finally:
@@ -207,7 +212,9 @@ def basic_blueprint_test(blueprint_file_name,
                                       endpoint_name=endpoint_name,
                                       endpoint_value=endpoint_value)
             except Exception as e:
-                logger.error('Error: {e}'.format(e=str(e)))
+                # TODO add color: RED
+                logger.error(color.RED + 'Error: {e}'.format(e=str(e)) +
+                             color.RESET)
                 cleanup_on_failure(test_name)
     else:
         try:
@@ -218,7 +225,9 @@ def basic_blueprint_test(blueprint_file_name,
                                   endpoint_name=endpoint_name,
                                   endpoint_value=endpoint_value)
         except Exception as e:
-            logger.error('Error: {e}'.format(e=str(e)))
+            # TODO add color: RED
+            logger.error(color.red + 'Error: {e}'.format(e=str(e)) +
+                         color.RESET)
             cleanup_on_failure(test_name)
 
 
@@ -323,7 +332,8 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 user_defined_check=user_defined_check,
                 user_defined_check_params=user_defined_check_params)
         except Exception:
-            logger.error(traceback.format_exc())
+            # TODO add color: RED
+            logger.error(color.RED + traceback.format_exc() + color.RESET)
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
                 'Test {test_id} failed subsequent invoke.'.format(
@@ -424,7 +434,8 @@ def handle_deployment_update(blueprint_file_name,
 
 
 def handle_uninstall_on_success(test_name, timeout):
-    logger.info('Uninstalling...')
+    # TODO add color: BLUE
+    logger.info(color.BLUE + 'Uninstalling...' + color.RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
     blueprint_of_deployment = get_blueprint_id_of_deployment(test_name)
@@ -435,8 +446,9 @@ def handle_uninstall_on_success(test_name, timeout):
         deployment_delete(test_name)
         blueprints_delete(blueprint_of_deployment)
     except Exception as e:
-        logger.info('Failed to delete blueprint, '
-                    '{0}'.format(str(e)))
+        # TODO add color: RED
+        logger.info(color.RED + 'Failed to delete blueprint, '
+                    '{0}'.format(str(e)) + color.RESET)
 
 
 def resume_install_workflow(test_name, timeout):
@@ -454,7 +466,8 @@ def resume_install_workflow(test_name, timeout):
 
 
 def start_install_workflow(test_name, timeout):
-    logger.info('Installing...')
+    # TODO add color: GREEN
+    logger.info(color.GREEN + 'Installing...' + color.RESET)
     try:
         executions_list(test_name)
         executions_start('install', test_name, timeout)
