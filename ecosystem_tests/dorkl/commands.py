@@ -28,6 +28,7 @@ from ecosystem_tests.dorkl.constansts import (logger,
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_cicd_tools.validations import validate_plugin_version
+from ecosystem_tests.dorkl.colors import (PrintColors)
 
 
 def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
@@ -51,7 +52,9 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
                 logger.info('Execution output: {0}'.format(stdout_line))
             stderr_file.flush()
             for stderr_line in stderr_file_read.readlines():
-                logger.error('Execution error: {0}'.format(stderr_line))
+                logger.error(PrintColors.RED +
+                             'Execution error: {0}'.format(stderr_line) +
+                             PrintColors.RESET)
 
     def return_parsable_output():
         stdout_file.flush()
@@ -218,7 +221,9 @@ def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True, detach=False):
             return json.loads(json_output)
         except (TypeError, ValueError):
             if log:
-                logger.error('JSON failed here: {0}'.format(json_output))
+                logger.error(PrintColors.RED +
+                             'JSON failed here: {0}'.format(json_output) +
+                             PrintColors.RESET)
             return
     return docker_exec(cmd, timeout, log, detach)
 
