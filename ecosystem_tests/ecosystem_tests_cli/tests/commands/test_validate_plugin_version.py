@@ -26,5 +26,4 @@ class ValidatePluginVersionTest(BaseCliCommandTest):
                                      mock_id_generator):
         mock_id_generator.return_value = self.test_id
         self.runner.invoke(validate_plugin_version, ['-d', mock_plugin])
-        # raise Exception(mock_validate_plugin_version.__dict__)
         mock_validate_plugin_version.assert_called_once_with(mock_plugin)
