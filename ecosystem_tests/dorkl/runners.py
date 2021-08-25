@@ -141,7 +141,6 @@ def _basic_blueprint_test(blueprint_file_name,
         cloudify_exec('cfy deployments list')))
     deployments_create(test_name, inputs)
     sleep(5)
-    # TODO add color: GREEN
     logger.info(PrintColors.GREEN + 'Installing...' + PrintColors.RESET)
     try:
         executions_list(test_name)
@@ -158,7 +157,6 @@ def _basic_blueprint_test(blueprint_file_name,
                 test_name,
                 endpoint_name
             ), endpoint_value)
-    # TODO add color: BLUE
     logger.info(PrintColors.BLUE + 'Uninstalling...' + PrintColors.RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
@@ -166,7 +164,6 @@ def _basic_blueprint_test(blueprint_file_name,
         deployment_delete(test_name)
         blueprints_delete(test_name)
     except Exception as e:
-        # TODO add color: RED
         logger.info(PrintColors.RED + 'Failed to delete blueprint, '
                     '{0}'.format(str(e)) + PrintColors.RESET)
 
@@ -185,7 +182,6 @@ def vpn():
         yield proc
     except Exception as e:
         # TODO: Learn about potential Exceptions here.
-        # TODO add color: RED
         logger.info(PrintColors.RED + 'VPN error {0}'.format(str(e)) +
                     PrintColors.RESET)
         pass
@@ -213,7 +209,6 @@ def basic_blueprint_test(blueprint_file_name,
                                       endpoint_name=endpoint_name,
                                       endpoint_value=endpoint_value)
             except Exception as e:
-                # TODO add color: RED
                 logger.error(PrintColors.RED + 'Error: {e}'.format(e=str(e)) +
                              PrintColors.RESET)
                 cleanup_on_failure(test_name)
@@ -226,7 +221,6 @@ def basic_blueprint_test(blueprint_file_name,
                                   endpoint_name=endpoint_name,
                                   endpoint_value=endpoint_value)
         except Exception as e:
-            # TODO add color: RED
             logger.error(PrintColors.RED + 'Error: {e}'.format(e=str(e)) +
                          PrintColors.RESET)
             cleanup_on_failure(test_name)
@@ -333,7 +327,6 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 user_defined_check=user_defined_check,
                 user_defined_check_params=user_defined_check_params)
         except Exception:
-            # TODO add color: RED
             logger.error(PrintColors.RED + traceback.format_exc() +
                          PrintColors.RESET)
             handle_test_failure(test_name, on_failure, timeout)
@@ -436,7 +429,6 @@ def handle_deployment_update(blueprint_file_name,
 
 
 def handle_uninstall_on_success(test_name, timeout):
-    # TODO add color: BLUE
     logger.info(PrintColors.BLUE + 'Uninstalling...' + PrintColors.RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
@@ -448,7 +440,6 @@ def handle_uninstall_on_success(test_name, timeout):
         deployment_delete(test_name)
         blueprints_delete(blueprint_of_deployment)
     except Exception as e:
-        # TODO add color: RED
         logger.info(PrintColors.RED + 'Failed to delete blueprint, '
                     '{0}'.format(str(e)) + PrintColors.RESET)
 
@@ -468,7 +459,6 @@ def resume_install_workflow(test_name, timeout):
 
 
 def start_install_workflow(test_name, timeout):
-    # TODO add color: GREEN
     logger.info(PrintColors.GREEN + 'Installing...' + PrintColors.RESET)
     try:
         executions_list(test_name)
