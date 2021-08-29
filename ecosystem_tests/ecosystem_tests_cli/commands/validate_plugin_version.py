@@ -18,7 +18,7 @@ from ecosystem_cicd_tools.validations import \
 from ...ecosystem_tests_cli import ecosystem_tests
 
 
-@ecosystem_tests.command(name='validate_plugin_version',
+@ecosystem_tests.command(name='validate-plugin-version',
                          short_help='Validate plugin version.')
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
