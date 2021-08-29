@@ -46,6 +46,7 @@ from ecosystem_tests.dorkl.colors import PrintColors
 
 DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', PrintColors.BOLD)
 
+
 def use_cfy(timeout=60):
     """
     Initialize the Cloudify CLI profile inside the container.
