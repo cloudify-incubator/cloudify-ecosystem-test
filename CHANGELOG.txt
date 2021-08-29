@@ -1,3 +1,4 @@
+2.5.11: Replace usage of validate plugin version scripts with CLI command
 2.5.10 Change Plugin Version Validation tests to use Plugin Version Validation CLI
 2.5.9: Validate Version Job needs to check that plugin YAML and CHANGELOG match
 2.5.8: Handle Unknown Object Exception in get release.
