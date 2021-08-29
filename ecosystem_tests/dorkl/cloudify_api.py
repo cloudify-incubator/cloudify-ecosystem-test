@@ -333,7 +333,7 @@ def executions_start(workflow_id,
         cmd = cmd + ' -p ' + ' -p '.join(params)
     return cloudify_exec(
         cmd.format(timeout, deployment_id, workflow_id),
-        get_json=False, timeout=timeout, stdout_color)
+        get_json=False, timeout=timeout, stdout_color=stdout_color)
 
 
 def executions_resume(execution_id, timeout):
