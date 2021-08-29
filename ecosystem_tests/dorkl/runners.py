@@ -59,7 +59,7 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
                                             copy_file_to_docker)
-from ecosystem_tests.dorkl.colors import (PrintColors)
+from ecosystem_tests.dorkl.colors import PrintColors
 
 
 def prepare_test(plugins=None,
