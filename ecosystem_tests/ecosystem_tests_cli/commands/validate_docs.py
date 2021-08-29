@@ -19,6 +19,5 @@ from ...ecosystem_tests_cli import ecosystem_tests
 
 @ecosystem_tests.command(name='validate-docs',
                          short_help='validate docs.')
-@ecosystem_tests.options.directory
 def validate_docs():
     validate_documentation_pulls()
