@@ -152,6 +152,13 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
+        self.repo = click.option('-R',
+                                 '--repo',
+                                 default=None,
+                                 type=click.STRING,
+                                 show_default=DEFAULT_REPO,
+                                 help=helptexts.REPO)
+
         self.inputs = click.option(
             '-i',
             '--inputs',
