@@ -38,7 +38,8 @@ from .constants import (RERUN,
                         DEFAULT_BLUEPRINT_PATH,
                         DEFAULT_CONTAINER_NAME,
                         DEFAULT_UNINSTALL_ON_SUCCESS,
-                        DEFAULT_DIRECTORY_PATH)
+                        DEFAULT_DIRECTORY_PATH,
+                        DEFAULT_REPO)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
