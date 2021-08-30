@@ -19,7 +19,7 @@ from ...ecosystem_tests_cli import ecosystem_tests
 
 @ecosystem_tests.command(name='validate-docs',
                          short_help='validate docs.')
-@ecosystem_tests.options(name='repo',
-                         short_help='Provide a different repository name.')
-def validate_docs(repo):
-    validate_documentation_pulls(repo)
+@ecosystem_tests.options.repo
+@ecosystem_tests.options.branch
+def validate_docs(repo, branch):
+    validate_documentation_pulls(repo, branch=branch)

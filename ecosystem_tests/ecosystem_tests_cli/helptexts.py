@@ -74,3 +74,5 @@ YUM_PACKAGES = 'Yum package to install on the manager container. ' \
 DIRECTORY_PATH = 'directory to execute to command inside'
 
 REPO = 'Provide a different repository name'
+
+BRANCH = 'Provide branch name in Git'
