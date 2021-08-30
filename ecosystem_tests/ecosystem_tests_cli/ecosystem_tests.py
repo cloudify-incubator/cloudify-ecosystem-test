@@ -37,7 +37,8 @@ from .constants import (RERUN,
                         DEFAULT_LICENSE_PATH,
                         DEFAULT_BLUEPRINT_PATH,
                         DEFAULT_CONTAINER_NAME,
-                        DEFAULT_UNINSTALL_ON_SUCCESS)
+                        DEFAULT_UNINSTALL_ON_SUCCESS,
+                        DEFAULT_DIRECTORY_PATH)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
@@ -143,6 +144,13 @@ class Options(object):
                                            multiple=True,
                                            show_default=DEFAULT_BLUEPRINT_PATH,
                                            help=helptexts.BLUEPRINT_PATH)
+
+        self.directory = click.option('-d',
+                                      '--directory',
+                                      default=os.getcwd(),
+                                      type=click.Path(),
+                                      show_default=DEFAULT_DIRECTORY_PATH,
+                                      help=helptexts.DIRECTORY_PATH)
 
         self.inputs = click.option(
             '-i',
