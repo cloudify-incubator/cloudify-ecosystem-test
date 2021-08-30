@@ -24,13 +24,28 @@ from datetime import datetime, timedelta
 
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,
-                                              MANAGER_CONTAINER_ENVAR_NAME)
+                                              MANAGER_CONTAINER_ENVAR_NAME,
+                                              RED,
+                                              GREEN,
+                                              YELLOW,
+                                              BLUE,
+                                              PINK,
+                                              CYAN,
+                                              RESET,
+                                              BOLD,
+                                              UNDERLINE)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_cicd_tools.validations import validate_plugin_version
 
+DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', BOLD)
 
-def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
+
+def handle_process(command,
+                   timeout=TIMEOUT,
+                   log=True,
+                   detach=False,
+                   stdout_color=DEFAULT_COLOR):
     file_obj_stdout = NamedTemporaryFile(delete=False)
     file_obj_stderr = NamedTemporaryFile(delete=False)
     stdout_file = open(file_obj_stdout.name, 'w')
@@ -48,10 +63,14 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
         if log:
             stdout_file.flush()
             for stdout_line in stdout_file_read.readlines():
-                logger.info('Execution output: {0}'.format(stdout_line))
+                logger.info(stdout_color +
+                            'Execution output: {0}'.format(stdout_line) +
+                            RESET)
             stderr_file.flush()
             for stderr_line in stderr_file_read.readlines():
-                logger.error('Execution error: {0}'.format(stderr_line))
+                logger.error(RED +
+                             'Execution error: {0}'.format(stderr_line) +
+                             RESET)
 
     def return_parsable_output():
         stdout_file.flush()
@@ -88,20 +107,29 @@ def handle_process(command, timeout=TIMEOUT, log=True, detach=False):
     return return_parsable_output()
 
 
-def docker_exec(cmd, timeout=TIMEOUT, log=True, detach=False):
+def docker_exec(cmd,
+                timeout=TIMEOUT,
+                log=True,
+                detach=False,
+                stdout_color=DEFAULT_COLOR):
     """
     Execute command on the docker container.
     :param cmd: The command.
     :param timeout: How long to permit the process to run.
     :param log: Whether to log stdout or not.
     :param detach: Allow the process to block other functions.
+    :param stdout_color: Defines the default stdout output color.
     :return: The command output.
     """
 
     container_name = get_manager_container_name()
     return handle_process(
         'docker exec {container_name} {cmd}'.format(
-            container_name=container_name, cmd=cmd), timeout, log, detach)
+            container_name=container_name, cmd=cmd),
+        timeout,
+        log,
+        detach,
+        stdout_color)
 
 
 def replace_file_on_manager(local_file_path, manager_file_path):
@@ -200,7 +228,12 @@ def copy_directory_to_docker(local_file_path):
     return remote_dir
 
 
-def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True, detach=False):
+def cloudify_exec(cmd,
+                  get_json=True,
+                  timeout=TIMEOUT,
+                  log=True,
+                  detach=False,
+                  stdout_color=DEFAULT_COLOR):
     """
     Execute a Cloudify CLI command inside the container.
     :param cmd: The command.
@@ -208,19 +241,22 @@ def cloudify_exec(cmd, get_json=True, timeout=TIMEOUT, log=True, detach=False):
     :param timeout: How long to allow the command to block other functions.
     :param log: Whether to log stdout or not.
     :param detach: To detach after executing
+    :param stdout_color: Defines the default stdout output color.
     :return:
     """
 
     if get_json:
         json_output = docker_exec(
-            '{0} --json'.format(cmd), timeout, log, detach)
+            '{0} --json'.format(cmd), timeout, log, detach, stdout_color)
         try:
             return json.loads(json_output)
         except (TypeError, ValueError):
             if log:
-                logger.error('JSON failed here: {0}'.format(json_output))
+                logger.error(RED +
+                             'JSON failed here: {0}'.format(json_output) +
+                             RESET)
             return
-    return docker_exec(cmd, timeout, log, detach)
+    return docker_exec(cmd, timeout, log, detach, stdout_color)
 
 
 def export_secret_to_environment(name):
