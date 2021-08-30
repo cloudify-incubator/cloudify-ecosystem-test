@@ -35,16 +35,24 @@ from ecosystem_cicd_tools.packaging import (
     find_wagon_local_path,
     get_bundle_from_workspace)
 from ecosystem_tests.dorkl.constansts import (logger,
-                                              LICENSE_ENVAR_NAME)
+                                              LICENSE_ENVAR_NAME,
+                                              RED,
+                                              GREEN,
+                                              YELLOW,
+                                              BLUE,
+                                              PINK,
+                                              CYAN,
+                                              RESET,
+                                              BOLD,
+                                              UNDERLINE)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.commands import (cloudify_exec,
                                             copy_file_to_docker,
                                             delete_file_from_docker,
                                             copy_directory_to_docker)
-from ecosystem_tests.dorkl.colors import PrintColors
 
-DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', PrintColors.BOLD)
+DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', BOLD)
 
 
 def use_cfy(timeout=60):

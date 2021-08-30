@@ -24,13 +24,21 @@ from datetime import datetime, timedelta
 
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,
-                                              MANAGER_CONTAINER_ENVAR_NAME)
+                                              MANAGER_CONTAINER_ENVAR_NAME,
+                                              RED,
+                                              GREEN,
+                                              YELLOW,
+                                              BLUE,
+                                              PINK,
+                                              CYAN,
+                                              RESET,
+                                              BOLD,
+                                              UNDERLINE)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_cicd_tools.validations import validate_plugin_version
-from ecosystem_tests.dorkl.colors import PrintColors
 
-DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', PrintColors.BOLD)
+DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', BOLD)
 
 
 def handle_process(command,
@@ -57,12 +65,12 @@ def handle_process(command,
             for stdout_line in stdout_file_read.readlines():
                 logger.info(stdout_color +
                             'Execution output: {0}'.format(stdout_line) +
-                            PrintColors.RESET)
+                            RESET)
             stderr_file.flush()
             for stderr_line in stderr_file_read.readlines():
-                logger.error(PrintColors.RED +
+                logger.error(RED +
                              'Execution error: {0}'.format(stderr_line) +
-                             PrintColors.RESET)
+                             RESET)
 
     def return_parsable_output():
         stdout_file.flush()
@@ -244,9 +252,9 @@ def cloudify_exec(cmd,
             return json.loads(json_output)
         except (TypeError, ValueError):
             if log:
-                logger.error(PrintColors.RED +
+                logger.error(RED +
                              'JSON failed here: {0}'.format(json_output) +
-                             PrintColors.RESET)
+                             RESET)
             return
     return docker_exec(cmd, timeout, log, detach, stdout_color)
 

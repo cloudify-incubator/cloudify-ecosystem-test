@@ -33,7 +33,15 @@ from ecosystem_tests.dorkl.constansts import (RERUN,
                                               ROLLBACK_FULL,
                                               UNINSTALL_FORCE,
                                               VPN_CONFIG_PATH,
-                                              ROLLBACK_PARTIAL)
+                                              ROLLBACK_PARTIAL,RED,
+                                              GREEN,
+                                              YELLOW,
+                                              BLUE,
+                                              PINK,
+                                              CYAN,
+                                              RESET,
+                                              BOLD,
+                                              UNDERLINE)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
@@ -59,7 +67,6 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
                                             copy_file_to_docker)
-from ecosystem_tests.dorkl.colors import PrintColors
 
 
 def prepare_test(plugins=None,
@@ -141,7 +148,7 @@ def _basic_blueprint_test(blueprint_file_name,
         cloudify_exec('cfy deployments list')))
     deployments_create(test_name, inputs)
     sleep(5)
-    logger.info(PrintColors.GREEN + 'Installing...' + PrintColors.RESET)
+    logger.info(GREEN + 'Installing...' + RESET)
     try:
         executions_list(test_name)
         executions_start('install', test_name, timeout)
@@ -157,15 +164,16 @@ def _basic_blueprint_test(blueprint_file_name,
                 test_name,
                 endpoint_name
             ), endpoint_value)
-    logger.info(PrintColors.BLUE + 'Uninstalling...' + PrintColors.RESET)
+    logger.info(BLUE + 'Uninstalling...' + RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
     try:
         deployment_delete(test_name)
         blueprints_delete(test_name)
     except Exception as e:
-        logger.info(PrintColors.RED + 'Failed to delete blueprint, '
-                    '{0}'.format(str(e)) + PrintColors.RESET)
+        logger.info(RED +
+                    'Failed to delete blueprint, {0}'.format(str(e)) +
+                    RESET)
 
 
 @contextmanager
@@ -182,8 +190,7 @@ def vpn():
         yield proc
     except Exception as e:
         # TODO: Learn about potential Exceptions here.
-        logger.info(PrintColors.RED + 'VPN error {0}'.format(str(e)) +
-                    PrintColors.RESET)
+        logger.info(RED + 'VPN error {0}'.format(str(e)) + RESET)
         pass
         # Apparently CircleCI does not support VPNs. !!!!
     finally:
@@ -209,8 +216,7 @@ def basic_blueprint_test(blueprint_file_name,
                                       endpoint_name=endpoint_name,
                                       endpoint_value=endpoint_value)
             except Exception as e:
-                logger.error(PrintColors.RED + 'Error: {e}'.format(e=str(e)) +
-                             PrintColors.RESET)
+                logger.error(RED + 'Error: {e}'.format(e=str(e)) + RESET)
                 cleanup_on_failure(test_name)
     else:
         try:
@@ -221,8 +227,7 @@ def basic_blueprint_test(blueprint_file_name,
                                   endpoint_name=endpoint_name,
                                   endpoint_value=endpoint_value)
         except Exception as e:
-            logger.error(PrintColors.RED + 'Error: {e}'.format(e=str(e)) +
-                         PrintColors.RESET)
+            logger.error(RED + 'Error: {e}'.format(e=str(e)) + RESET)
             cleanup_on_failure(test_name)
 
 
@@ -327,8 +332,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 user_defined_check=user_defined_check,
                 user_defined_check_params=user_defined_check_params)
         except Exception:
-            logger.error(PrintColors.RED + traceback.format_exc() +
-                         PrintColors.RESET)
+            logger.error(RED + traceback.format_exc() + RESET)
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
                 'Test {test_id} failed subsequent invoke.'.format(
@@ -429,7 +433,7 @@ def handle_deployment_update(blueprint_file_name,
 
 
 def handle_uninstall_on_success(test_name, timeout):
-    logger.info(PrintColors.BLUE + 'Uninstalling...' + PrintColors.RESET)
+    logger.info(BLUE + 'Uninstalling...' + RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
     blueprint_of_deployment = get_blueprint_id_of_deployment(test_name)
@@ -440,8 +444,9 @@ def handle_uninstall_on_success(test_name, timeout):
         deployment_delete(test_name)
         blueprints_delete(blueprint_of_deployment)
     except Exception as e:
-        logger.info(PrintColors.RED + 'Failed to delete blueprint, '
-                    '{0}'.format(str(e)) + PrintColors.RESET)
+        logger.info(RED +
+                    'Failed to delete blueprint, {0}'.format(str(e)) +
+                    RESET)
 
 
 def resume_install_workflow(test_name, timeout):
@@ -459,7 +464,7 @@ def resume_install_workflow(test_name, timeout):
 
 
 def start_install_workflow(test_name, timeout):
-    logger.info(PrintColors.GREEN + 'Installing...' + PrintColors.RESET)
+    logger.info(GREEN + 'Installing...' + RESET)
     try:
         executions_list(test_name)
         executions_start('install', test_name, timeout)
