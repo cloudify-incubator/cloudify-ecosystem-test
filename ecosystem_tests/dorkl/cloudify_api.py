@@ -35,13 +35,24 @@ from ecosystem_cicd_tools.packaging import (
     find_wagon_local_path,
     get_bundle_from_workspace)
 from ecosystem_tests.dorkl.constansts import (logger,
-                                              LICENSE_ENVAR_NAME)
+                                              LICENSE_ENVAR_NAME,
+                                              RED,
+                                              GREEN,
+                                              YELLOW,
+                                              BLUE,
+                                              PINK,
+                                              CYAN,
+                                              RESET,
+                                              BOLD,
+                                              UNDERLINE)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.commands import (cloudify_exec,
                                             copy_file_to_docker,
                                             delete_file_from_docker,
                                             copy_directory_to_docker)
+
+DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', BOLD)
 
 
 def use_cfy(timeout=60):
@@ -301,7 +312,11 @@ def get_blueprint_id_of_deployment(deployment_id):
             return deployment["blueprint_id"]
 
 
-def executions_start(workflow_id, deployment_id, timeout, params=None):
+def executions_start(workflow_id,
+                     deployment_id,
+                     timeout,
+                     params=None,
+                     stdout_color=DEFAULT_COLOR):
     """
     Start an execution on the manager.
     :param workflow_id:
@@ -310,6 +325,7 @@ def executions_start(workflow_id, deployment_id, timeout, params=None):
     :param params: Valid Parameters for the workflow (Can be provided as
     wildcard based paths (*.yaml, /my_inputs/,etc..) to YAML files,
      a JSON string or as 'key1=value1;key2=value2')
+    :param stdout_color: Defines the default stdout output color.
     :return:
     """
     cmd = 'cfy executions start --timeout {0} -d {1} {2}'
@@ -325,7 +341,7 @@ def executions_start(workflow_id, deployment_id, timeout, params=None):
         cmd = cmd + ' -p ' + ' -p '.join(params)
     return cloudify_exec(
         cmd.format(timeout, deployment_id, workflow_id),
-        get_json=False, timeout=timeout)
+        get_json=False, timeout=timeout, stdout_color=stdout_color)
 
 
 def executions_resume(execution_id, timeout):
