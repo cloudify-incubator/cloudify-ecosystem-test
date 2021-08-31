@@ -38,7 +38,9 @@ from .constants import (RERUN,
                         DEFAULT_BLUEPRINT_PATH,
                         DEFAULT_CONTAINER_NAME,
                         DEFAULT_UNINSTALL_ON_SUCCESS,
-                        DEFAULT_DIRECTORY_PATH)
+                        DEFAULT_DIRECTORY_PATH,
+                        DEFAULT_REPO,
+                        DEFAULT_BRANCH)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
@@ -151,6 +153,20 @@ class Options(object):
                                       type=click.Path(),
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
+
+        self.repo = click.option('-R',
+                                 '--repo',
+                                 default=None,
+                                 type=click.STRING,
+                                 show_default=DEFAULT_REPO,
+                                 help=helptexts.REPO)
+
+        self.branch = click.option('-B',
+                                   '--branch',
+                                   default=None,
+                                   type=click.STRING,
+                                   show_default=DEFAULT_BRANCH,
+                                   help=helptexts.BRANCH)
 
         self.inputs = click.option(
             '-i',

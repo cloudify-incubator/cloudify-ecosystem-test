@@ -16,6 +16,7 @@
 from ..ecosystem_tests_cli import ecosystem_tests
 from .commands import (validate_plugin_version,
                        validate_blueprint,
+                       validate_docs,
                        local_blueprint_test,
                        prepare_test_manager)
 
@@ -32,6 +33,7 @@ def _register_commands():
     _ecosystem_test.add_command(validate_blueprint.validate_blueprint)
     _ecosystem_test.add_command(
         validate_plugin_version.validate_plugin_version)
+    _ecosystem_test.add_command(validate_docs.validate_docs)
 
 
 _register_commands()
