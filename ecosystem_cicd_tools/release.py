@@ -47,6 +47,14 @@ VERSION_STRING_RE = \
     r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
 
 
+def find_name_flugin(setup_py):
+    with open(setup_py, 'r') as infile:
+        name_flugin = infile.read()
+        logging.info(name_flugin)
+
+    return 'cloudify-aws-plugin'
+
+
 def find_version(setup_py):
     with open(setup_py, 'r') as infile:
         version_string = re.findall(VERSION_STRING_RE, infile.read())

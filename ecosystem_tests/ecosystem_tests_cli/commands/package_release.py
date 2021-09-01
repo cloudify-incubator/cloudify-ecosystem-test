@@ -22,8 +22,8 @@ setup_py = path.join(
     path.abspath(path.join(path.dirname(__file__), pardir)),
     'setup.py')
 
-@ecosystem_tests.command(name='release',
+@ecosystem_tests.command(name='package-release',
                          short_help='package release.')
 def package_release():
     plugin_release_with_latest(
-        'cloudify-ecosystem-tests', find_version(setup_py))
+        find_name_flugin(setup_py), find_version(setup_py))
