@@ -152,12 +152,6 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
-
-        self.plugin_name = click.option('-pn',
-                                      '--plugin-name',
-                                      type=click.STRING,
-                                      help=helptexts.PLUNGIN_NAME)
-
         self.inputs = click.option(
             '-i',
             '--inputs',
