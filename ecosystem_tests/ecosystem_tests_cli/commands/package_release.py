@@ -22,6 +22,7 @@ setup_py = path.join(
     path.abspath(path.join(path.dirname(__file__), pardir)),
     'setup.py')
 
+
 @ecosystem_tests.command(name='package-release',
                          short_help='package release.')
 def package_release():

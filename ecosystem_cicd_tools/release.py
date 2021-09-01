@@ -49,11 +49,15 @@ VERSION_STRING_RE = \
 
 def find_name_flugin(setup_py):
     logging.info('find_name_flugin : ')
+    print("find_name_flugin")
+    name_flugin = 'name_flugin data'
     with open(setup_py, 'r') as infile:
         name_flugin = infile.read()
-        logging.info(name_flugin)
 
-    return 'cloudify-aws-plugin'
+    print(" logging.info(name_flugin)")
+    logging.info(name_flugin)
+
+    return name_flugin
 
 
 def find_version(setup_py):
