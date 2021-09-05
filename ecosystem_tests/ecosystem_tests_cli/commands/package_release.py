@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from os import path, pardir
 
+import os
 from ecosystem_cicd_tools.release import (
     plugin_release_with_latest, find_version)
 from ...ecosystem_tests_cli import ecosystem_tests
@@ -24,5 +24,5 @@ from ...ecosystem_tests_cli import ecosystem_tests
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.name
 def package_release(directory, name):
-    setup_py = directory + 'setup.py'
+    setup_py = os.path.join(directory, 'setup.py')
     plugin_release_with_latest(name, find_version(setup_py))
