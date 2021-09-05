@@ -25,6 +25,8 @@ setup_py = path.join(
 
 @ecosystem_tests.command(name='package-release',
                          short_help='package release.')
-def package_release():
-    plugin_release_with_latest(
-        find_name_flugin(setup_py), find_version(setup_py))
+@ecosystem_tests.options.directory
+@ecosystem_tests.options.name
+def package_release(directory, name):
+    setup_py = directory + 'seyup.py'
+    plugin_release_with_latest(name, find_version(setup_py))
