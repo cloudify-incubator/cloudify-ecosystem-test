@@ -50,6 +50,16 @@ def local_blueprint_test(blueprint_path,
                          nested_test,
                          dry_run):
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
+
+    def nested_test_executor(*_, **__):
+        for test in nested_test:
+            logger.info(
+                'Executing nested test: {test_path} '.format(test_path=test))
+            nested_result = pytest.main(['-s', test])
+            if nested_result.value != 0:
+                raise Exception(
+                    'Nested test {test_path} failed!'.format(test_path=test))
+
     if dry_run:
         return handle_dry_run(bp_test_ids,
                               inputs,
@@ -66,11 +76,9 @@ def local_blueprint_test(blueprint_path,
                                  timeout=timeout,
                                  on_subsequent_invoke=on_subsequent_invoke,
                                  on_failure=on_failure,
-                                 uninstall_on_success=uninstall_on_success)
-    for test in nested_test:
-        logger.info(
-            'Executing nested test: {test_path} '.format(test_path=test))
-        pytest.main(['-s', test])
+                                 uninstall_on_success=uninstall_on_success,
+                                 user_defined_check=nested_test_executor)
+
 
 
 def handle_dry_run(bp_test_ids,

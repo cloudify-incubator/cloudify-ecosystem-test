@@ -39,7 +39,8 @@ from .constants import (RERUN,
                         DEFAULT_CONTAINER_NAME,
                         DEFAULT_UNINSTALL_ON_SUCCESS,
                         DEFAULT_DIRECTORY_PATH,
-                        DEFAULT_REPO)
+                        DEFAULT_REPO,
+                        DEFAULT_BRANCH)
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
@@ -153,12 +154,23 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
+        self.name = click.option('-n',
+                                 '--name',
+                                 type=click.STRING,
+                                 help=helptexts.PLUNGIN_NAME)
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,
                                  type=click.STRING,
                                  show_default=DEFAULT_REPO,
                                  help=helptexts.REPO)
+
+        self.branch = click.option('-B',
+                                   '--branch',
+                                   default=None,
+                                   type=click.STRING,
+                                   show_default=DEFAULT_BRANCH,
+                                   help=helptexts.BRANCH)
 
         self.inputs = click.option(
             '-i',
