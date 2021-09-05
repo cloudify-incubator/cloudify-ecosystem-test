@@ -51,15 +51,6 @@ def local_blueprint_test(blueprint_path,
                          dry_run):
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
 
-    def nested_test_executor(*_, **__):
-        for test in nested_test:
-            logger.info(
-                'Executing nested test: {test_path} '.format(test_path=test))
-            nested_result = pytest.main(['-s', test])
-            if nested_result.value != 0:
-                raise Exception(
-                    'Nested test {test_path} failed!'.format(test_path=test))
-
     if dry_run:
         return handle_dry_run(bp_test_ids,
                               inputs,
@@ -70,14 +61,18 @@ def local_blueprint_test(blueprint_path,
                               container_name,
                               nested_test)
     for blueprint, test_id in bp_test_ids:
-        basic_blueprint_test_dev(blueprint_file_name=blueprint,
-                                 test_name=test_id,
-                                 inputs=inputs,
-                                 timeout=timeout,
-                                 on_subsequent_invoke=on_subsequent_invoke,
-                                 on_failure=on_failure,
-                                 uninstall_on_success=uninstall_on_success,
-                                 user_defined_check=nested_test_executor)
+        basic_blueprint_test_dev(
+            blueprint_file_name=blueprint,
+            test_name=test_id,
+            inputs=inputs,
+            timeout=timeout,
+            on_subsequent_invoke=on_subsequent_invoke,
+            on_failure=on_failure,
+            uninstall_on_success=uninstall_on_success,
+            user_defined_check=nested_test_executor if nested_test else None,
+            user_defined_check_params={
+                'nested_tests': nested_test
+            } if nested_test else None)
 
 
 def handle_dry_run(bp_test_ids,
@@ -125,3 +120,16 @@ def handle_dry_run(bp_test_ids,
                    '  - inputs '
 
     logger.info(dry_run_str)
+
+
+def nested_test_executor(nested_tests=None):
+    nested_tests = nested_tests or []
+    for nested_test in nested_tests:
+        logger.info('Executing nested test: {test_path} '.format(
+            test_path=nested_test))
+        nested_result = pytest.main(['-s', nested_test])
+        if nested_result.value != 0:
+            raise Exception(
+                'Nested test {test_path} failed! '
+                'Result: {test_result}'.format(
+                    test_path=nested_test, test_result=nested_result))
