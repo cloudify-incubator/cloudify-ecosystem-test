@@ -154,6 +154,10 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
+        self.name = click.option('-n',
+                                 '--name',
+                                 type=click.STRING,
+                                 help=helptexts.PLUNGIN_NAME)
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,

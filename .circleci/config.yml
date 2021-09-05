@@ -85,7 +85,7 @@ commands:
       - run:
           name: install local project
           command: pip install .
-      - run: python .circleci/package_release.py
+      - run: ecosystem-tests package-release
 
   build_bundle:
     steps:
