@@ -84,8 +84,8 @@ commands:
           command: pip install --upgrade setuptools
       - run:
           name: install local project
-          command: pip install -e .
-      - run: ecosystem-tests package-release
+          command: pip install .
+      - run: ecosystem-test package-release
 
   build_bundle:
     steps:
