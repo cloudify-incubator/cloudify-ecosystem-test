@@ -128,7 +128,7 @@ def nested_test_executor(nested_tests=None):
         logger.info('Executing nested test: {test_path} '.format(
             test_path=nested_test))
         nested_result = pytest.main(['-s', nested_test])
-        if nested_result.value != 0:
+        if nested_result != 0:
             raise Exception(
                 'Nested test {test_path} failed! '
                 'Result: {test_result}'.format(
