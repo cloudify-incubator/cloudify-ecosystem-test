@@ -19,5 +19,6 @@ from ...ecosystem_tests_cli import ecosystem_tests
 
 @ecosystem_tests.command(name='merge-docs',
                          short_help='merge docs.')
-def merge_docs():
-    merge_documentation_pulls()
+@ecosystem_tests.options.repo
+def merge_docs(repo):
+    merge_documentation_pulls(repo)
