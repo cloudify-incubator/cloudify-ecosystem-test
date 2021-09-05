@@ -80,7 +80,6 @@ def local_blueprint_test(blueprint_path,
                                  user_defined_check=nested_test_executor)
 
 
-
 def handle_dry_run(bp_test_ids,
                    inputs,
                    timeout,
