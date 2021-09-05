@@ -1,3 +1,4 @@
+2.5.15: Add merge-docs and package-release command to "ecosystem-tests" CLI
 2.5.14:
   - Fix nested tests so that nested test failures result in failure for entire test.
 2.5.13: Add "validate-docs" command to "ecosystem-tests" CLI
