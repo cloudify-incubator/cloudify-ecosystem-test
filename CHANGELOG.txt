@@ -1,5 +1,6 @@
 2.5.14:
-  - Fix nested tests so that nested test failures result in failure for entire test.
+  - RD-3112: Fix nested tests so that nested test failures result in failure for entire test.
+  - RD-3063: Add Package release command
 2.5.13: Add "validate-docs" command to "ecosystem-tests" CLI
 2.5.12: Added colors to CLI (Errors - Red, Install - Green, Uninstall - Blue)
 2.5.11: Replace usage of validate plugin version scripts with CLI command
