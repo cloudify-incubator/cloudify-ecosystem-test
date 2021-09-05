@@ -18,15 +18,11 @@ from ecosystem_cicd_tools.release import (
     plugin_release_with_latest, find_version)
 from ...ecosystem_tests_cli import ecosystem_tests
 
-setup_py = path.join(
-    path.abspath(path.join(path.dirname(__file__), pardir)),
-    'setup.py')
-
 
 @ecosystem_tests.command(name='package-release',
                          short_help='package release.')
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.name
 def package_release(directory, name):
-    setup_py = directory + 'seyup.py'
+    setup_py = directory + 'setup.py'
     plugin_release_with_latest(name, find_version(setup_py))
