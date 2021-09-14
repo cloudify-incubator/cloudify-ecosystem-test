@@ -1,3 +1,4 @@
+2.5.16: Add merge-docs and package-release command to "ecosystem-tests" CLI
 2.5.15: Fix issue due to pytest versions.
 2.5.14:
   - RD-3112: Fix nested tests so that nested test failures result in failure for entire test.

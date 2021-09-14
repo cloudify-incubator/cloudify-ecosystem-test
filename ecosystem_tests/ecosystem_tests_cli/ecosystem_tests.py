@@ -158,6 +158,7 @@ class Options(object):
                                  '--name',
                                  type=click.STRING,
                                  help=helptexts.PLUNGIN_NAME)
+
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,
