@@ -1,3 +1,4 @@
+2.5.18: Fix issue with package release.
 2.5.17: Fix issue with package release.
 2.5.16: Add merge-docs and package-release command to "ecosystem-tests" CLI
 2.5.15: Fix issue due to pytest versions.
