@@ -85,7 +85,7 @@ commands:
       - run:
           name: install local project
           command: pip install .
-      - run: ecosystem-tests package-release
+      - run: ecosystem-test package-release
 
   build_bundle:
     steps:
