@@ -14,12 +14,13 @@
 # limitations under the License.
 
 from ..ecosystem_tests_cli import ecosystem_tests
-from .commands import (validate_plugin_version,
-                       validate_blueprint,
+from .commands import (merge_docs,
                        validate_docs,
-                       local_blueprint_test,
                        package_release,
-                       prepare_test_manager)
+                       validate_blueprint,
+                       prepare_test_manager,
+                       local_blueprint_test,
+                       validate_plugin_version)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -36,6 +37,7 @@ def _register_commands():
     _ecosystem_test.add_command(
         validate_plugin_version.validate_plugin_version)
     _ecosystem_test.add_command(validate_docs.validate_docs)
+    _ecosystem_test.add_command(merge_docs.merge_docs)
 
 
 _register_commands()
