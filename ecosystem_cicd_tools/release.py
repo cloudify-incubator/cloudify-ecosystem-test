@@ -81,7 +81,8 @@ def plugin_release(plugin_name,
                    workspace_files=None,
                    workspace_path=None):
 
-    workspace_files = workspace_files or get_workspace_files(workspace_path=workspace_path)
+    workspace_files = workspace_files or get_workspace_files(
+        workspace_path=workspace_path)
     version = version or get_plugin_version()
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -89,8 +90,7 @@ def plugin_release(plugin_name,
     commit = get_commit()
     if not version_release:
         version_release = create_release(
-            version, version, plugin_release_name,
-            commit)
+            version, version, plugin_release_name, commit)
     if path.exists('plugin.yaml'):
         logging.info('Uploading plugin YAML {0}'.format('plugin.yaml'))
         version_release.upload_asset(
@@ -161,9 +161,11 @@ def plugin_release_with_latest(plugin_name,
         logging.warn('Found existing release for {0}. '
                      'No new build.'.format(version))
     else:
+        logging.info('Starting create plugin release for {} {} {} {}'.format(
+            plugin_name, version, plugin_release_name, plugins))
         # Create release for the new version if not exists
-        version_release = plugin_release(plugin_name, version,
-                                         plugin_release_name, plugins)
+        version_release = plugin_release(
+            plugin_name, version, plugin_release_name, plugins)
         latest_release = get_release("latest")
         if latest_release:
             # We have latest tag and release so we need to delete
