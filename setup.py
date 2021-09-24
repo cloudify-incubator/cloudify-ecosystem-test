@@ -2,13 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.5.19',
+    version='2.5.20',
     license='LICENSE',
     packages=find_packages(),
     description='Stuff that Ecosystem Tests Use',
     entry_points={
         "console_scripts": [
-            "ecosystem-test = ecosystem_tests.ecosystem_tests_cli.main:_ecosystem_test"
+            "ecosystem-test = ecosystem_tests.ecosystem_tests_cli.main:_ecosystem_test",
+            "ecosystem-tests = ecosystem_tests.ecosystem_tests_cli.main:_ecosystem_test"
         ]
     },
     install_requires=[
