@@ -138,7 +138,15 @@ class Options(object):
         a developer sees an option. It it can receive arguments, it's a
         method - if not, it's an attribute.
         """
-
+        self.plugin_version = click.option('-PV',
+                                           '--plugin-version',
+                                           type=click.STRING,
+                                           help=helptexts.VERSION)
+        self.package = click.option('-P',
+                                    '--package',
+                                    multiple=True,
+                                    type=click.STRING,
+                                    help=helptexts.PACKAGE)
         self.blueprint_path = click.option('-b',
                                            '--blueprint-path',
                                            default=[DEFAULT_BLUEPRINT_PATH],

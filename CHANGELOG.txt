@@ -1,3 +1,4 @@
+2.5.23: RD-3081: swap-code-on-manager.
 2.5.22: RD-3193-skip-nodocs: Use enhancement label.
 2.5.21: Exclude aarch64 from bundles.
 2.5.20: Make ecosystem-tests alias to ecosystem-test
