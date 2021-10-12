@@ -200,6 +200,8 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             plugin_dict['link'] = asset
             continue
         for wagon in plugin_dict['wagons']:
+            if 'aarch64' in asset:
+                continue
             if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
                 if asset.endswith('md5'):
                         wagon['md5url'] = asset
