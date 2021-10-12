@@ -7,8 +7,8 @@
         "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_aarch64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_aarch64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
@@ -28,8 +28,8 @@
         "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_aarch64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_aarch64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
@@ -133,8 +133,8 @@
         "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_aarch64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_aarch64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
