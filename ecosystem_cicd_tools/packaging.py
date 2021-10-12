@@ -428,7 +428,8 @@ def configure_bundle_archive(plugins_json=None):
             plugin_yaml = plugin['link']
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
-                    mapping[wagon['url']] = plugin_yaml
+                    if 'aarch64' not in wagon['url']:
+                        mapping[wagon['url']] = plugin_yaml
 
     logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
