@@ -154,6 +154,10 @@ workflows:
   tests:
     jobs:
       - unittests
+      - build_bundle:
+          filters:
+            branches:
+              only: master
       - release:
           filters:
             branches:

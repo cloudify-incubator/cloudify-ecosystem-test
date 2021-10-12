@@ -200,6 +200,8 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             plugin_dict['link'] = asset
             continue
         for wagon in plugin_dict['wagons']:
+            if 'aarch64' in asset:
+                continue
             if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
                 if asset.endswith('md5'):
                         wagon['md5url'] = asset
@@ -428,7 +430,8 @@ def configure_bundle_archive(plugins_json=None):
             plugin_yaml = plugin['link']
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
-                    mapping[wagon['url']] = plugin_yaml
+                    if 'aarch64' not in wagon['url']:
+                        mapping[wagon['url']] = plugin_yaml
 
     logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory

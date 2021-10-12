@@ -1,3 +1,4 @@
+2.5.21: Exclude aarch64 from bundles.
 2.5.20: Make ecosystem-tests alias to ecosystem-test
 2.5.19: Add merge docs. Probably were merge issues.
 2.5.18: Fix issue with package release.
