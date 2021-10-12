@@ -154,11 +154,6 @@ workflows:
   tests:
     jobs:
       - unittests
-      - build_bundle:
-          filters:
-            branches:
-              only: RD-3293-aarch64
-
       - release:
           filters:
             branches:
