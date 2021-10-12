@@ -17,7 +17,7 @@ from .github_stuff import (
     get_repository,
     get_pull_request,
     find_pull_request_number,
-    validate_docs_requirement)
+    check_if_label_in_pr_labels)
 
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
@@ -169,7 +169,11 @@ def _validate_documenation_pulls(docs_repo, jira_ids):
                 raise_if_unmergeable(pull)
                 merges += 1
     if not merges:
-        raise Exception('No documentation PRs were found.')
+        raise Exception(
+            'No documentation PRs were found in {}. '
+            'If your PR includes the label "enhancement", '
+            'then you are expected to submit docs PRs. '.format(
+                docs_repo.name))
 
 
 def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
@@ -188,15 +192,15 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
 
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
-    pull_request_number = find_pull_request_number(branch, repo)
-    if not pull_request_number and branch != 'master':
+
+    pr_number = find_pull_request_number(branch, repo)
+    if not pr_number and branch != 'master':
         logging.info('A PR has not yet been opened.')
         return
 
-    pull_request = get_pull_request(pull_request_number)
+    pull_request = get_pull_request(pr_number)
     jira_ids = get_pull_request_jira_ids(pull=pull_request)
 
-    for commit in pull_request.get_commits():
-        if not validate_docs_requirement(commit.commit.message):
-            return
+    if not check_if_label_in_pr_labels(pr_number):
+        return
     _validate_documenation_pulls(docs_repo, jira_ids)

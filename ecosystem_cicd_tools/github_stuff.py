@@ -220,9 +220,7 @@ def get_branch_pr(branch_name, repo=None):
     logging.info('Looking for PR number in {msg}'.format(
         msg=branch.commit.commit.message))
     number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
-    if '__NODOCS__' in branch.commit.commit.message.lower():
-        return
-    elif len(number_sign_nums) != 1:
+    if len(number_sign_nums) != 1:
         raise Exception(
             'The branch name {branch} contains more than one \#. '
             'In order to identify the PR, '
@@ -265,7 +263,11 @@ def _merge_documentation_pulls(docs_repo, jira_ids):
                 pull.merge(merge_method='squash')
                 merges += 1
     if not merges:
-        raise Exception('No documentation PRs were found.')
+        raise Exception(
+            'No documentation PRs were found in {}. '
+            'If your PR includes the label "enhancement", '
+            'then you are expected to submit docs PRs. '.format(
+                docs_repo.name))
 
 
 def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
@@ -283,10 +285,8 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     pr_number = get_branch_pr(branch, repo)
     if not pr_number:
         return
-    pull_request = repo.get_pull(pr_number)
-    for commit in pull_request.get_commits():
-        if not validate_docs_requirement(commit.commit.message):
-            return
+    if not check_if_label_in_pr_labels(pr_number):
+        return
     jira_ids = get_pull_request_jira_ids(pr_number)
     _merge_documentation_pulls(docs_repo, jira_ids)
 
@@ -326,3 +326,25 @@ def find_changed_files_in_branch_pr_or_master(repo=None, branch_name=None):
         return []
     return get_files_changed_in_pr(pr_number, repo)
 
+
+def get_pr_labels(pr_number, repo):
+    pr = get_pull_request(pr_number, repo)
+    return pr.get_labels()
+
+
+def check_if_label_in_pr_labels(pr_number, repo=None, label_name=None):
+    label_name = label_name or 'enhancement'
+    repo = repo or get_repository()
+    labels = get_pr_labels(pr_number, repo)
+    if labels.totalCount == 0:
+        raise Exception(
+            'The PR {} in repo {} does not provide any labels. '
+            'Please add labels to your PR. '
+            'For example, if the PR is for a feature, '
+            'then use the label "enhancement". If the PR is for a bug, '
+            'then use the label "bug".'.format(pr_number, repo.name))
+    for label in labels:
+        if label_name.lower() in label.name.lower():
+            return label
+    logging.info('Warning: The label {} was not found in labels {}'.format(
+        label_name, labels))
