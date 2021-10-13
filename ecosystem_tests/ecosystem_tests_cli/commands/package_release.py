@@ -26,6 +26,8 @@ from ecosystem_cicd_tools.release import (
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.name
 def package_release(directory, name):
+    if not name:
+        raise ValueError('Argument name can not be "NoneType"')
     try:
         setup_py = os.path.join(directory, 'setup.py')
         plugin_release_with_latest(name, find_version(setup_py))
