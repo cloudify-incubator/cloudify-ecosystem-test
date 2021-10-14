@@ -85,7 +85,7 @@ commands:
       - run:
           name: install local project
           command: pip install .
-      - run: ecosystem-test package-release cloudify-ecosystem-test
+      - run: ecosystem-test package-release --name cloudify-ecosystem-test
 
   build_bundle:
     steps:
