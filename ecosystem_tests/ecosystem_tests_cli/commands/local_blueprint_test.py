@@ -25,9 +25,6 @@ from ..utilities import (prepare_test_env,
                          validate_and_generate_test_ids)
 
 
-
-
-
 @nottest
 @ecosystem_tests.command(name='local-blueprint-test',
                          short_help='Test blueprint locally.')
