@@ -148,9 +148,9 @@ def replace_file_on_manager(local_file_path, manager_file_path):
         destination=manager_file_path))
 
 
-def replace_plugin_package_on_manager(plugin_name,
+def replace_plugin_package_on_manager(package_name,
                                       plugin_version,
-                                      package_name,
+                                      directory,
                                       python_version='python3.6'):
     """Replace plugin code in the manager's path.
 
@@ -160,9 +160,9 @@ def replace_plugin_package_on_manager(plugin_name,
 
     Then call the code like this: python .cicd/update_test_manager.py
 
-    :param plugin_name: Name of a plug in.
-    :param plugin_version: The plug in's version.
-    :param package_name:  The plug in's name.
+    :param package_name: Name of a package.
+    :param plugin_version: The plugin's version.
+    :param directory:  The plugin's directory.
     :param python_version: The python version name.
     :return:
     """
@@ -171,14 +171,21 @@ def replace_plugin_package_on_manager(plugin_name,
         '/opt/mgmtworker/env/plugins/default_tenant/' \
         '{plugin}/{version}/lib/{python}/' \
         'site-packages/{package}'.format(
-            plugin=plugin_name,
+            package=package_name,
             version=plugin_version,
             python=python_version,
-            package=package_name.split('/')[-1]
+            plugin=directory.split('/')[-1]
         )
+    directory = os.path.join(directory, package_name)
+    if not os.path.exists(directory):
+        raise Exception('No such file or directory {}'.format(directory))
+    elif not os.path.isdir(directory):
+        raise Exception('The directory provided {} is not a directory.'.format(
+            directory))
     logger.info('Replacing {s} on manager {d}'.format(
-        s=package_name, d=manager_package_path))
-    replace_file_on_manager(package_name, manager_package_path)
+        s=directory, d=manager_package_path))
+
+    replace_file_on_manager(directory, manager_package_path)
     docker_exec('chown -R cfyuser:cfyuser {path}'.format(
         path=manager_package_path))
 

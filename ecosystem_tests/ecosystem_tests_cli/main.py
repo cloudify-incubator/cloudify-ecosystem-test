@@ -20,7 +20,8 @@ from .commands import (merge_docs,
                        validate_blueprint,
                        prepare_test_manager,
                        local_blueprint_test,
-                       validate_plugin_version)
+                       validate_plugin_version,
+                       swap_plugin_code)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -38,6 +39,7 @@ def _register_commands():
         validate_plugin_version.validate_plugin_version)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(merge_docs.merge_docs)
+    _ecosystem_test.add_command(swap_plugin_code.swap_plugin_code)
 
 
 _register_commands()
