@@ -19,6 +19,7 @@ import time
 import yaml
 from nose.tools import nottest
 
+from cloudify_cli.cli.colors import (PrintColors)
 from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 from ...dorkl.runners import basic_blueprint_test_dev
@@ -51,7 +52,9 @@ def local_blueprint_test(blueprint_path,
                          nested_test,
                          dry_run):
     start = time.time()
-    logger.info("Test starts at {}".format(time.ctime(start)))
+    logger.info(PrintColors.YELLOW +
+                "Test starts at {}".format(time.ctime(start)) +
+                PrintColors.RESET)
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
 
     if dry_run:
@@ -82,8 +85,12 @@ def local_blueprint_test(blueprint_path,
             } if nested_test else None)
 
     end = time.time()
-    logger.info("Test finished at {}".format(time.ctime(end)))
-    logger.info("Test ran for {} seconds".format(end - start))
+    logger.info(PrintColors.YELLOW +
+                "Test finished at {}".format(time.ctime(end)) +
+                PrintColors.RESET)
+    logger.info(PrintColors.YELLOW +
+                "Test ran for {} seconds".format(end - start) +
+                PrintColors.RESET)
 
 
 def handle_dry_run(bp_test_ids,
