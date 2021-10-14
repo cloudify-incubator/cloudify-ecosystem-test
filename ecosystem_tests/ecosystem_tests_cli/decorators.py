@@ -24,7 +24,7 @@
 import time
 
 from .logger import logger
-from constants import YELLOW, RESET
+from .constants import YELLOW, RESET
 
 
 def timer_decorator(fn):
