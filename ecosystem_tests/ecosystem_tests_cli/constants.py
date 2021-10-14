@@ -32,3 +32,16 @@ DEFAULT_UNINSTALL_ON_SUCCESS = True
 DEFAULT_DIRECTORY_PATH = './'
 DEFAULT_REPO = None
 DEFAULT_BRANCH = None
+
+
+#the following are colors for printing
+
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+BLUE = '\033[94m'
+PINK = '\033[95m'
+CYAN = '\033[96m'
+RESET = '\033[0m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'

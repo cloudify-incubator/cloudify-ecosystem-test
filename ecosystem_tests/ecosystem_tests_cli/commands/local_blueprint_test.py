@@ -15,18 +15,17 @@
 
 import pytest
 
-import time
 import yaml
 from nose.tools import nottest
 
 from ..logger import logger
-from ...ecosystem_tests_cli import ecosystem_tests
+from ...ecosystem_tests_cli import ecosystem_tests, decorators
 from ...dorkl.runners import basic_blueprint_test_dev
 from ..utilities import (prepare_test_env,
                          validate_and_generate_test_ids)
 
-YELLOW = '\033[93m'
-RESET = '\033[0m'
+
+
 
 
 @nottest
@@ -43,6 +42,7 @@ RESET = '\033[0m'
 @ecosystem_tests.options.container_name
 @ecosystem_tests.options.nested_test
 @ecosystem_tests.options.dry_run
+@decorators.timer_decorator
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -53,26 +53,19 @@ def local_blueprint_test(blueprint_path,
                          container_name,
                          nested_test,
                          dry_run):
-    start = time.time()
-    logger.info(YELLOW + "Test starts at {}".format(time.ctime(start)) + RESET)
+
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
 
     if dry_run:
-        handle_dry_run(bp_test_ids,
-                       inputs,
-                       timeout,
-                       on_failure,
-                       uninstall_on_success,
-                       on_subsequent_invoke,
-                       container_name,
-                       nested_test)
-        end = time.time()
-        logger.info(YELLOW +
-                    "Test finished at {}".format(time.ctime(end)) +
-                    RESET)
-        logger.info(YELLOW + "Test ran for {} seconds".format(end - start) +
-                    RESET)
-        return
+        return handle_dry_run(bp_test_ids,
+                              inputs,
+                              timeout,
+                              on_failure,
+                              uninstall_on_success,
+                              on_subsequent_invoke,
+                              container_name,
+                              nested_test)
+
     for blueprint, test_id in bp_test_ids:
         basic_blueprint_test_dev(
             blueprint_file_name=blueprint,
@@ -86,10 +79,6 @@ def local_blueprint_test(blueprint_path,
             user_defined_check_params={
                 'nested_tests': nested_test
             } if nested_test else None)
-
-    end = time.time()
-    logger.info(YELLOW + "Test finished at {}".format(time.ctime(end)) + RESET)
-    logger.info(YELLOW + "Test ran for {} seconds".format(end - start) + RESET)
 
 
 def handle_dry_run(bp_test_ids,
