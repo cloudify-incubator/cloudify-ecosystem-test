@@ -23,8 +23,9 @@
 
 import time
 
-from logger import logger
+from .logger import logger
 from constants import YELLOW, RESET
+
 
 def timer_decorator(fn):
     def wrapper(**kwargs):
