@@ -45,4 +45,3 @@ def timer_decorator(fn):
                     RESET)
         return result
     return wrapper
-

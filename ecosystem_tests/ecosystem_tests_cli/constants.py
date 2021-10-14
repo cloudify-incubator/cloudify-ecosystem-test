@@ -33,8 +33,7 @@ DEFAULT_DIRECTORY_PATH = './'
 DEFAULT_REPO = None
 DEFAULT_BRANCH = None
 
-
-#the following are colors for printing
+# the following are colors for printing
 
 RED = '\033[91m'
 GREEN = '\033[92m'
