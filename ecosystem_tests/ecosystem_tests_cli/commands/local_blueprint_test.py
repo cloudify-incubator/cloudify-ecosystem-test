@@ -28,6 +28,7 @@ from ..utilities import (prepare_test_env,
 YELLOW = '\033[93m'
 RESET = '\033[0m'
 
+
 @nottest
 @ecosystem_tests.command(name='local-blueprint-test',
                          short_help='Test blueprint locally.')
