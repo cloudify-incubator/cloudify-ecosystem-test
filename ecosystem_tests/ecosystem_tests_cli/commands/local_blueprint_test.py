@@ -15,6 +15,7 @@
 
 import pytest
 
+import time
 import yaml
 from nose.tools import nottest
 
@@ -49,17 +50,23 @@ def local_blueprint_test(blueprint_path,
                          container_name,
                          nested_test,
                          dry_run):
+    start = time.time()
+    logger.info("Test starts at {}".format(time.ctime(start)))
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
 
     if dry_run:
-        return handle_dry_run(bp_test_ids,
-                              inputs,
-                              timeout,
-                              on_failure,
-                              uninstall_on_success,
-                              on_subsequent_invoke,
-                              container_name,
-                              nested_test)
+        handle_dry_run(bp_test_ids,
+                       inputs,
+                       timeout,
+                       on_failure,
+                       uninstall_on_success,
+                       on_subsequent_invoke,
+                       container_name,
+                       nested_test)
+        end = time.time()
+        logger.info("Test finished at {}".format(time.ctime(end)))
+        logger.info("Test ran for {} seconds".format(end - start))
+        return
     for blueprint, test_id in bp_test_ids:
         basic_blueprint_test_dev(
             blueprint_file_name=blueprint,
@@ -73,6 +80,10 @@ def local_blueprint_test(blueprint_path,
             user_defined_check_params={
                 'nested_tests': nested_test
             } if nested_test else None)
+
+    end = time.time()
+    logger.info("Test finished at {}".format(time.ctime(end)))
+    logger.info("Test ran for {} seconds".format(end - start))
 
 
 def handle_dry_run(bp_test_ids,
