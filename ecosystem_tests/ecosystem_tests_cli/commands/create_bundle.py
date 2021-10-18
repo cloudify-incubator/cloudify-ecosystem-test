@@ -28,6 +28,7 @@ def create_bundle(directory):
         json_content = get_json_content(directory)
     else:
         json_content = None
+    logger.info("finished reading json file")
     bundle_path = create_plugin_bundle_archive(
         *configure_bundle_archive(json_content))
     logger.info("bundle path is {}".format(bundle_path))
