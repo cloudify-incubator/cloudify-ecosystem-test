@@ -140,7 +140,7 @@ class Options(object):
         """
         self.json_path = click.option('-j',
                                       '--json-path',
-                                      default=os.getcwd(),
+                                      default=None,
                                       type=click.Path(),
                                       help=helptexts.JSON_PATH)
         self.plugin_version = click.option('-PV',
