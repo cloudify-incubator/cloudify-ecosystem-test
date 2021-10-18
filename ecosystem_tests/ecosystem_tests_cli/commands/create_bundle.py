@@ -15,7 +15,9 @@
 import json
 
 from ...ecosystem_tests_cli import ecosystem_tests
-from ....ecosystem_cicd_tools import packaging
+from ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
+                                               configure_bundle_archive
+
 
 @ecosystem_tests.command(name='create-bundle',
                          short_help='create plugins bundle.')
@@ -25,8 +27,8 @@ def create_bundle(json_path):
         json_content = get_json_content(json_path)
     else:
         json_content = None
-    packaging.create_plugin_bundle_archive(
-        *packaging.configure_bundle_archive(json_content))
+    create_plugin_bundle_archive(
+        *configure_bundle_archive(json_content))
 
 
 def get_json_content(json_path):
