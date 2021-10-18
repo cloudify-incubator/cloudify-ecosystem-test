@@ -14,6 +14,7 @@
 # limitations under the License.
 import json
 
+from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 from ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
                                                configure_bundle_archive
@@ -27,8 +28,9 @@ def create_bundle(json_path):
         json_content = get_json_content(json_path)
     else:
         json_content = None
-    create_plugin_bundle_archive(
+    bundle_path = create_plugin_bundle_archive(
         *configure_bundle_archive(json_content))
+    logger.info("bundle path is {}".format(bundle_path))
 
 
 def get_json_content(json_path):
