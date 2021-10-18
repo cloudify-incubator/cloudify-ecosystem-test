@@ -15,7 +15,7 @@
 import json
 
 from ...ecosystem_tests_cli import ecosystem_tests
-from ....ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
+from ...ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
                                                configure_bundle_archive
 
 
