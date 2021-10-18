@@ -75,6 +75,7 @@ YUM_PACKAGES = 'Yum package to install on the manager container. ' \
                'This argument can be used multiple times.'
 
 DIRECTORY_PATH = 'directory to execute to command inside'
+JSON_PATH = 'directory to JSON file'
 
 PLUNGIN_NAME = 'plugin name'
 REPO = 'Provide a different repository name'

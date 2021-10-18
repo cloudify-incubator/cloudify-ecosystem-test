@@ -21,7 +21,7 @@ from ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
 
 @ecosystem_tests.command(name='create-bundle',
                          short_help='create plugins bundle.')
-@ecosystem_tests.options.jason_path
+@ecosystem_tests.options.json_path
 def create_bundle(json_path):
     if json_path:
         json_content = get_json_content(json_path)
