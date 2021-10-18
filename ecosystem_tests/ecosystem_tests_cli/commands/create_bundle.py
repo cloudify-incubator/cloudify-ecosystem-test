@@ -15,7 +15,7 @@
 import json
 
 from ...ecosystem_tests_cli import ecosystem_tests
-from ...ecosystem_cicd_tools import packaging
+from ....ecosystem_cicd_tools import packaging
 
 @ecosystem_tests.command(name='create-bundle',
                          short_help='create plugins bundle.')
