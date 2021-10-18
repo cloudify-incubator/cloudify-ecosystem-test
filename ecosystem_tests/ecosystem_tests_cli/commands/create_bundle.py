@@ -24,12 +24,10 @@ from ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
                          short_help='create plugins bundle.')
 @ecosystem_tests.options.json_path
 def create_bundle(json_path):
-    logger.info("json path = {}".format(json_path))
     if json_path:
         json_content = get_json_content(json_path)
     else:
         json_content = None
-    logger.info("finished reading json file")
     bundle_path = create_plugin_bundle_archive(
         *configure_bundle_archive(json_content))
     logger.info("bundle path is {}".format(bundle_path))
