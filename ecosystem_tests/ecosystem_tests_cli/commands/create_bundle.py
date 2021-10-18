@@ -36,8 +36,3 @@ def get_json_content(json_path):
     data = json.load(f)
     f.close()
     return data
-
-
-if __name__ == '__main__':
-    d = get_json_content("/Users/yaniv/Downloads/plugins.json")
-    print(d)
