@@ -1,3 +1,6 @@
+2.5.24:
+  - RD-3079: Add a timer to local-blueprint-test command.
+  - RD-3062: create-bundle CLI command
 2.5.23: RD-3081: swap-code-on-manager.
 2.5.22: RD-3193-skip-nodocs: Use enhancement label.
 2.5.21: Exclude aarch64 from bundles.
