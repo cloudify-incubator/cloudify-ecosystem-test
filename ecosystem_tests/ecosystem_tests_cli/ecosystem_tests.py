@@ -138,6 +138,11 @@ class Options(object):
         a developer sees an option. It it can receive arguments, it's a
         method - if not, it's an attribute.
         """
+        self.json_path = click.option('-j',
+                                      '--json-path',
+                                      default=None,
+                                      type=click.Path(),
+                                      help=helptexts.JSON_PATH)
         self.plugin_version = click.option('-PV',
                                            '--plugin-version',
                                            type=click.STRING,

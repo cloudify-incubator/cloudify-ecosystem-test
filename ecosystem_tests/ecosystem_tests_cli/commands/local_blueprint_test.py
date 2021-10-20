@@ -19,7 +19,7 @@ import yaml
 from nose.tools import nottest
 
 from ..logger import logger
-from ...ecosystem_tests_cli import ecosystem_tests
+from ...ecosystem_tests_cli import ecosystem_tests, decorators
 from ...dorkl.runners import basic_blueprint_test_dev
 from ..utilities import (prepare_test_env,
                          validate_and_generate_test_ids)
@@ -39,6 +39,7 @@ from ..utilities import (prepare_test_env,
 @ecosystem_tests.options.container_name
 @ecosystem_tests.options.nested_test
 @ecosystem_tests.options.dry_run
+@decorators.timer_decorator
 def local_blueprint_test(blueprint_path,
                          test_id,
                          inputs,
@@ -49,6 +50,7 @@ def local_blueprint_test(blueprint_path,
                          container_name,
                          nested_test,
                          dry_run):
+
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
 
     if dry_run:
@@ -60,6 +62,7 @@ def local_blueprint_test(blueprint_path,
                               on_subsequent_invoke,
                               container_name,
                               nested_test)
+
     for blueprint, test_id in bp_test_ids:
         basic_blueprint_test_dev(
             blueprint_file_name=blueprint,
