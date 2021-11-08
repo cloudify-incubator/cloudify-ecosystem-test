@@ -218,7 +218,7 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
                 wagons_list_copy[2]['md5url'] = asset
             else:
                 wagons_list_copy[2]['md5url'] = asset
-        plugin_dict['wagons'] = wagons_list_copy
+    plugin_dict['wagons'] = wagons_list_copy
 
 
 def get_plugin_new_json(remote_path,
