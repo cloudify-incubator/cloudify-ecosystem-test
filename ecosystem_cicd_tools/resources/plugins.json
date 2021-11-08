@@ -3,17 +3,17 @@
         "description": "A Cloudify Plugin that provisions resources in AWS",
         "releases": "https://github.com/cloudify-cosmo/cloudify-aws-plugin/releases",
         "title": "AWS",
-        "version": "2.12.10",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/plugin.yaml",
+        "version": "2.12.11",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.11/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.11/cloudify_aws_plugin-2.12.11-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.11/cloudify_aws_plugin-2.12.11-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.10/cloudify_aws_plugin-2.12.10-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.11/cloudify_aws_plugin-2.12.11-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/2.12.11/cloudify_aws_plugin-2.12.11-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -24,17 +24,17 @@
         "description": "A Cloudify Plugin that provisions resources in Microsoft Azure",
         "releases": "https://github.com/cloudify-cosmo/cloudify-azure-plugin/releases",
         "title": "Azure",
-        "version": "3.5.3",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/plugin.yaml",
+        "version": "3.5.4",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.4/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.4/cloudify_azure_plugin-3.5.4-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.4/cloudify_azure_plugin-3.5.4-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.3/cloudify_azure_plugin-3.5.3-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.4/cloudify_azure_plugin-3.5.4-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/3.5.4/cloudify_azure_plugin-3.5.4-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -108,17 +108,17 @@
         "description": "A Cloudify Plugin that provisions resources in VMware vSphere",
         "releases": "https://github.com/cloudify-cosmo/cloudify-vsphere-plugin/releases",
         "title": "vSphere",
-        "version": "2.19.6",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.6/plugin.yaml",
+        "version": "2.19.7",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.7/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.6/cloudify_vsphere_plugin-2.19.6-centos-Core-py27.py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.6/cloudify_vsphere_plugin-2.19.6-centos-Core-py27.py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.7/cloudify_vsphere_plugin-2.19.7-centos-Core-py27.py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.7/cloudify_vsphere_plugin-2.19.7-centos-Core-py27.py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.6/cloudify_vsphere_plugin-2.19.6-redhat-Maipo-py27.py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.6/cloudify_vsphere_plugin-2.19.6-redhat-Maipo-py27.py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.7/cloudify_vsphere_plugin-2.19.7-redhat-Maipo-py27.py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vsphere-plugin/2.19.7/cloudify_vsphere_plugin-2.19.7-redhat-Maipo-py27.py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -129,17 +129,17 @@
         "description": "Deploy and manage Cloud resources with Terraform.",
         "releases": "https://github.com/cloudify-cosmo/cloudify-terraform-plugin/releases",
         "title": "Terraform",
-        "version": "0.17.3",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/plugin.yaml",
+        "version": "0.17.4",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.4/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.4/cloudify_terraform_plugin-0.17.4-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.4/cloudify_terraform_plugin-0.17.4-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.3/cloudify_terraform_plugin-0.17.3-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.4/cloudify_terraform_plugin-0.17.4-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-terraform-plugin/0.17.4/cloudify_terraform_plugin-0.17.4-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -150,17 +150,17 @@
         "description": "The Ansible plugin can be used to run Ansible Playbooks",
         "releases": "https://github.com/cloudify-cosmo/cloudify-ansible-plugin/releases",
         "title": "Ansible",
-        "version": "2.13.3",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.3/plugin.yaml",
+        "version": "2.13.4",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.4/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.3/cloudify_ansible_plugin-2.13.3-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.3/cloudify_ansible_plugin-2.13.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.4/cloudify_ansible_plugin-2.13.4-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.4/cloudify_ansible_plugin-2.13.4-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.3/cloudify_ansible_plugin-2.13.3-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.3/cloudify_ansible_plugin-2.13.3-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.4/cloudify_ansible_plugin-2.13.4-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-ansible-plugin/2.13.4/cloudify_ansible_plugin-2.13.4-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -171,17 +171,17 @@
         "description": "Cloudify plugin for packaging Kubernetes microservices in Cloudify blueprints",
         "releases": "https://github.com/cloudify-cosmo/cloudify-kubernetes-plugin/releases",
         "title": "Kubernetes",
-        "version": "2.13.3",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.3/plugin.yaml",
+        "version": "2.13.4",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.4/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.3/cloudify_kubernetes_plugin-2.13.3-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.3/cloudify_kubernetes_plugin-2.13.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.4/cloudify_kubernetes_plugin-2.13.4-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.4/cloudify_kubernetes_plugin-2.13.4-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.3/cloudify_kubernetes_plugin-2.13.3-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.3/cloudify_kubernetes_plugin-2.13.3-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.4/cloudify_kubernetes_plugin-2.13.4-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-kubernetes-plugin/2.13.4/cloudify_kubernetes_plugin-2.13.4-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
@@ -234,17 +234,17 @@
         "description": "For running fabric tasks or commands from the manager",
         "releases": "https://github.com/cloudify-cosmo/cloudify-fabric-plugin/releases",
         "title": "Fabric",
-        "version": "2.0.12",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.12/plugin.yaml",
+        "version": "2.0.13",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.13/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.12/cloudify_fabric_plugin-2.0.12-centos-Core-py27.py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.12/cloudify_fabric_plugin-2.0.12-centos-Core-py27.py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.13/cloudify_fabric_plugin-2.0.13-centos-Core-py27.py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.13/cloudify_fabric_plugin-2.0.13-centos-Core-py27.py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.12/cloudify_fabric_plugin-2.0.12-redhat-Maipo-py27.py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.12/cloudify_fabric_plugin-2.0.12-redhat-Maipo-py27.py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.13/cloudify_fabric_plugin-2.0.13-redhat-Maipo-py27.py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/2.0.13/cloudify_fabric_plugin-2.0.13-redhat-Maipo-py27.py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],

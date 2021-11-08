@@ -8,6 +8,7 @@ import logging
 import tarfile
 import zipfile
 import mimetypes
+from copy import deepcopy
 from pprint import pformat
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -194,24 +195,30 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             plugin_dict['link'].split('/')[-2],
             plugin_version
         )
+    wagons_list_copy = sorted(
+        deepcopy(plugin_dict['wagons']),
+        key=lambda d: d['name'])
+
     for asset in assets:
         # Replace the old asset paths with new ones.
         if asset.endswith('.yaml'):
             plugin_dict['link'] = asset
-            continue
-        for wagon in plugin_dict['wagons']:
-            if 'aarch64' in asset:
-                continue
-            if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
-                if asset.endswith('md5'):
-                        wagon['md5url'] = asset
-                else:
-                    wagon['url'] = asset
-            elif wagon['name'] == CENTOS and 'centos-Core' in asset:
-                if asset.endswith('md5'):
-                        wagon['md5url'] = asset
-                else:
-                    wagon['url'] = asset
+        elif 'centos-altarch' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[0]['md5url'] = asset
+            else:
+                wagons_list_copy[0]['md5url'] = asset
+        elif 'centos-Core' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[1]['md5url'] = asset
+            else:
+                wagons_list_copy[1]['md5url'] = asset
+        elif 'redhat-Maipo' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[2]['md5url'] = asset
+            else:
+                wagons_list_copy[2]['md5url'] = asset
+        plugin_dict['wagons'] = wagons_list_copy
 
 
 def get_plugin_new_json(remote_path,
