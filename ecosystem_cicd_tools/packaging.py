@@ -207,17 +207,17 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             if asset.endswith('md5'):
                 wagons_list_copy[0]['md5url'] = asset
             else:
-                wagons_list_copy[0]['md5url'] = asset
+                wagons_list_copy[0]['url'] = asset
         elif 'centos-Core' in asset:
             if asset.endswith('md5'):
                 wagons_list_copy[1]['md5url'] = asset
             else:
-                wagons_list_copy[1]['md5url'] = asset
+                wagons_list_copy[1]['url'] = asset
         elif 'redhat-Maipo' in asset:
             if asset.endswith('md5'):
                 wagons_list_copy[2]['md5url'] = asset
             else:
-                wagons_list_copy[2]['md5url'] = asset
+                wagons_list_copy[2]['url'] = asset
     plugin_dict['wagons'] = wagons_list_copy
 
 
