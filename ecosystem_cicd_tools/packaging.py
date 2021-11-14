@@ -42,7 +42,8 @@ PLUGINS_TO_BUNDLE = [
 
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
-DISTROS_TO_BUNDLE = [CENTOS, REDHAT]
+ARM64 = 'Centos aarch64'
+DISTROS_TO_BUNDLE = [CENTOS, REDHAT, ARM64]
 PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
@@ -437,8 +438,15 @@ def configure_bundle_archive(plugins_json=None):
             plugin_yaml = plugin['link']
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
-                    if 'aarch64' not in wagon['url']:
-                        mapping[wagon['url']] = plugin_yaml
+                    mapping[wagon['url']] = plugin_yaml
+                if wagon['name'] == CENTOS:
+                    aarch_name = wagon['url'].replace(
+                        'centos-Core', 'centos-altarch')
+                    aarch_name = aarch_name.replace(
+                        'x86_64', 'aarch64')
+                    aarch_name = aarch_name.replace(
+                        'py27.py36', 'py36')
+                    mapping[aarch_name] = plugin_yaml
 
     logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
