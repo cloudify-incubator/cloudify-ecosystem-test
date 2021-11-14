@@ -8,6 +8,7 @@ import logging
 import tarfile
 import zipfile
 import mimetypes
+from copy import deepcopy
 from pprint import pformat
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -41,7 +42,8 @@ PLUGINS_TO_BUNDLE = [
 
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
-DISTROS_TO_BUNDLE = [CENTOS, REDHAT]
+ARM64 = 'Centos aarch64'
+DISTROS_TO_BUNDLE = [CENTOS, REDHAT, ARM64]
 PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
@@ -194,24 +196,30 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             plugin_dict['link'].split('/')[-2],
             plugin_version
         )
+    wagons_list_copy = sorted(
+        deepcopy(plugin_dict['wagons']),
+        key=lambda d: d['name'])
+
     for asset in assets:
         # Replace the old asset paths with new ones.
         if asset.endswith('.yaml'):
             plugin_dict['link'] = asset
-            continue
-        for wagon in plugin_dict['wagons']:
-            if 'aarch64' in asset:
-                continue
-            if wagon['name'] == REDHAT and 'redhat-Maipo' in asset:
-                if asset.endswith('md5'):
-                        wagon['md5url'] = asset
-                else:
-                    wagon['url'] = asset
-            elif wagon['name'] == CENTOS and 'centos-Core' in asset:
-                if asset.endswith('md5'):
-                        wagon['md5url'] = asset
-                else:
-                    wagon['url'] = asset
+        elif 'centos-altarch' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[0]['md5url'] = asset
+            else:
+                wagons_list_copy[0]['url'] = asset
+        elif 'centos-Core' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[1]['md5url'] = asset
+            else:
+                wagons_list_copy[1]['url'] = asset
+        elif 'redhat-Maipo' in asset:
+            if asset.endswith('md5'):
+                wagons_list_copy[2]['md5url'] = asset
+            else:
+                wagons_list_copy[2]['url'] = asset
+    plugin_dict['wagons'] = wagons_list_copy
 
 
 def get_plugin_new_json(remote_path,
@@ -430,8 +438,15 @@ def configure_bundle_archive(plugins_json=None):
             plugin_yaml = plugin['link']
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
-                    if 'aarch64' not in wagon['url']:
-                        mapping[wagon['url']] = plugin_yaml
+                    mapping[wagon['url']] = plugin_yaml
+                if wagon['name'] == CENTOS:
+                    aarch_name = wagon['url'].replace(
+                        'centos-Core', 'centos-altarch')
+                    aarch_name = aarch_name.replace(
+                        'x86_64', 'aarch64')
+                    aarch_name = aarch_name.replace(
+                        'py27.py36', 'py36')
+                    mapping[aarch_name] = plugin_yaml
 
     logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
