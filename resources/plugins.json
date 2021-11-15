@@ -381,17 +381,17 @@
         "description": "Cloudify Helm 3 plugin",
         "releases": "https://github.com/cloudify-incubator/cloudify-helm-plugin/releases",
         "title": "Helm",
-        "version": "0.2.1",
-        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.1/plugin.yaml",
+        "version": "0.2.3",
+        "link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.3/plugin.yaml",
         "wagons": [
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.1/cloudify_helm_plugin-0.2.1-centos-Core-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.1/cloudify_helm_plugin-0.2.1-centos-Core-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.3/cloudify_helm_plugin-0.2.3-centos-Core-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.3/cloudify_helm_plugin-0.2.3-centos-Core-py36-none-linux_x86_64.wgn.md5",
                 "name": "Centos Core"
             },
             {
-                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.1/cloudify_helm_plugin-0.2.1-redhat-Maipo-py36-none-linux_x86_64.wgn",
-                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.1/cloudify_helm_plugin-0.2.1-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
+                "url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.3/cloudify_helm_plugin-0.2.3-redhat-Maipo-py36-none-linux_x86_64.wgn",
+                "md5url": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-helm-plugin/0.2.3/cloudify_helm_plugin-0.2.3-redhat-Maipo-py36-none-linux_x86_64.wgn.md5",
                 "name": "Redhat Maipo"
             }
         ],
