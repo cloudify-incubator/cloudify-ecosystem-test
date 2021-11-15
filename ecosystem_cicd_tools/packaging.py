@@ -23,7 +23,8 @@ BUCKET_FOLDER = 'cloudify/wagons'
 PLUGINS_JSON_PATH = os.path.join(BUCKET_FOLDER, 'plugins.json')
 EXAMPLES_JSON = 'resources/examples.json'
 PLUGINS_JSON = 'resources/plugins.json'
-PLUGINS_TO_BUNDLE = [
+PLUGINS_TO_BUNDLE\
+    = [
     'vsphere',
     'terraform',
     'docker',
@@ -436,17 +437,20 @@ def configure_bundle_archive(plugins_json=None):
     for plugin in plugins_json:
         if plugin['title'].lower() in PLUGINS_TO_BUNDLE:
             plugin_yaml = plugin['link']
+            centos_wagon = None
             for wagon in plugin['wagons']:
                 if wagon['name'] in DISTROS_TO_BUNDLE:
                     mapping[wagon['url']] = plugin_yaml
                 if wagon['name'] == CENTOS:
-                    aarch_name = wagon['url'].replace(
-                        'centos-Core', 'centos-altarch')
-                    aarch_name = aarch_name.replace(
-                        'x86_64', 'aarch64')
-                    aarch_name = aarch_name.replace(
-                        'py27.py36', 'py36')
-                    mapping[aarch_name] = plugin_yaml
+                    centos_wagon = wagon
+            if centos_wagon:
+                aarch_name = centos_wagon['url'].replace(
+                    'centos-Core', 'centos-altarch')
+                aarch_name = aarch_name.replace(
+                    'x86_64', 'aarch64')
+                aarch_name = aarch_name.replace(
+                    'py27.py36', 'py36')
+                mapping[aarch_name] = plugin_yaml
 
     logging.info('Configure bundle mapping: {mapping}'.format(mapping=mapping))
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
