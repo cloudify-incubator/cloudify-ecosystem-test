@@ -1,3 +1,4 @@
+2.5.25: Update create bundle aarch.
 2.5.24:
   - RD-3079: Add a timer to local-blueprint-test command.
   - RD-3062: create-bundle CLI command
