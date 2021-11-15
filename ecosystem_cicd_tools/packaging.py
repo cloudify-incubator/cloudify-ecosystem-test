@@ -207,7 +207,7 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
     redhat_index = -1
     centos_index = -1
     centos_aarch_index = -1
-    for inc in range(0, wagons_list_copy):
+    for inc in range(0, len(wagons_list_copy)):
         if 'redhat-Maipo' in wagons_list_copy[inc]['url']:
             redhat_index = inc
         elif 'centos-Core' in wagons_list_copy[inc]['url']:
