@@ -201,25 +201,39 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
         deepcopy(plugin_dict['wagons']),
         key=lambda d: d['name'])
 
+    logging.info('Assets {} '.format(assets))
+    logging.info('Wagon list COPY {}'.format(wagons_list_copy))
+
+    redhat_index = -1
+    centos_index = -1
+    centos_aarch_index = -1
+    for inc in range(0, wagons_list_copy):
+        if 'redhat-Maipo' in wagons_list_copy[inc]['url']:
+            redhat_index = inc
+        elif 'centos-Core' in wagons_list_copy[inc]['url']:
+            centos_index = inc
+        elif 'centos-altarch' in wagons_list_copy[inc]['url']:
+            centos_aarch_index = inc
+
     for asset in assets:
         # Replace the old asset paths with new ones.
         if asset.endswith('.yaml'):
             plugin_dict['link'] = asset
         elif 'centos-altarch' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[0]['md5url'] = asset
+                wagons_list_copy[centos_aarch_index]['md5url'] = asset
             else:
-                wagons_list_copy[0]['url'] = asset
+                wagons_list_copy[centos_aarch_index]['url'] = asset
         elif 'centos-Core' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[1]['md5url'] = asset
+                wagons_list_copy[centos_index]['md5url'] = asset
             else:
-                wagons_list_copy[1]['url'] = asset
+                wagons_list_copy[centos_index]['url'] = asset
         elif 'redhat-Maipo' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[2]['md5url'] = asset
+                wagons_list_copy[redhat_index]['md5url'] = asset
             else:
-                wagons_list_copy[2]['url'] = asset
+                wagons_list_copy[redhat_index]['url'] = asset
     plugin_dict['wagons'] = wagons_list_copy
 
 
