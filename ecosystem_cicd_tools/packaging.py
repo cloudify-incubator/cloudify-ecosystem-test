@@ -200,20 +200,19 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
     wagons_list_copy = sorted(
         deepcopy(plugin_dict['wagons']),
         key=lambda d: d['name'])
+    new_wagon_list = []
 
     logging.info('Assets {} '.format(assets))
-    logging.info('Wagon list COPY {}'.format(wagons_list_copy))
 
-    redhat_index = -1
-    centos_index = -1
-    centos_aarch_index = -1
-    for inc in range(0, len(wagons_list_copy)):
-        if 'redhat-Maipo' in wagons_list_copy[inc]['url']:
-            redhat_index = inc
-        elif 'centos-Core' in wagons_list_copy[inc]['url']:
-            centos_index = inc
-        elif 'centos-altarch' in wagons_list_copy[inc]['url']:
-            centos_aarch_index = inc
+    centos_core_li = {
+        'name': CENTOS
+    }
+    centos_aarch_li = {
+        'name': ARM64
+    }
+    redhat_maipo_li = {
+        'name': REDHAT
+    }
 
     for asset in assets:
         # Replace the old asset paths with new ones.
@@ -221,20 +220,31 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
             plugin_dict['link'] = asset
         elif 'centos-altarch' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[centos_aarch_index]['md5url'] = asset
+                centos_aarch_li['md5url'] = asset
             else:
-                wagons_list_copy[centos_aarch_index]['url'] = asset
+                centos_aarch_li['url'] = asset
         elif 'centos-Core' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[centos_index]['md5url'] = asset
+                centos_core_li['md5url'] = asset
             else:
-                wagons_list_copy[centos_index]['url'] = asset
+                centos_core_li['url'] = asset
         elif 'redhat-Maipo' in asset:
             if asset.endswith('md5'):
-                wagons_list_copy[redhat_index]['md5url'] = asset
+                redhat_maipo_li['md5url'] = asset
             else:
-                wagons_list_copy[redhat_index]['url'] = asset
-    plugin_dict['wagons'] = wagons_list_copy
+                redhat_maipo_li['url'] = asset
+
+    for li in [centos_core_li, centos_aarch_li, redhat_maipo_li]:
+        if 'url' not in li or 'md5url' not in li:
+            continue
+        for wagon_item in wagons_list_copy:
+            if wagon_item['name'] == li['name']:
+                wagons_list_copy.remove(wagon_item)
+        new_wagon_list.append(li)
+
+    new_wagon_list.extend(wagons_list_copy)
+    plugin_dict['wagons'] = sorted(
+        new_wagon_list, key=lambda d: d['name'])
 
 
 def get_plugin_new_json(remote_path,
