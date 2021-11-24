@@ -19,7 +19,7 @@ class TestPackaging(unittest.TestCase):
         ]
         wagons_list = [
             {
-                'name': 'Centos aarch64',
+                'name': 'Centos AltArch',
                 'md5url': 'old-centos-altarch.wgn.md5',
                 'url': 'old-centos-altarch.wgn',
             },
@@ -41,7 +41,7 @@ class TestPackaging(unittest.TestCase):
         }
         expected = [
             {
-                'name': 'Centos aarch64',
+                'name': 'Centos AltArch',
                 'md5url': 'new-centos-altarch.wgn.md5',
                 'url': 'new-centos-altarch.wgn',
             },
