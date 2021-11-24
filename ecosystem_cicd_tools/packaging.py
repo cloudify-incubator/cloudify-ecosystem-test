@@ -48,6 +48,7 @@ DISTROS_TO_BUNDLE = [CENTOS, REDHAT, ARM64]
 PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
+ASSET_FILE_URL_TEMPLATE = ASSET_URL_TEMPLATE + '/{4}'
 
 
 @contextmanager
@@ -60,6 +61,13 @@ def aws(**_):
         access_secret), 'utf-8').strip('\n')
     os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
     yield
+
+
+def list_bucket_objects(bucket_name=None, path=None):
+    with aws():
+        bucket_name = bucket_name or BUCKET_NAME
+        s3 = boto3.client('s3')
+        return s3.list_objects(Bucket=bucket_name, Prefix=path)
 
 
 def upload_to_s3(local_path,
@@ -179,30 +187,11 @@ def get_plugins_json(remote_path):
     return read_json_file(local_path)
 
 
-def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
-    """
-    Update the YAML and Wagon URLs in the plugins dict with new assets.
-    :param plugin_dict: The dict item for this plugin in plugins.json list.
-    :param assets: A list of URLs of plugin YAMLs and wagons.
-    :return: None, the object is edited in place.
-    """
+def plugin_dicts(plugin_dict, assets, wagons_list=None):
 
-    logging.info('Updating plugin JSON with assets {assets}'.format(
-        assets=assets))
-    logging.info('Updating plugin JSON with this version {version}'.format(
-        version=plugin_version))
-    if plugin_version:
-        plugin_dict['version'] = plugin_version
-        plugin_dict['link'] = plugin_dict['link'].replace(
-            plugin_dict['link'].split('/')[-2],
-            plugin_version
-        )
-    wagons_list_copy = sorted(
-        deepcopy(plugin_dict['wagons']),
-        key=lambda d: d['name'])
+    wagons_list = wagons_list or []
+
     new_wagon_list = []
-
-    logging.info('Assets {} '.format(assets))
 
     centos_core_li = {
         'name': CENTOS
@@ -237,14 +226,39 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
     for li in [centos_core_li, centos_aarch_li, redhat_maipo_li]:
         if 'url' not in li or 'md5url' not in li:
             continue
-        for wagon_item in wagons_list_copy:
+        for wagon_item in wagons_list:
             if wagon_item['name'] == li['name']:
-                wagons_list_copy.remove(wagon_item)
+                wagons_list.remove(wagon_item)
         new_wagon_list.append(li)
 
-    new_wagon_list.extend(wagons_list_copy)
+    new_wagon_list.extend(wagons_list)
     plugin_dict['wagons'] = sorted(
         new_wagon_list, key=lambda d: d['name'])
+
+
+def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
+    """
+    Update the YAML and Wagon URLs in the plugins dict with new assets.
+    :param plugin_dict: The dict item for this plugin in plugins.json list.
+    :param assets: A list of URLs of plugin YAMLs and wagons.
+    :return: None, the object is edited in place.
+    """
+
+    logging.info('Updating plugin JSON with assets {assets}'.format(
+        assets=assets))
+    logging.info('Updating plugin JSON with this version {version}'.format(
+        version=plugin_version))
+    if plugin_version:
+        plugin_dict['version'] = plugin_version
+        plugin_dict['link'] = plugin_dict['link'].replace(
+            plugin_dict['link'].split('/')[-2],
+            plugin_version
+        )
+    wagons_list_copy = sorted(
+        deepcopy(plugin_dict['wagons']),
+        key=lambda d: d['name'])
+    plugin_dicts(plugin_dict, assets, wagons_list_copy)
+
 
 
 def get_plugin_new_json(remote_path,
@@ -322,6 +336,21 @@ def update_plugins_json(plugin_name, plugin_version, assets):
         plugin_version,
         assets)
     write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
+
+
+def get_list_of_updated_assets(plugins_json=None):
+    plugins_json = plugins_json or get_plugins_json(PLUGINS_JSON_PATH)
+    for plugin in plugins_json:
+        list_of_updated_assets = []
+        base_path = '/'.join(plugin['link'].split('/')[3:7])
+        for s3_path in list_bucket_objects(path=base_path)['Contents']:
+            cloudify_path = ASSET_FILE_URL_TEMPLATE.format(
+                *s3_path['Key'].split('/'))
+            list_of_updated_assets.append(cloudify_path)
+        plugin_dicts(plugin_dict=plugin, assets=list_of_updated_assets)
+    print(json.dumps(plugins_json))
+
+
 
 
 def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
