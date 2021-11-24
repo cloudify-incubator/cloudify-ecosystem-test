@@ -337,7 +337,10 @@
 	"title": "vCloud",
 	"version": "2.0.1",
 	"link": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-vcloud-plugin/2.0.1/plugin.yaml",
-	"wagons": [],
+	"wagons": [{
+	    "name": "Centos Core",
+		"url": "http://repository.cloudifysource.org/cloudify-vcloud-plugin/2.0.1/cloudify_vcloud_plugin-2.0.1-py36-none-linux_x86_64.wgn",
+		"md5url": "http://repository.cloudifysource.org/cloudify-vcloud-plugin/2.0.1/cloudify_vcloud_plugin-2.0.1-py36-none-linux_x86_64.wgn.md5"}],
 	"icon": "https://cloudify.co/wp-content/uploads/2019/08/vsphere.png",
 	"name": "cloudify-vcloud-plugin"
 }, {

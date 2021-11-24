@@ -348,9 +348,6 @@ def get_list_of_updated_assets(plugins_json=None):
                 *s3_path['Key'].split('/'))
             list_of_updated_assets.append(cloudify_path)
         plugin_dicts(plugin_dict=plugin, assets=list_of_updated_assets)
-    print(json.dumps(plugins_json))
-
-
 
 
 def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
