@@ -43,7 +43,7 @@ PLUGINS_TO_BUNDLE\
 
 REDHAT = 'Redhat Maipo'
 CENTOS = 'Centos Core'
-ARM64 = 'Centos aarch64'
+ARM64 = 'Centos AltArch'
 DISTROS_TO_BUNDLE = [CENTOS, REDHAT, ARM64]
 PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
