@@ -118,6 +118,11 @@ def download_from_s3(remote_path,
     :return:
     """
 
+    logging.info('download_from_s3 {s3_object} {remote_path} to {local_path}.'
+                 .format(s3_object=s3_object,
+                         remote_path=remote_path,
+                         local_path=local_path))
+
     with aws():
         if not local_path:
             archive_temp = NamedTemporaryFile(delete=False)
