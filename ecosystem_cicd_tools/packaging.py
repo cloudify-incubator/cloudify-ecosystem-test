@@ -118,6 +118,11 @@ def download_from_s3(remote_path,
     :return:
     """
 
+    logging.info('download_from_s3 {s3_object} {remote_path} to {local_path}.'
+                 .format(s3_object=s3_object,
+                         remote_path=remote_path,
+                         local_path=local_path))
+
     with aws():
         if not local_path:
             archive_temp = NamedTemporaryFile(delete=False)
@@ -131,9 +136,12 @@ def download_from_s3(remote_path,
         if not os.path.exists(os.path.dirname(local_path)):
             os.makedirs(os.path.dirname(local_path))
         logging.info('Starting download')
-        s3_object.download_file(
-            local_path,
-            Config=boto3.s3.transfer.TransferConfig(use_threads=False))
+        try:
+            s3_object.download_file(
+                local_path,
+                Config=boto3.s3.transfer.TransferConfig(use_threads=False))
+        except ClientError:
+            logging.info('Failed to download file.')
         logging.info('Finished download')
         return local_path
 
