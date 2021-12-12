@@ -36,7 +36,7 @@ class TestPackaging(unittest.TestCase):
         ]
         plugin_dict = {
             'link': 'foo',
-            'version': 'bar',
+            'version': 'wgn',
             'wagons': wagons_list
         }
         expected = [
