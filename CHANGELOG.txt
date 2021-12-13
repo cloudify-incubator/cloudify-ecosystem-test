@@ -1,4 +1,4 @@
-2.5.32: Plugins Bundles Should Exclude Previous versions.
+2.5.33: Plugins Bundles Should Exclude Previous versions.
 2.5.32: Catch ClientError in function that it is called.
 2.5.31: Rename alt arch.
 2.5.30: Update plugins JSON files.

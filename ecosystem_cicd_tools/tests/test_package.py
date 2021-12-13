@@ -35,7 +35,7 @@ class TestPackaging(unittest.TestCase):
             },
         ]
         plugin_dict = {
-            'link': 'foo',
+            'link': 'https:/foo/taco/izam',
             'version': 'wgn',
             'wagons': wagons_list
         }
@@ -56,7 +56,7 @@ class TestPackaging(unittest.TestCase):
                 'url': 'old-redhat-maipo.wgn',
             },
         ]
-        update_assets_in_plugin_dict(plugin_dict, assets)
+        update_assets_in_plugin_dict(plugin_dict, assets, 'wgn')
         print(plugin_dict['wagons'])
         print(expected)
         self.assertListEqual(plugin_dict['wagons'], sorted(
