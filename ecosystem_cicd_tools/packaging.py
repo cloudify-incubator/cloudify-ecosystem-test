@@ -197,6 +197,8 @@ def get_plugins_json(remote_path):
 
 def plugin_dicts(plugin_dict, assets, wagons_list=None):
 
+    logging.info('Plugin dict: {}'.format(plugin_dict))
+
     wagons_list = wagons_list or []
 
     new_wagon_list = []
@@ -233,6 +235,9 @@ def plugin_dicts(plugin_dict, assets, wagons_list=None):
 
     for li in [centos_core_li, centos_aarch_li, redhat_maipo_li]:
         if 'url' not in li or 'md5url' not in li:
+            continue
+        elif plugin_dict['version'] not in li['url'] or \
+                plugin_dict['version'] not in li['md5url']:
             continue
         for wagon_item in wagons_list:
             if wagon_item['name'] == li['name']:
