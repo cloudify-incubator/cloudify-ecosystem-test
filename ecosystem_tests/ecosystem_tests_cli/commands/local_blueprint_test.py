@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import pytest
+from os import environ
 
 import yaml
 from nose.tools import nottest
@@ -64,6 +65,7 @@ def local_blueprint_test(blueprint_path,
                               nested_test)
 
     for blueprint, test_id in bp_test_ids:
+        environ['__ECOSYSTEM_TEST_ID'] = test_id
         basic_blueprint_test_dev(
             blueprint_file_name=blueprint,
             test_name=test_id,
@@ -76,6 +78,7 @@ def local_blueprint_test(blueprint_path,
             user_defined_check_params={
                 'nested_tests': nested_test
             } if nested_test else None)
+        del environ['__ECOSYSTEM_TEST_ID']
 
 
 def handle_dry_run(bp_test_ids,
