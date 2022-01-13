@@ -32,7 +32,11 @@ import boto3
 from wagon import show
 from botocore.exceptions import ClientError
 
-from . import BLUEPRINT_LABEL_TEMPLATE, DEPLOYMENT_LABEL_TEMPLATE
+from . import (
+    LABELLED_PLUGINS,
+    BLUEPRINT_LABEL_TEMPLATE,
+    DEPLOYMENT_LABEL_TEMPLATE)
+
 logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
 BUCKET_FOLDER = 'cloudify/wagons'
@@ -403,17 +407,21 @@ def find_wagon_local_path(docker_path, workspace_path=None):
     :param docker_path:
     :return:
     """
+    logging.info('Finding wagon {} in {}'.format(docker_path, workspace_path))
     for f in get_workspace_files(workspace_path=workspace_path):
+        logging.info(
+            'Checking \n{} against \n{}'.format(os.path.basename(docker_path), f))
         if os.path.basename(docker_path) in f and f.endswith('.wgn'):
             return f
+    return docker_path
 
 
-def get_file_from_s3_or_locally(source, destination):
-    logging.info('source {0}'.format(source))
+def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
+    logging.info('Get source {0}'.format(source))
     try:
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
-        logging.info('source {0}'.format(source))
+        logging.info('Source is not URL, source {0}'.format(source))
     try:
         download_from_s3(
             source,
@@ -421,17 +429,23 @@ def get_file_from_s3_or_locally(source, destination):
     except ClientError:
         if source.endswith('.wgn'):
             source = find_wagon_local_path(source)
-        if source.endswith('plugin.yaml'):
+        elif source.endswith('plugin.yaml'):
             source = os.path.join(os.getcwd(), 'plugin.yaml')
-        shutil.copyfile(source, destination)
+        else:
+            raise
+        if source:
+            shutil.copyfile(source, destination)
+    if source.endswith('plugin.yaml'):
+        update_yaml_for_v2_bundle(destination, v2_bundle)
 
 
-def create_plugin_metadata(wgn_path, yaml_path, tempdir):
+def create_plugin_metadata(wgn_path, yaml_path, tempdir, v2_bundle=False):
     """
     Update the metadata with the path relative to zip root.
     :param wgn_path: A path to a local wagon file.
     :param yaml_path: A path to a local plugin YAML file.
     :param tempdir: The tempdir we're working with.
+    :param v2_bundle: update plugin YAML.
     :return:
     """
 
@@ -451,7 +465,8 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir):
     get_file_from_s3_or_locally(wgn_path,
                                 os.path.join(tempdir, dest_wgn_path))
     get_file_from_s3_or_locally(yaml_path,
-                                os.path.join(tempdir, dest_yaml_path))
+                                os.path.join(tempdir, dest_yaml_path),
+                                v2_bundle)
     return dest_wgn_path, dest_yaml_path
 
 
@@ -480,13 +495,12 @@ def create_plugin_bundle_archive(mappings,
     for key, value in mappings.items():
         # If we have a plugin we want to use for a local path,
         # then we don't want to download it.
-        wagon_path, yaml_path = create_plugin_metadata(key, value, tempdir)
-        update_yaml_for_v2_bundle(yaml_path, v2_bundle)
+        wagon_path, yaml_path = create_plugin_metadata(
+            key, value, tempdir, v2_bundle)
         logging.info('Inserting '
                      'metadata[{wagon_path}] = {yaml_path}'.format(
                          wagon_path=wagon_path, yaml_path=yaml_path))
         metadata[wagon_path] = yaml_path
-
     with open(os.path.join(tempdir, 'METADATA'), 'w+') as f:
         logging.info(
             'create_plugin_bundle_archive writing metadata {m}'.format(
@@ -503,6 +517,8 @@ def create_plugin_bundle_archive(mappings,
 
 
 def update_yaml_for_v2_bundle(yaml_path, v2_bundle):
+    if not os.path.exists(yaml_path):
+        raise RuntimeError('Path does not exist: {}'.format(yaml_path))
     if not v2_bundle:
         return
     with open(yaml_path, "r") as stream:
@@ -512,6 +528,9 @@ def update_yaml_for_v2_bundle(yaml_path, v2_bundle):
             pattern,
             next(iter(current_yaml['plugins'].values()))['package_name']
         ).group(1)
+
+    if label_value not in LABELLED_PLUGINS:
+        return
 
     with open(yaml_path, 'a') as f:
         f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))

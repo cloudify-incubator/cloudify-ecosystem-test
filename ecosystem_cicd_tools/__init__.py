@@ -14,10 +14,25 @@ BLUEPRINT_LABEL_TEMPLATE = """
 blueprint_labels:
   obj-type: 
     values: 
-      - {plugin_name}"""
+      - {plugin_name}
+"""
 
 DEPLOYMENT_LABEL_TEMPLATE = """
 labels:
   obj-type: 
     values: 
-      - {plugin_name}"""
+      - {plugin_name}
+"""
+
+LABELLED_PLUGINS = ['aws',
+                    'gcp',
+                    'azure',
+                    'terraform',
+                    'helm',
+                    'ansible',
+                    'kubernetes',
+                    'openstack',
+                    'vcloud',
+                    'vsphere',
+                    'starlnigx',
+                    'docker']

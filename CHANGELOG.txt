@@ -1,3 +1,4 @@
+2.5.36: RD-3919 Add Labels to Wagon Bundle
 2.5.35: RD-3780-Nested-Test improvement
 2.5.34: Plugins Bundles Should Exclude Previous versions.
 2.5.33: Plugins Bundles Should Exclude Previous versions.
