@@ -1,5 +1,20 @@
+########
+# Copyright (c) 2018--2022 Cloudify Platform Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
+import re
 import json
 import yaml
 import base64
@@ -17,6 +32,7 @@ import boto3
 from wagon import show
 from botocore.exceptions import ClientError
 
+from . import BLUEPRINT_LABEL_TEMPLATE, DEPLOYMENT_LABEL_TEMPLATE
 logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
 BUCKET_FOLDER = 'cloudify/wagons'
@@ -49,6 +65,8 @@ PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 ASSET_FILE_URL_TEMPLATE = ASSET_URL_TEMPLATE + '/{4}'
+
+PLUGIN_NAMING_CONVENTION = pattern = 'cloudify\-(.*?)\-plugin'
 
 
 @contextmanager
@@ -439,12 +457,14 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir):
 
 def create_plugin_bundle_archive(mappings,
                                  tar_name,
-                                 destination):
+                                 destination,
+                                 v2_bundle=False):
     """
 
     :param mappings: A special metadata data structure.
     :param tar_name: The name of the tar file.
     :param destination: The destination where we save it.
+    :param v2_bundle: Whether to v2-ize the bundle.
     :return:
     """
 
@@ -461,6 +481,7 @@ def create_plugin_bundle_archive(mappings,
         # If we have a plugin we want to use for a local path,
         # then we don't want to download it.
         wagon_path, yaml_path = create_plugin_metadata(key, value, tempdir)
+        update_yaml_for_v2_bundle(yaml_path, v2_bundle)
         logging.info('Inserting '
                      'metadata[{wagon_path}] = {yaml_path}'.format(
                          wagon_path=wagon_path, yaml_path=yaml_path))
@@ -479,6 +500,22 @@ def create_plugin_bundle_archive(mappings,
         tarfile_.close()
         shutil.rmtree(tempdir, ignore_errors=True)
     return tar_path
+
+
+def update_yaml_for_v2_bundle(yaml_path, v2_bundle):
+    if not v2_bundle:
+        return
+    with open(yaml_path, "r") as stream:
+        current_yaml = yaml.safe_load(stream)
+
+        label_value = re.search(
+            pattern,
+            next(iter(current_yaml['plugins'].values()))['package_name']
+        ).group(1)
+
+    with open(yaml_path, 'a') as f:
+        f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))
+        f.write(DEPLOYMENT_LABEL_TEMPLATE.format(plugin_name=label_value))
 
 
 def configure_bundle_archive(plugins_json=None):
@@ -516,10 +553,10 @@ def configure_bundle_archive(plugins_json=None):
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
 
 
-def build_plugins_bundle(plugins_json=None):
+def build_plugins_bundle(plugins_json=None, v2_bundle=False):
     # Deprecate this by looking in other repos.
     return create_plugin_bundle_archive(
-        *configure_bundle_archive(plugins_json))
+        *configure_bundle_archive(plugins_json), v2_bundle=v2_bundle)
 
 
 def update_plugins_bundle(bundle_archive=None, plugins_json=None):
@@ -530,7 +567,7 @@ def update_plugins_bundle(bundle_archive=None, plugins_json=None):
     report_tar_contents(bundle_archive)
 
 
-def build_plugins_bundle_with_workspace(workspace_path=None):
+def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
     """
     Get wagons and md5 files from the workspace and replace the old values in
     plugins.json with the new values. This is only used to build the
@@ -564,7 +601,7 @@ def build_plugins_bundle_with_workspace(workspace_path=None):
         else:
             raise Exception('Illegal files list {files}'.format(files=files))
     copy_plugins_json_to_workspace(write_json(plugins_json))
-    bundle_path = build_plugins_bundle(plugins_json)
+    bundle_path = build_plugins_bundle(plugins_json, v2_bundle)
     workspace_path = os.path.join(
         os.path.abspath('workspace'),
         'build',
