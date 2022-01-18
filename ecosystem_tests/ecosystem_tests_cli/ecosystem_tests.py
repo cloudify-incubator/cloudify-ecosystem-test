@@ -172,6 +172,12 @@ class Options(object):
                                  type=click.STRING,
                                  help=helptexts.PLUNGIN_NAME)
 
+        self.v2_plugin = click.option('-v2',
+                                      '--v2-plugin',
+                                      type=click.BOOL,
+                                      default=False,
+                                      help=helptexts.V2_PLUGIN)
+
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,

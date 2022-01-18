@@ -516,10 +516,10 @@ def create_plugin_bundle_archive(mappings,
     return tar_path
 
 
-def update_yaml_for_v2_bundle(yaml_path, v2_bundle):
+def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
     if not os.path.exists(yaml_path):
         raise RuntimeError('Path does not exist: {}'.format(yaml_path))
-    if not v2_bundle:
+    if not v2_plugin:
         return
     with open(yaml_path, "r") as stream:
         current_yaml = yaml.safe_load(stream)

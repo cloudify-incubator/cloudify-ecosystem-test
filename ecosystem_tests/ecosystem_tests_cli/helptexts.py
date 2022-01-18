@@ -80,3 +80,5 @@ JSON_PATH = 'directory to JSON file'
 PLUNGIN_NAME = 'plugin name'
 REPO = 'Provide a different repository name'
 BRANCH = 'Provide branch name in Git'
+V2_PLUGIN = 'Add blueprint and deployment labels to the plugin.yaml ' \
+            'before distributing.'
