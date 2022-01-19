@@ -483,6 +483,9 @@ def create_plugin_bundle_archive(mappings,
     :return:
     """
 
+    if v2_bundle:
+        tar_name = tar_name + '-v2'
+
     logging.info('Creating tar name {tar_name} at '
                  '{destination} with mappings {mappings}'.format(
                      tar_name=tar_name,
