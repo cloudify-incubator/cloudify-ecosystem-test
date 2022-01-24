@@ -621,7 +621,11 @@ def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
             logging.info('Build plugins json {i} {out}'.format(
                 i=i, out=plugins_json))
         else:
-            raise Exception('Illegal files list {files}'.format(files=files))
+            try:
+                os.remove(files[i])
+            except OSError:
+                raise Exception(
+                    'Illegal files list {files}'.format(files=files[i]))
     copy_plugins_json_to_workspace(write_json(plugins_json))
     bundle_path = build_plugins_bundle(plugins_json, v2_bundle)
     workspace_path = os.path.join(
