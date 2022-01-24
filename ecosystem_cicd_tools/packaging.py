@@ -1,5 +1,20 @@
+########
+# Copyright (c) 2018--2022 Cloudify Platform Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
+import re
 import json
 import yaml
 import base64
@@ -16,6 +31,11 @@ from tempfile import NamedTemporaryFile, mkdtemp
 import boto3
 from wagon import show
 from botocore.exceptions import ClientError
+
+from . import (
+    LABELLED_PLUGINS,
+    BLUEPRINT_LABEL_TEMPLATE,
+    DEPLOYMENT_LABEL_TEMPLATE)
 
 logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
@@ -49,6 +69,8 @@ PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 ASSET_FILE_URL_TEMPLATE = ASSET_URL_TEMPLATE + '/{4}'
+
+PLUGIN_NAMING_CONVENTION = pattern = 'cloudify\-(.*?)\-plugin'
 
 
 @contextmanager
@@ -385,17 +407,21 @@ def find_wagon_local_path(docker_path, workspace_path=None):
     :param docker_path:
     :return:
     """
+    logging.info('Finding wagon {} in {}'.format(docker_path, workspace_path))
     for f in get_workspace_files(workspace_path=workspace_path):
+        logging.info(
+            'Checking \n{} against \n{}'.format(os.path.basename(docker_path), f))
         if os.path.basename(docker_path) in f and f.endswith('.wgn'):
             return f
+    return docker_path
 
 
-def get_file_from_s3_or_locally(source, destination):
-    logging.info('source {0}'.format(source))
+def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
+    logging.info('Get source {0}'.format(source))
     try:
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
-        logging.info('source {0}'.format(source))
+        logging.info('Source is not URL, source {0}'.format(source))
     try:
         download_from_s3(
             source,
@@ -403,17 +429,23 @@ def get_file_from_s3_or_locally(source, destination):
     except ClientError:
         if source.endswith('.wgn'):
             source = find_wagon_local_path(source)
-        if source.endswith('plugin.yaml'):
+        elif source.endswith('plugin.yaml'):
             source = os.path.join(os.getcwd(), 'plugin.yaml')
-        shutil.copyfile(source, destination)
+        else:
+            raise
+        if source:
+            shutil.copyfile(source, destination)
+    if source.endswith('plugin.yaml'):
+        update_yaml_for_v2_bundle(destination, v2_bundle)
 
 
-def create_plugin_metadata(wgn_path, yaml_path, tempdir):
+def create_plugin_metadata(wgn_path, yaml_path, tempdir, v2_bundle=False):
     """
     Update the metadata with the path relative to zip root.
     :param wgn_path: A path to a local wagon file.
     :param yaml_path: A path to a local plugin YAML file.
     :param tempdir: The tempdir we're working with.
+    :param v2_bundle: update plugin YAML.
     :return:
     """
 
@@ -433,20 +465,26 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir):
     get_file_from_s3_or_locally(wgn_path,
                                 os.path.join(tempdir, dest_wgn_path))
     get_file_from_s3_or_locally(yaml_path,
-                                os.path.join(tempdir, dest_yaml_path))
+                                os.path.join(tempdir, dest_yaml_path),
+                                v2_bundle)
     return dest_wgn_path, dest_yaml_path
 
 
 def create_plugin_bundle_archive(mappings,
                                  tar_name,
-                                 destination):
+                                 destination,
+                                 v2_bundle=False):
     """
 
     :param mappings: A special metadata data structure.
     :param tar_name: The name of the tar file.
     :param destination: The destination where we save it.
+    :param v2_bundle: Whether to v2-ize the bundle.
     :return:
     """
+
+    if v2_bundle:
+        tar_name = tar_name + '-v2'
 
     logging.info('Creating tar name {tar_name} at '
                  '{destination} with mappings {mappings}'.format(
@@ -460,12 +498,12 @@ def create_plugin_bundle_archive(mappings,
     for key, value in mappings.items():
         # If we have a plugin we want to use for a local path,
         # then we don't want to download it.
-        wagon_path, yaml_path = create_plugin_metadata(key, value, tempdir)
+        wagon_path, yaml_path = create_plugin_metadata(
+            key, value, tempdir, v2_bundle)
         logging.info('Inserting '
                      'metadata[{wagon_path}] = {yaml_path}'.format(
                          wagon_path=wagon_path, yaml_path=yaml_path))
         metadata[wagon_path] = yaml_path
-
     with open(os.path.join(tempdir, 'METADATA'), 'w+') as f:
         logging.info(
             'create_plugin_bundle_archive writing metadata {m}'.format(
@@ -479,6 +517,27 @@ def create_plugin_bundle_archive(mappings,
         tarfile_.close()
         shutil.rmtree(tempdir, ignore_errors=True)
     return tar_path
+
+
+def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
+    if not os.path.exists(yaml_path):
+        raise RuntimeError('Path does not exist: {}'.format(yaml_path))
+    if not v2_plugin:
+        return
+    with open(yaml_path, "r") as stream:
+        current_yaml = yaml.safe_load(stream)
+
+        label_value = re.search(
+            pattern,
+            next(iter(current_yaml['plugins'].values()))['package_name']
+        ).group(1)
+
+    if label_value not in LABELLED_PLUGINS:
+        return
+
+    with open(yaml_path, 'a') as f:
+        f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))
+        f.write(DEPLOYMENT_LABEL_TEMPLATE.format(plugin_name=label_value))
 
 
 def configure_bundle_archive(plugins_json=None):
@@ -516,10 +575,10 @@ def configure_bundle_archive(plugins_json=None):
     return mapping, PLUGINS_BUNDLE_NAME, build_directory
 
 
-def build_plugins_bundle(plugins_json=None):
+def build_plugins_bundle(plugins_json=None, v2_bundle=False):
     # Deprecate this by looking in other repos.
     return create_plugin_bundle_archive(
-        *configure_bundle_archive(plugins_json))
+        *configure_bundle_archive(plugins_json), v2_bundle=v2_bundle)
 
 
 def update_plugins_bundle(bundle_archive=None, plugins_json=None):
@@ -530,7 +589,7 @@ def update_plugins_bundle(bundle_archive=None, plugins_json=None):
     report_tar_contents(bundle_archive)
 
 
-def build_plugins_bundle_with_workspace(workspace_path=None):
+def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
     """
     Get wagons and md5 files from the workspace and replace the old values in
     plugins.json with the new values. This is only used to build the
@@ -564,7 +623,7 @@ def build_plugins_bundle_with_workspace(workspace_path=None):
         else:
             raise Exception('Illegal files list {files}'.format(files=files))
     copy_plugins_json_to_workspace(write_json(plugins_json))
-    bundle_path = build_plugins_bundle(plugins_json)
+    bundle_path = build_plugins_bundle(plugins_json, v2_bundle)
     workspace_path = os.path.join(
         os.path.abspath('workspace'),
         'build',

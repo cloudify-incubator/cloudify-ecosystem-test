@@ -36,6 +36,7 @@ from .packaging import (
     get_workspace_files,
     PLUGINS_BUNDLE_NAME,
     update_plugins_bundle,
+    update_yaml_for_v2_bundle,
     upload_plugin_asset_to_s3,
     update_plugins_json,
     report_tar_contents
@@ -79,7 +80,8 @@ def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
                    workspace_files=None,
-                   workspace_path=None):
+                   workspace_path=None,
+                   v2_plugin=False):
 
     workspace_files = workspace_files or get_workspace_files(
         workspace_path=workspace_path)
@@ -98,6 +100,14 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3('plugin.yaml',
                                   plugin_name,
                                   version)
+        shutil.copyfile('plugin.yaml', 'v2_plugin.yaml')
+        if v2_plugin:
+            update_yaml_for_v2_bundle('v2_plugin.yaml', v2_plugin)
+            version_release.upload_asset(
+                'v2_plugin.yaml', 'v2_plugin.yaml', 'application/zip')
+            upload_plugin_asset_to_s3('v2_plugin.yaml',
+                                      plugin_name,
+                                      version)
     for workspace_file in workspace_files:
         if PLUGINS_BUNDLE_NAME in workspace_file:
             logging.info('Updating bundle {f}'.format(f=workspace_file))
@@ -155,7 +165,8 @@ def blueprint_release(blueprint_name,
 def plugin_release_with_latest(plugin_name,
                                version=None,
                                plugin_release_name=None,
-                               plugins=None):
+                               plugins=None,
+                               v2_plugin=False):
     # if we have release for this version we do not want update nothing
     if get_release(version):
         logging.warn('Found existing release for {0}. '
@@ -180,7 +191,8 @@ def plugin_release_with_latest(plugin_name,
             'Create release with name latest and tag latest')
         plugin_release(plugin_name, "latest",
                        plugin_release_name=version_release.body,
-                       workspace_files=plugins)
+                       workspace_files=plugins,
+                       v2_plugin=v2_plugin)
 
 
 def blueprint_release_with_latest(blueprint_name,
