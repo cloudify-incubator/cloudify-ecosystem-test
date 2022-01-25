@@ -33,6 +33,7 @@ from wagon import show
 from botocore.exceptions import ClientError
 
 from . import (
+    V2_YAML,
     LABELLED_PLUGINS,
     BLUEPRINT_LABEL_TEMPLATE,
     DEPLOYMENT_LABEL_TEMPLATE)
@@ -268,11 +269,16 @@ def plugin_dicts(plugin_dict, assets, wagons_list=None):
         new_wagon_list, key=lambda d: d['name'])
 
 
-def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
+def update_assets_in_plugin_dict(plugin_dict,
+                                 assets,
+                                 plugin_version=None,
+                                 v2_plugin=False):
     """
     Update the YAML and Wagon URLs in the plugins dict with new assets.
     :param plugin_dict: The dict item for this plugin in plugins.json list.
     :param assets: A list of URLs of plugin YAMLs and wagons.
+    :param plugin_version: New plugin version string
+    :param v2_plugin: Add labels?
     :return: None, the object is edited in place.
     """
 
@@ -280,24 +286,30 @@ def update_assets_in_plugin_dict(plugin_dict, assets, plugin_version=None):
         assets=assets))
     logging.info('Updating plugin JSON with this version {version}'.format(
         version=plugin_version))
+    plugin_yaml = plugin_dict['link']
+    plugin_yaml_v2 = plugin_yaml.replace(
+        plugin_yaml.split('plugin.yaml')[1], V2_YAML)
     if plugin_version:
+        plugin_yaml = plugin_yaml.replace(
+            plugin_yaml.split('/')[-2], plugin_version)
+        plugin_yaml_v2 = plugin_yaml.replace(
+            plugin_yaml_v2.split('/')[-2], plugin_version)
         plugin_dict['version'] = plugin_version
-        plugin_dict['link'] = plugin_dict['link'].replace(
-            plugin_dict['link'].split('/')[-2],
-            plugin_version
-        )
+    plugin_dict['link'] = plugin_yaml
+    if v2_plugin:
+        plugin_dict['yaml'] = plugin_yaml_v2
     wagons_list_copy = sorted(
         deepcopy(plugin_dict['wagons']),
         key=lambda d: d['name'])
     plugin_dicts(plugin_dict, assets, wagons_list_copy)
 
 
-
 def get_plugin_new_json(remote_path,
                         plugin_name,
                         plugin_version,
                         assets,
-                        plugins_list=None):
+                        plugins_list=None,
+                        v2_plugin=False):
     """
     Download the plugins.json from s3. Update the plugin dict with new assets.
     :param remote_path: the key in s3 of the plugins.json
@@ -305,6 +317,7 @@ def get_plugin_new_json(remote_path,
     :param plugin_version: the plugin version
     :param assets: new resources, such as plugin YAML, wagon, md5, etc.
     :param plugins_list: Override the need for remote if you already have it.
+    :param v2_plugin: Labels?
     :return: the new plugins list.
     """
 
@@ -334,19 +347,22 @@ def get_plugin_new_json(remote_path,
                                                  pdv=pd['version']))
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
                 if update_version:
-                    update_assets_in_plugin_dict(pd, assets, plugin_version)
+                    update_assets_in_plugin_dict(
+                        pd, assets, plugin_version, v2_plugin)
                 else:
-                    update_assets_in_plugin_dict(pd, assets)
+                    update_assets_in_plugin_dict(
+                        pd, assets, v2_plugin=v2_plugin)
     logging.info('New plugin list: {pl}'.format(pl=plugins_list))
     return plugins_list
 
 
-def update_plugins_json(plugin_name, plugin_version, assets):
+def update_plugins_json(plugin_name, plugin_version, assets, v2_plugin=False):
     """
     Update the plugins JSON in s3 with the new URLs for assets.
     :param plugin_name: The plugin name
     :param plugin_version: The plugin version.
     :param assets: A list of local paths that will be changed to new URLs.
+    :param v2_plugin: labels?
     :return:
     """
 
@@ -366,7 +382,8 @@ def update_plugins_json(plugin_name, plugin_version, assets):
         PLUGINS_JSON_PATH,
         plugin_name,
         plugin_version,
-        assets)
+        assets,
+        v2_plugin)
     write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
 
 
@@ -616,7 +633,8 @@ def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
                 plugin_name,
                 plugin_version,
                 plugin,
-                plugins_json
+                plugins_json,
+                v2_bundle
             )
             logging.info('Build plugins json {i} {out}'.format(
                 i=i, out=plugins_json))

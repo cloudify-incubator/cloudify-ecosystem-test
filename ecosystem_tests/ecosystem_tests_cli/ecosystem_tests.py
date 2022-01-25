@@ -175,7 +175,7 @@ class Options(object):
         self.v2_plugin = click.option('-v2',
                                       '--v2-plugin',
                                       type=click.BOOL,
-                                      default=False,
+                                      is_flag=True,
                                       help=helptexts.V2_PLUGIN)
 
         self.repo = click.option('-R',

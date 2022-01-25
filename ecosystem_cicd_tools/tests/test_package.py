@@ -35,7 +35,7 @@ class TestPackaging(unittest.TestCase):
             },
         ]
         plugin_dict = {
-            'link': 'https:/foo/taco/izam',
+            'link': 'https:/foo/taco/izam/plugin.yaml',
             'version': 'wgn',
             'wagons': wagons_list
         }

@@ -22,6 +22,7 @@ from tempfile import NamedTemporaryFile
 
 from github.GithubException import GithubException
 
+from . import V2_YAML
 from .github_stuff import (
     get_assets,
     get_release,
@@ -29,7 +30,6 @@ from .github_stuff import (
     upload_asset,
     create_release,
     delete_latest_tag_if_exists,
-    merge_documentation_pulls
 )
 from .packaging import (
     package_blueprint,
@@ -100,12 +100,12 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3('plugin.yaml',
                                   plugin_name,
                                   version)
-        shutil.copyfile('plugin.yaml', 'v2_plugin.yaml')
+        shutil.copyfile('plugin.yaml', V2_YAML)
         if v2_plugin:
-            update_yaml_for_v2_bundle('v2_plugin.yaml', v2_plugin)
+            update_yaml_for_v2_bundle(V2_YAML, v2_plugin)
             version_release.upload_asset(
-                'v2_plugin.yaml', 'v2_plugin.yaml', 'application/zip')
-            upload_plugin_asset_to_s3('v2_plugin.yaml',
+                V2_YAML, V2_YAML, 'application/zip')
+            upload_plugin_asset_to_s3(V2_YAML,
                                       plugin_name,
                                       version)
     for workspace_file in workspace_files:
@@ -131,7 +131,7 @@ def plugin_release(plugin_name,
                                       plugin_name,
                                       version)
     workspace_files.append('plugin.yaml')
-    update_plugins_json(plugin_name, version, workspace_files)
+    update_plugins_json(plugin_name, version, workspace_files, v2_plugin)
     return version_release
 
 
