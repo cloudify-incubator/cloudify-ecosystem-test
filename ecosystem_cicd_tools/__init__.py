@@ -36,3 +36,5 @@ LABELLED_PLUGINS = ['aws',
                     'vsphere',
                     'starlnigx',
                     'docker']
+
+V2_YAML = 'v2_plugin.yaml'
