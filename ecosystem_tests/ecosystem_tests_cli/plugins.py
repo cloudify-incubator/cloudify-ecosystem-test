@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import requests
 
 from .exceptions import EcosystemTestCliException
@@ -35,6 +36,8 @@ def create_plugins_list(plugins):
 
 def check_valid_urls(plugin_tuple):
     for url in plugin_tuple:
+        if os.path.exists(url):
+            continue
         request = requests.head(url)
         if request.status_code != requests.codes.found and \
                 request.status_code != requests.codes.ok:
