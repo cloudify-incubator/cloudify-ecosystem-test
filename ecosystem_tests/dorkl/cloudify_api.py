@@ -138,6 +138,10 @@ def plugins_upload(wagon_path, yaml_path):
     """
     logger.info('Uploading plugin: {0} {1}'.format(wagon_path, yaml_path))
     if not plugin_already_uploaded(wagon_path):
+        if os.path.exists(wagon_path):
+            wagon_path = copy_file_to_docker(wagon_path)
+        if os.path.exists(yaml_path):
+            yaml_path = copy_file_to_docker(yaml_path)
         return cloudify_exec('cfy plugins upload {0} -y {1}'.format(
             wagon_path, yaml_path), get_json=False)
 
