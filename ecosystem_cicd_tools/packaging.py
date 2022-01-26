@@ -383,7 +383,7 @@ def update_plugins_json(plugin_name, plugin_version, assets, v2_plugin=False):
         plugin_name,
         plugin_version,
         assets,
-        v2_plugin)
+        v2_plugin=v2_plugin)
     write_json_and_upload_to_s3(plugin_dict, PLUGINS_JSON_PATH, BUCKET_NAME)
 
 
