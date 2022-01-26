@@ -100,6 +100,7 @@ def plugin_release(plugin_name,
         upload_plugin_asset_to_s3('plugin.yaml',
                                   plugin_name,
                                   version)
+
         shutil.copyfile('plugin.yaml', V2_YAML)
         if v2_plugin:
             update_yaml_for_v2_bundle(V2_YAML, v2_plugin)
@@ -126,11 +127,13 @@ def plugin_release(plugin_name,
                     path.basename(workspace_file),
                     'application/zip')
             except GithubException:
-                logging.warn('Failed to upload {0}'.format(workspace_file))
+                logging.error('Failed to upload {0}'.format(workspace_file))
             upload_plugin_asset_to_s3(workspace_file,
                                       plugin_name,
                                       version)
     workspace_files.append('plugin.yaml')
+    if v2_plugin:
+        workspace_files.append(V2_YAML)
     update_plugins_json(plugin_name, version, workspace_files, v2_plugin)
     return version_release
 
@@ -176,7 +179,11 @@ def plugin_release_with_latest(plugin_name,
             plugin_name, version, plugin_release_name, plugins))
         # Create release for the new version if not exists
         version_release = plugin_release(
-            plugin_name, version, plugin_release_name, plugins)
+            plugin_name,
+            version,
+            plugin_release_name=plugin_release_name,
+            workspace_files=plugins,
+            v2_plugin=v2_plugin)
         latest_release = get_release("latest")
         if latest_release:
             # We have latest tag and release so we need to delete
