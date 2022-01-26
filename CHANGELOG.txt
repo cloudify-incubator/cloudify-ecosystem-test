@@ -1,3 +1,4 @@
+2.6.0: Add plugin v2 yaml to latest and to new numbered release.
 2.5.40: Fix nasty bug.
 2.5.39: Improve plugin upload
 2.5.38: Change v2 to flag
