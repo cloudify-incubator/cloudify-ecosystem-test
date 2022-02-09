@@ -439,19 +439,21 @@ def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
         logging.info('Source is not URL, source {0}'.format(source))
-    try:
-        download_from_s3(
-            source,
-            destination)
-    except ClientError:
-        if source.endswith('.wgn'):
-            source = find_wagon_local_path(source)
-        elif source.endswith('plugin.yaml'):
-            source = os.path.join(os.getcwd(), 'plugin.yaml')
-        else:
-            raise
-        if source:
-            shutil.copyfile(source, destination)
+    local_yaml = os.path.join(os.getcwd(), 'plugin.yaml')
+    if source.endswith('plugin.yaml'):
+        shutil.copyfile(local_yaml, destination)
+    else:
+        try:
+            download_from_s3(
+                source,
+                destination)
+        except ClientError:
+            if source.endswith('.wgn'):
+                source = find_wagon_local_path(source)
+            else:
+                raise
+            if source:
+                shutil.copyfile(source, destination)
     if source.endswith('plugin.yaml'):
         update_yaml_for_v2_bundle(destination, v2_bundle)
 
@@ -481,9 +483,10 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir, v2_bundle=False):
     # using locally built files.
     get_file_from_s3_or_locally(wgn_path,
                                 os.path.join(tempdir, dest_wgn_path))
-    get_file_from_s3_or_locally(yaml_path,
-                                os.path.join(tempdir, dest_yaml_path),
-                                v2_bundle)
+    dest_yaml_path = get_file_from_s3_or_locally(
+        yaml_path,
+        os.path.join(tempdir, dest_yaml_path),
+        v2_bundle)
     return dest_wgn_path, dest_yaml_path
 
 
