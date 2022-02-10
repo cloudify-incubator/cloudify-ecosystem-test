@@ -440,7 +440,7 @@ def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
     except IndexError:
         logging.info('Source is not URL, source {0}'.format(source))
     local_yaml = os.path.join(os.getcwd(), 'plugin.yaml')
-    if source.endswith('plugin.yaml'):
+    if source.endswith('plugin.yaml') and os.path.exists(local_yaml):
         shutil.copyfile(local_yaml, destination)
     else:
         try:
