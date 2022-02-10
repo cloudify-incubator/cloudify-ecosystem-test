@@ -1,3 +1,4 @@
+2.6.3: Fix.
 2.6.2: Fix bug where nwe plugin yaml is not in the bundle.
 2.6.1: Fix bug where nwe plugin yaml is not in the bundle.
 2.6.0: Add plugin v2 yaml to latest and to new numbered release.

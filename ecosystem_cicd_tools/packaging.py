@@ -483,7 +483,7 @@ def create_plugin_metadata(wgn_path, yaml_path, tempdir, v2_bundle=False):
     # using locally built files.
     get_file_from_s3_or_locally(wgn_path,
                                 os.path.join(tempdir, dest_wgn_path))
-    dest_yaml_path = get_file_from_s3_or_locally(
+    get_file_from_s3_or_locally(
         yaml_path,
         os.path.join(tempdir, dest_yaml_path),
         v2_bundle)
