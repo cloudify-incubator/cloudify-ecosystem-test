@@ -107,7 +107,7 @@ commands:
             fi
       - run:
           name: Download pip
-          command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+          command: curl "https://bootstrap.pypa.io/pip/3.6/get-pip.py" -o "get-pip.py"
       - run:
           name: Install pip
           command: sudo python get-pip.py
