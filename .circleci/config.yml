@@ -56,10 +56,17 @@ commands:
             git submodule update --remote
       - run:
           name: Set Python
-          command: alias python='python3.9'
+          command: |
+            if ! command -v COMMAND &> /dev/null
+            then
+                echo "COMMAND could not be found"
+                exit
+            else
+                pyenv global 3.6.5
+            fi
       - run:
           name: Download pip
-          command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+          command: curl "https://bootstrap.pypa.io/pip/3.6/get-pip.py" -o "get-pip.py"
       - run:
           name: Install pip
           command: sudo python get-pip.py
