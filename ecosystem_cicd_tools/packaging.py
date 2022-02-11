@@ -440,7 +440,7 @@ def edit_this_plugin_yaml(local_yaml):
             y = yaml.safe_load(stream)
             logging.info('GOT THIS: {}'.format(y))
             logging.info('GOT THIS 2: {}'.format(y['plugins']))
-            if y['plugins']['package_name'] == repo_name:
+            if next(iter(y['plugins'].values()))['package_name'] == repo_name:
                 return True
     return False
 

@@ -1,3 +1,4 @@
+2.6.6: Fixed
 2.6.5: Test
 2.6.4: Another bad issue.
 2.6.3: Fix.
