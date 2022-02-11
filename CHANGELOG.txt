@@ -1,3 +1,4 @@
+2.6.5: Test
 2.6.4: Another bad issue.
 2.6.3: Fix.
 2.6.2: Fix bug where nwe plugin yaml is not in the bundle.
