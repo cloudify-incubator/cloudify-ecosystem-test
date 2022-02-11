@@ -438,6 +438,8 @@ def edit_this_plugin_yaml(local_yaml):
     if os.path.exists(local_yaml):
         with open(local_yaml, "r") as stream:
             y = yaml.safe_load(stream)
+            logging.info('GOT THIS: {}'.format(y))
+            logging.info('GOT THIS 2: {}'.format(y['plugins']))
             if y['plugins']['package_name'] == repo_name:
                 return True
     return False
