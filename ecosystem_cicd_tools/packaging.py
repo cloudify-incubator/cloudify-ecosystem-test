@@ -218,6 +218,7 @@ def get_plugins_json(remote_path):
 def plugin_dicts(plugin_dict, assets, wagons_list=None):
 
     logging.info('Plugin dict: {}'.format(plugin_dict))
+    logging.info('Plugin dict assets: {}'.format(assets))
 
     wagons_list = wagons_list or []
 
@@ -640,7 +641,9 @@ def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
         f for f in get_workspace_files(workspace_path=workspace_path)
         if f.endswith('wgn') or f.endswith('md5')
     ]
+    files = list(set(files))
     files.sort()
+    logging.info('build_plugins_bundle_with_workspace Files: {}'.format(files))
     for i in range(0, len(files), 2):
         if files[i].endswith('.wgn'):
             plugin = (files[i], files[i+1])
