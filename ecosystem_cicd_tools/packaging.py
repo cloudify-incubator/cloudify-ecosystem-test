@@ -254,7 +254,7 @@ def plugin_dicts(plugin_dict, assets, wagons_list=None):
                 redhat_maipo_li['url'] = asset
 
     for li in [centos_core_li, centos_aarch_li, redhat_maipo_li]:
-        if li.keys() != {'url','md5url'}:
+        if li.keys() != {'url', 'md5url', 'name'}:
             continue
         elif plugin_dict['version'] not in li['url'] or \
                 plugin_dict['version'] not in li['md5url']:
