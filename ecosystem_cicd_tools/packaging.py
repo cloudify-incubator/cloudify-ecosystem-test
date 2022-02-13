@@ -433,15 +433,10 @@ def find_wagon_local_path(docker_path, workspace_path=None):
     return docker_path
 
 
-def edit_this_plugin_yaml(local_yaml):
-    repo_name = os.environ['CIRCLE_PROJECT_REPONAME']
-    if os.path.exists(local_yaml):
-        with open(local_yaml, "r") as stream:
-            y = yaml.safe_load(stream)
-            logging.info('GOT THIS: {}'.format(y))
-            logging.info('GOT THIS 2: {}'.format(y['plugins']))
-            if next(iter(y['plugins'].values()))['package_name'] == repo_name:
-                return True
+def edit_this_plugin_yaml(destination):
+    repo = os.environ.get('CIRCLE_PROJECT_REPONAME')
+    if repo and repo in destination and destination.endswith('plugin.yaml'):
+        return True
     return False
 
 
@@ -451,10 +446,8 @@ def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
         logging.info('Source is not URL, source {0}'.format(source))
-    local_yaml = os.path.join(os.getcwd(), 'plugin.yaml')
-
-    if source.endswith('plugin.yaml') and edit_this_plugin_yaml(local_yaml):
-        shutil.copyfile(local_yaml, destination)
+    if edit_this_plugin_yaml(destination):
+        shutil.copyfile('plugin.yaml', destination)
     else:
         try:
             download_from_s3(
