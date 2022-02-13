@@ -456,6 +456,8 @@ def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
         except ClientError:
             if source.endswith('.wgn'):
                 source = find_wagon_local_path(source)
+            elif source.endswith('plugin.yaml'):
+                source = os.path.join(os.getcwd(), 'plugin.yaml')
             else:
                 raise
             if source:
