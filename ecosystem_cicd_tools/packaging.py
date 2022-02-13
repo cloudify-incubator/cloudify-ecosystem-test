@@ -352,12 +352,8 @@ def get_plugin_new_json(remote_path,
                 'update {vers} vs {pdv}.'.format(vers=plugin_version,
                                                  pdv=pd['version']))
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
-                if update_version:
-                    update_assets_in_plugin_dict(
-                        pd, assets, plugin_version, v2_plugin)
-                else:
-                    update_assets_in_plugin_dict(
-                        pd, assets, v2_plugin=v2_plugin)
+                update_assets_in_plugin_dict(
+                    pd, assets, plugin_version, v2_plugin=v2_plugin)
     logging.info('New plugin list: {pl}'.format(pl=plugins_list))
     return plugins_list
 
