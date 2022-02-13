@@ -555,6 +555,9 @@ def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
     with open(yaml_path, "r") as stream:
         current_yaml = yaml.safe_load(stream)
 
+        deployment_label_already = DEPLOYMENT_LABEL_TEMPLATE in current_yaml
+        blueprint_label_already = BLUEPRINT_LABEL_TEMPLATE in current_yaml
+
         label_value = re.search(
             pattern,
             next(iter(current_yaml['plugins'].values()))['package_name']
@@ -564,8 +567,10 @@ def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
         return
 
     with open(yaml_path, 'a') as f:
-        f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))
-        f.write(DEPLOYMENT_LABEL_TEMPLATE.format(plugin_name=label_value))
+        if not blueprint_label_already:
+            f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))
+        if not deployment_label_already:
+            f.write(DEPLOYMENT_LABEL_TEMPLATE.format(plugin_name=label_value))
 
 
 def configure_bundle_archive(plugins_json=None):
