@@ -294,7 +294,7 @@ def update_assets_in_plugin_dict(plugin_dict,
         version=plugin_version))
     plugin_yaml = plugin_dict['link']
     plugin_yaml_v2 = plugin_yaml.replace(
-        plugin_yaml.split('plugin.yaml')[1], V2_YAML)
+        os.path.basename(plugin_yaml), V2_YAML)
     if plugin_version:
         plugin_yaml = plugin_yaml.replace(
             plugin_yaml.split('/')[-2], plugin_version)
@@ -354,6 +354,7 @@ def get_plugin_new_json(remote_path,
             if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
                 update_assets_in_plugin_dict(
                     pd, assets, plugin_version, v2_plugin=v2_plugin)
+            pd['yaml'] = pd['link']
     logging.info('New plugin list: {pl}'.format(pl=plugins_list))
     return plugins_list
 
@@ -437,19 +438,21 @@ def find_wagon_local_path(docker_path, workspace_path=None):
 
 def edit_this_plugin_yaml(destination):
     repo = os.environ.get('CIRCLE_PROJECT_REPONAME')
-    if repo and repo in destination and destination.endswith('plugin.yaml'):
+    if repo and repo.replace('-', '_') in destination and \
+            destination.endswith('plugin.yaml'):
         return True
     return False
 
 
 def get_file_from_s3_or_locally(source, destination, v2_bundle=False):
-    logging.info('Get source {0}'.format(source))
+    logging.info('get_file_from_s3_or_locally Get source {0}'.format(source))
+    logging.info('get_file_from_s3_or_locally To dest {}'.format(destination))
     try:
         source = source.split(ASSET_URL_DOMAIN + '/')[1]
     except IndexError:
         logging.info('Source is not URL, source {0}'.format(source))
     if edit_this_plugin_yaml(destination):
-        shutil.copyfile('plugin.yaml', destination)
+        shutil.copyfile(os.path.join(os.getcwd(), 'plugin.yaml'), destination)
     else:
         try:
             download_from_s3(
