@@ -1,3 +1,4 @@
+2.6.14: Improve get latest release in github code.
 2.6.13: Worst code nightmare.
 2.6.12: Worst code nightmare.
 2.6.11: Worst code nightmare.

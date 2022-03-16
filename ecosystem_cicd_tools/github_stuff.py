@@ -141,12 +141,21 @@ def get_most_recent_release(version_family=None, repo=None):
                      version=version_family,
                      repo=repo.name))
     releases = repo.get_releases()
+    largest_version = get_largest_version(
+        [v.title for v in releases if v.title[0].isdigit()])
     for release in releases:
-        if "latest" in release.title:
-            continue
-        if version_family and not release.title.startswith(version_family):
-            continue
-        return release
+        if release.title == largest_version:
+            return release
+
+
+def get_largest_version(versions):
+    largest = '0-0'
+    for version in versions:
+        manager_version, blueprint_version = version.split('-')
+        if manager_version >= largest.split('-')[0] and \
+                int(blueprint_version) >= int(largest.split('-')[-1]):
+            largest = version
+    return largest
 
 
 def get_pull_request(number, repo=None):
