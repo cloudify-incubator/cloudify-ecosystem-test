@@ -24,6 +24,13 @@ labels:
       - {plugin_name}
 """
 
+RESOURCE_TAGS_TEMPLATE = """
+resource_tags:
+  tenant: { get_sys: [ tenant, name ] }
+  deployment_id: { get_sys: [ deployment, id ] }
+  owner: { get_sys: [ deployment, owner ] }
+"""
+
 LABELLED_PLUGINS = ['aws',
                     'gcp',
                     'azure',
