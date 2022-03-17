@@ -352,7 +352,8 @@ def get_plugin_new_json(remote_path,
                 'Checking if we have a major version '
                 'update {vers} vs {pdv}.'.format(vers=plugin_version,
                                                  pdv=pd['version']))
-            if plugin_version.split('.')[0] == pd['version'].split('.')[0]:
+            if plugin_version.split('.')[0] == pd['version'].split('.')[0] or \
+                    'openstack' not in pd['name']:
                 update_assets_in_plugin_dict(
                     pd, assets, plugin_version, v2_plugin=v2_plugin)
             pd['yaml'] = pd['link']
