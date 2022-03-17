@@ -1,3 +1,9 @@
+<<<<<<< Updated upstream
+=======
+2.6.16: Add v2 Plugin build.
+2.6.15: Improve get latest release in github code.
+2.6.14: Skip only openstack major version upgrades.
+>>>>>>> Stashed changes
 2.6.13: Worst code nightmare.
 2.6.12: Worst code nightmare.
 2.6.11: Worst code nightmare.
