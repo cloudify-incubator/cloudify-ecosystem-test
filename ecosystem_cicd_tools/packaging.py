@@ -564,7 +564,7 @@ def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
 
         deployment_label_already = DEPLOYMENT_LABEL_TEMPLATE in current_yaml
         blueprint_label_already = BLUEPRINT_LABEL_TEMPLATE in current_yaml
-        resource_tags_already = RESOURCE_TAGS_TEMPLATE in current_yaml
+        # resource_tags_already = RESOURCE_TAGS_TEMPLATE in current_yaml
 
         label_value = re.search(
             pattern,
@@ -579,8 +579,8 @@ def update_yaml_for_v2_bundle(yaml_path, v2_plugin):
             f.write(BLUEPRINT_LABEL_TEMPLATE.format(plugin_name=label_value))
         if not deployment_label_already:
             f.write(DEPLOYMENT_LABEL_TEMPLATE.format(plugin_name=label_value))
-        if not resource_tags_already:
-            f.write(RESOURCE_TAGS_TEMPLATE)
+        # if not resource_tags_already:
+        #     f.write(RESOURCE_TAGS_TEMPLATE)
 
 
 def configure_bundle_archive(plugins_json=None):
