@@ -121,6 +121,11 @@ def plugin_dicts(plugin_dict, assets, wagons_list=None):
                 centos_aarch_li['md5url'] = asset
             else:
                 centos_aarch_li['url'] = asset
+        elif 'centos-Core-py36-none-linux_aarch64' in asset:
+            if asset.endswith('md5'):
+                centos_aarch_li['md5url'] = asset
+            else:
+                centos_aarch_li['url'] = asset
         elif 'centos-Core' in asset:
             if asset.endswith('md5'):
                 centos_core_li['md5url'] = asset
