@@ -106,41 +106,33 @@ def download_from_s3(remote_path,
                          remote_path=remote_path,
                          local_path=local_path))
 
-    workspace_path = workspace_path or os.path.join(
-        os.path.abspath('workspace'), 'build')
+    #
+    # workspace_path = workspace_path or os.path.join(
+    #     os.path.abspath('workspace'), 'build')
 
-    if not local_path:
-        if not os.path.exists(workspace_path):
-            os.makedirs(os.path.dirname(workspace_path))
-        archive_temp = NamedTemporaryFile(delete=False, dir=workspace_path)
-        local_path = archive_temp.name
+    # if not local_path:
+    #     if not os.path.exists(workspace_path):
+    #         os.makedirs(os.path.dirname(workspace_path))
+    #     archive_temp = NamedTemporaryFile(delete=False, dir=workspace_path)
+    #     local_path = archive_temp.name
 
-    if not os.path.exists(os.path.dirname(local_path)):
-        os.makedirs(os.path.dirname(local_path))
+    # if not os.path.exists(os.path.dirname(local_path)):
+    #     os.makedirs(os.path.dirname(local_path))
 
     with aws():
         if not s3_object:
             bucket_name = bucket_name or BUCKET_NAME
             s3 = boto3.resource('s3')
             s3_object = s3.Object(bucket_name, remote_path)
+
         logging.info('Downloading {s3_object} to {local_path}.'.format(
             s3_object=s3_object, local_path=local_path))
+
         logging.info('....Starting download')
-        try:
-            s3_object.download_file(
-                local_path,
-                Config=boto3.s3.transfer.TransferConfig(use_threads=False))
-        except ClientError:
-            logging.info('....Download failed.')
+        s3_object.download_file(
+            local_path,
+            Config=boto3.s3.transfer.TransferConfig(use_threads=False))
 
-    if not os.path.exists(local_path) and os.path.exists(
-            os.path.join(workspace_path, os.path.basename(local_path))):
-        local_path = os.path.join(workspace_path, os.path.basename(local_path))
-    if not os.path.exists(local_path):
-        raise RuntimeError(
-            'There is no path for the file {}'.format(local_path))
-
-    logging.info('....Finished download')
     return local_path
 
 
