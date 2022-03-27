@@ -15,29 +15,36 @@
 
 import os
 import re
-import json
 import yaml
-import base64
 import shutil
 import logging
 import tarfile
-import zipfile
-import mimetypes
 from copy import deepcopy
 from pprint import pformat
-from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
 
-import boto3
 from wagon import show
 from botocore.exceptions import ClientError
 
 from . import (
     V2_YAML,
     LABELLED_PLUGINS,
-    RESOURCE_TAGS_TEMPLATE,
+    # RESOURCE_TAGS_TEMPLATE,
     BLUEPRINT_LABEL_TEMPLATE,
     DEPLOYMENT_LABEL_TEMPLATE)
+
+from .utils import (
+    write_json,
+    upload_to_s3,
+    read_json_file,
+    create_archive,
+    download_from_s3,
+    list_bucket_objects,
+    report_tar_contents,
+    get_workspace_files,
+    find_wagon_local_path,
+    write_json_and_upload_to_s3
+)
 
 logging.basicConfig(level=logging.INFO)
 BUCKET_NAME = 'cloudify-release-eu'
@@ -72,140 +79,7 @@ ASSET_URL_DOMAIN = 'http://repository.cloudifysource.org'
 ASSET_URL_TEMPLATE = ASSET_URL_DOMAIN + '/{0}/{1}/{2}/{3}'
 ASSET_FILE_URL_TEMPLATE = ASSET_URL_TEMPLATE + '/{4}'
 
-PLUGIN_NAMING_CONVENTION = pattern = 'cloudify\-(.*?)\-plugin'
-
-
-@contextmanager
-def aws(**_):
-    access_key = os.environ['aws_access_key_id'].strip('\n')
-    access_secret = os.environ['aws_secret_access_key'].strip('\n')
-    os.environ['aws_access_key_id'.upper()] = str(base64.b64decode(
-        access_key), 'utf-8').strip('\n')
-    os.environ['aws_secret_access_key'.upper()] = str(base64.b64decode(
-        access_secret), 'utf-8').strip('\n')
-    os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
-    yield
-
-
-def list_bucket_objects(bucket_name=None, path=None):
-    with aws():
-        bucket_name = bucket_name or BUCKET_NAME
-        s3 = boto3.client('s3')
-        return s3.list_objects(Bucket=bucket_name, Prefix=path)
-
-
-def upload_to_s3(local_path,
-                 remote_path,
-                 bucket_name=None,
-                 content_type=None):
-    """
-    Upload a local file to s3.
-    :param local_path: The local path to the file that we want to upload.
-    :param remote_path: The s3 key.
-    :param bucket_name: The s3 bucket.
-    :param content_type: By default s3 upload_file adds
-        content-type octet-stream. This is not universal, for example JSON
-        files need to be application/json.
-    :return:
-    """
-
-    with aws():
-        bucket_name = bucket_name or BUCKET_NAME
-        s3 = boto3.resource('s3')
-        bucket = s3.Bucket(bucket_name)
-        logging.info('Uploading {local_path} to s3://{remote_path}.'.format(
-            local_path=local_path, remote_path=remote_path))
-        extra_args = {'ACL': 'public-read'}
-        if content_type:
-            extra_args.update({'ContentType': content_type})
-        bucket.upload_file(local_path,
-                           remote_path,
-                           ExtraArgs=extra_args)
-        object_acl = s3.ObjectAcl(bucket_name, remote_path)
-        logging.info('{object_acl} grants: {grants}.'.format(
-            object_acl=object_acl, grants=object_acl.grants))
-        object_acl.put(ACL='public-read')
-        logging.info('{object_acl} grants: {grants}.'.format(
-            object_acl=object_acl, grants=object_acl.grants))
-
-
-def download_from_s3(remote_path,
-                     local_path=None,
-                     bucket_name=None,
-                     s3_object=None):
-    """
-    Download a file from s3.
-    :param remote_path: The s3 key.
-    :param local_path: The destination path.
-    :param bucket_name: The s3 bucket.
-    :param s3_object: Optional if you have created the boto3 s3 object alredy.
-    :return:
-    """
-
-    logging.info('download_from_s3 {s3_object} {remote_path} to {local_path}.'
-                 .format(s3_object=s3_object,
-                         remote_path=remote_path,
-                         local_path=local_path))
-
-    with aws():
-        if not local_path:
-            archive_temp = NamedTemporaryFile(delete=False)
-            local_path = archive_temp.name
-        if not s3_object:
-            bucket_name = bucket_name or BUCKET_NAME
-            s3 = boto3.resource('s3')
-            s3_object = s3.Object(bucket_name, remote_path)
-        logging.info('Downloading {s3_object} to {local_path}.'.format(
-            s3_object=s3_object, local_path=local_path))
-        if not os.path.exists(os.path.dirname(local_path)):
-            os.makedirs(os.path.dirname(local_path))
-        logging.info('Starting download')
-        try:
-            s3_object.download_file(
-                local_path,
-                Config=boto3.s3.transfer.TransferConfig(use_threads=False))
-        except ClientError:
-            logging.info('Download failed.')
-        logging.info('Finished download')
-        return local_path
-
-
-def read_json_file(file_path):
-    """
-    Read a JSON file.
-    :param file_path: the local path to the JSON file.
-    :return: a JSON object - usually a list or a dict.
-    """
-
-    with open(file_path, 'r') as outfile:
-        return json.load(outfile)
-
-
-def write_json_and_upload_to_s3(content, remote_path, bucket_name):
-    """
-
-    :param content: Usually a list or a dict.
-    :param remote_path: the s3 key.
-    :param bucket_name: The s3 bucket.
-    :return:
-    """
-
-    logging.info('Writing new content to s3://{remote_path}.'.format(
-        remote_path=remote_path))
-    logging.info('The new data is {content}'.format(content=content))
-    json_temp = NamedTemporaryFile(suffix='.json', delete=False)
-    with open(json_temp.name, 'w') as outfile:
-        json.dump(content, outfile, ensure_ascii=False, indent=4)
-    mt, _ = mimetypes.guess_type(json_temp.name)
-    upload_to_s3(json_temp.name, remote_path, bucket_name, content_type=mt)
-
-
-def write_json(content):
-    logging.info('The new data is {content}'.format(content=content))
-    archive_temp = NamedTemporaryFile(delete=False)
-    with open(archive_temp.name, 'w') as outfile:
-        json.dump(content, outfile, ensure_ascii=False, indent=4)
-    return archive_temp.name
+PLUGIN_NAMING_CONVENTION = pattern = 'cloudify\-(.*?)\-plugin'  # noqa
 
 
 def get_plugins_json(remote_path):
@@ -337,7 +211,6 @@ def get_plugin_new_json(remote_path,
         v=plugin_version,
         a=assets,
         ll=plugins_list))
-    update_version = not plugins_list
     plugins_list = plugins_list or get_plugins_json(remote_path)
     # Plugins list is a list of dictionaries. Each plugin/version is one dict.
     for pd in plugins_list:
@@ -424,21 +297,6 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
     logging.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
         plugin_name=plugin_name, plugin_version=plugin_version))
     upload_to_s3(local_path, bucket_path)
-
-
-def find_wagon_local_path(docker_path, workspace_path=None):
-    """
-
-    :param docker_path:
-    :return:
-    """
-    logging.info('Finding wagon {} in {}'.format(docker_path, workspace_path))
-    for f in get_workspace_files(workspace_path=workspace_path):
-        logging.info(
-            'Checking \n{} against \n{}'.format(os.path.basename(docker_path), f))
-        if os.path.basename(docker_path) in f and f.endswith('.wgn'):
-            return f
-    return docker_path
 
 
 def edit_this_plugin_yaml(destination):
@@ -687,35 +545,6 @@ def build_plugins_bundle_with_workspace(workspace_path=None, v2_bundle=False):
     report_tar_contents(workspace_path)
 
 
-def report_tar_contents(path):
-    loc = mkdtemp()
-    tar = tarfile.open(path)
-    tar.extractall(path=loc)
-    tar.close()
-    files = os.listdir(loc)
-    logging.info('These are the files in the bundle: {files}'.format(
-        files=files))
-    shutil.rmtree(loc)
-
-
-def get_workspace_files(file_type=None, workspace_path=None):
-    file_type = file_type or '.wgn'
-    workspace_path = workspace_path or os.path.join(
-        os.path.abspath('workspace'), 'build')
-    files = []
-    if not os.path.isdir(workspace_path):
-        return []
-    for f in os.listdir(workspace_path):
-        f = os.path.join(workspace_path, f)
-        files.append(f)
-        if f.endswith(file_type):
-            f_md5 = f + '.md5'
-            os.system('md5sum {0} > {1}'.format(f, f_md5))
-            files.append(f_md5)
-    logging.info('These are the workspace files: {0}'.format(files))
-    return files
-
-
 def copy_plugins_json_to_workspace(plugins_json):
     new_plugins_json_file = write_json(plugins_json)
     workspace_path = os.path.join(
@@ -730,7 +559,7 @@ def get_bundle_from_workspace(workspace_path=None):
         if filename.endswith('.tgz'):
             logging.info('Found bundle: {0}'.format(filename))
             return filename
-    logging.warn('No bundle found in {workspace_path}'.format(
+    logging.info('No bundle found in {workspace_path}'.format(
         workspace_path=workspace_path))
 
 
@@ -745,19 +574,3 @@ def package_blueprint(name, source_directory):
     logging.info('Moving {0} to {1}.'.format(archive_temp.name, destination))
     shutil.move(archive_temp.name, destination)
     return destination
-
-
-def create_archive(source_directory, destination):
-    logging.info(
-        'Packaging archive from source: {0} to destination: {1}.'.format(
-            source_directory, destination))
-    zip_file = zipfile.ZipFile(destination, 'w')
-    for root, _, files in os.walk(source_directory):
-        for filename in files:
-            logging.info('Packing {0} in archive.'.format(filename))
-            file_path = os.path.join(root, filename)
-            source_dir = os.path.dirname(source_directory)
-            zip_file.write(
-                file_path, os.path.relpath(file_path, source_dir))
-    zip_file.close()
-    logging.info('Finished writing archive {0}'.format(destination))
