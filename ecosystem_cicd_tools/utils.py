@@ -133,14 +133,12 @@ def download_from_s3(remote_path,
         except ClientError:
             logging.info('....Download failed.')
 
+    if not os.path.exists(local_path) and os.path.exists(
+            os.path.join(workspace_path, os.path.basename(local_path))):
+        local_path = os.path.join(workspace_path, os.path.basename(local_path))
     if not os.path.exists(local_path):
-        if os.path.exists(
-                os.path.join(workspace_path, os.path.basename(local_path))):
-            local_path = os.path.join(
-                workspace_path, os.path.basename(local_path))
-        else:
-            raise RuntimeError(
-                'There is no path for the file {}'.format(local_path))
+        raise RuntimeError(
+            'There is no path for the file {}'.format(local_path))
 
     logging.info('....Finished download')
     return local_path
