@@ -41,14 +41,7 @@ def aws(**_):
     os.environ['aws_secret_access_key'.upper()] = str(base64.b64decode(
         access_secret), 'utf-8').strip('\n')
     os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
-    try:
-        yield
-    finally:
-        for key in ['aws_access_key_id',
-                    'aws_secret_access_key',
-                    'AWS_DEFAULT_REGION']:
-            if key in os.environ:
-                del os.environ[key]
+    yield
 
 
 def list_bucket_objects(bucket_name=None, path=None):
