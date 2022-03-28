@@ -106,18 +106,18 @@ def download_from_s3(remote_path,
                          remote_path=remote_path,
                          local_path=local_path))
 
-    #
-    # workspace_path = workspace_path or os.path.join(
-    #     os.path.abspath('workspace'), 'build')
 
-    # if not local_path:
-    #     if not os.path.exists(workspace_path):
-    #         os.makedirs(os.path.dirname(workspace_path))
-    #     archive_temp = NamedTemporaryFile(delete=False, dir=workspace_path)
-    #     local_path = archive_temp.name
+    workspace_path = workspace_path or os.path.join(
+        os.path.abspath('workspace'), 'build')
 
-    # if not os.path.exists(os.path.dirname(local_path)):
-    #     os.makedirs(os.path.dirname(local_path))
+    if not local_path:
+        if not os.path.exists(workspace_path):
+            os.makedirs(os.path.dirname(workspace_path))
+        archive_temp = NamedTemporaryFile(delete=False, dir=workspace_path)
+        local_path = archive_temp.name
+
+    if not os.path.exists(os.path.dirname(local_path)):
+        os.makedirs(os.path.dirname(local_path))
 
     with aws():
         if not s3_object:
