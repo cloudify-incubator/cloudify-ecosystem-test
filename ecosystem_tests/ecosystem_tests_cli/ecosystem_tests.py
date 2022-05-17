@@ -185,6 +185,31 @@ class Options(object):
                                  show_default=DEFAULT_REPO,
                                  help=helptexts.REPO)
 
+        self.org = click.option('-O',
+                                '--org',
+                                default='cloudify-cosmo',
+                                type=click.STRING,
+                                help='github username')
+
+        self.assets = click.option('-A',
+                                   '--assets',
+                                   type=click.STRING,
+                                   multiple=True,
+                                   help='File assets.')
+
+        self.release = click.option('-re',
+                                    '--release',
+                                    default='latest',
+                                    type=click.STRING,
+                                    help='Github release name.')
+
+        self.github_token = click.option('-gt',
+                                         '--github-token',
+                                         default=os.environ.get(
+                                             'RELEASE_BUILD_TOKEN'),
+                                         type=click.STRING,
+                                         help='Github API token.')
+
         self.branch = click.option('-B',
                                    '--branch',
                                    default=None,
