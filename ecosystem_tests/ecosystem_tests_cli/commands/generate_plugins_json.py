@@ -60,7 +60,7 @@ def upload_file(filename):
     remote_name = '{}/{}/{}'.format(
             s3.BUCKET_NAME,
             s3.BUCKET_FOLDER,
-            filename,
+            os.path.basename(filename),
         )
     logger.logger.info('Uploading {} to s3.'.format(remote_name))
     s3.upload_to_s3(
