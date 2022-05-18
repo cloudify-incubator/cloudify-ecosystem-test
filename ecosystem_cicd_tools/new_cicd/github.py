@@ -1,9 +1,9 @@
 import os
 from functools import wraps
+from pkg_resources import parse_version
 
 import github
 
-from . import s3
 from .logging import logger
 
 
@@ -17,7 +17,7 @@ def with_github_client(func):
         repository = get_repository_object(kwargs)
         kwargs['repository'] = repository
         kwargs['commit'] = get_commit(kwargs)
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper_func
 
 
@@ -98,8 +98,11 @@ def get_most_recent_release(repository):
     logger.info('Attempting to get most recent release from repo {repo}.'
                 .format(repo=repository.name))
     releases = sorted(
-        repository.get_releases(), key=lambda v: v.title, reverse=True)
-    return releases.pop()
+        [str(r.title) for r in repository.get_releases() if r.title],
+        key=parse_version,
+    )
+    if releases:
+        return releases.pop()
 
 
 def upload_asset(release, asset_path, asset_label):
@@ -118,29 +121,3 @@ def upload_asset(release, asset_path, asset_label):
         if asset.label == asset_label:
             asset.delete_asset()
             release.upload_asset(asset_path, asset_label)
-
-
-@with_github_client
-def upload_assets_to_release(assets, release_name, repository, **_):
-    """ Upload a bunch of assets to release.
-    Example assets:
-    {
-        'plugin.yaml': 'cloudify-aws-plugin/plugin.yaml',
-        'v2_plugin.yaml': 'cloudify-aws-plugin/v2_plugin.yaml',
-        'cloudify_aws_plugin-3.0.4-centos-Core-py36-none-linux_aarch64.wgn': 'cloudify-aws-plugin/cloudify_aws_plugin-3.0.4-centos-Core-py36-none-linux_aarch64.wgn',
-    }
-    Example release name: latest, or '3.0.5'
-
-    :param assets:
-    :param release_name:
-    :param repository:
-    :param _:
-    :return:
-    """  # noqa
-    release = get_release(release_name, repository)
-    if not release:
-        raise RuntimeError(
-            'The release {release} does not exist.'.format(release=release))
-    for label, path, in assets.items():
-        upload_asset(release, path, label)
-        s3.upload_plugin_asset_to_s3(path, repository.name, release_name)

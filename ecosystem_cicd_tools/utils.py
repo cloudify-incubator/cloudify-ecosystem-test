@@ -129,6 +129,7 @@ def download_from_s3(remote_path,
             s3_object=s3_object, local_path=local_path))
 
         logging.info('....Starting download')
+
         s3_object.download_file(
             local_path,
             Config=boto3.s3.transfer.TransferConfig(use_threads=False))

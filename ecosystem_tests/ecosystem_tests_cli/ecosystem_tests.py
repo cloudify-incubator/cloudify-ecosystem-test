@@ -178,6 +178,22 @@ class Options(object):
                                       is_flag=True,
                                       help=helptexts.V2_PLUGIN)
 
+        self.upload_to_s3 = click.option('-u',
+                                         '--upload-to-s3',
+                                         default=False,
+                                         type=click.BOOL,
+                                         is_flag=True,
+                                         help='If to upload to s3.')
+
+        self.plugins_yaml_version = click.option('-pyv',
+                                                 '--plugins-yaml-version',
+                                                 default='v1',
+                                                 type=click.STRING,
+                                                 show_default='v1',
+                                                 help='For example, '
+                                                      '--plugins-yaml-version '
+                                                      'v3')
+
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,

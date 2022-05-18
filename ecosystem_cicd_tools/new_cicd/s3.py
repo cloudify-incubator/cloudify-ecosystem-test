@@ -3,6 +3,8 @@ import base64
 from functools import wraps
 
 from boto3 import resource
+from botocore.exceptions import ClientError
+from boto3.s3.transfer import TransferConfig
 
 from .logging import logger
 
@@ -12,13 +14,15 @@ BUCKET_FOLDER = 'cloudify/wagons'
 ACCESS_KEY = 'aws_access_key_id'
 ACCESS_SECRET = 'aws_secret_access_key'
 
+URL_TEMPLATE = 'http://repository.cloudifysource.org/cloudify/wagons/{}/{}/{}'
+
 
 def with_s3_client(func):
     @wraps(func)
     def wrapper_func(*args, **kwargs):
 
         kwargs['s3'] = get_client()
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper_func
 
 
@@ -98,3 +102,59 @@ def upload_to_s3(local_path,
                        ExtraArgs=extra_args)
     object_acl = s3.ObjectAcl(bucket_name, remote_path)
     object_acl.put(ACL='public-read')
+
+
+@with_s3_client
+def download_from_s3(local_path,
+                     remote_path,
+                     s3=None):
+
+    logger.info('download_from_s3 {remote_path} to {local_path}.'
+                .format(remote_path=remote_path,
+                        local_path=local_path))
+
+    s3_object = s3.Object(BUCKET_NAME, remote_path)
+
+    if object_exists(s3_object):
+        s3_object.download_file(
+            local_path,
+            Config=TransferConfig(use_threads=False))
+
+
+def object_exists(o):
+    try:
+        o.content_length
+    except ClientError:
+        return False
+    else:
+        return True
+
+
+@with_s3_client
+def get_plugin_yaml_url(plugin_name, filename, plugin_version, s3=None):
+    logger.debug('Getting plugin YAML file: {} {} {} {}.'.format(
+        BUCKET_FOLDER,
+        plugin_name,
+        plugin_version,
+        filename))
+    bucket_path = os.path.join(BUCKET_FOLDER,
+                               plugin_name,
+                               plugin_version,
+                               filename)
+    s3_object = s3.Object(BUCKET_NAME, bucket_path)
+    if object_exists(s3_object):
+        return URL_TEMPLATE.format(plugin_name, plugin_version, filename)
+
+
+@with_s3_client
+def get_objects_in_key(plugin_name, plugin_version, s3=None):
+    bucket = s3.Bucket(BUCKET_NAME)
+    objects = bucket.objects.filter(
+        Prefix='{}/{}/{}'.format(BUCKET_FOLDER, plugin_name, plugin_version))
+    sorted_objects = sorted(
+        objects,
+        key=lambda v: v.key)
+    objects = [o.key for o in sorted_objects]
+    logger.debug('Objects in key: {} {} {}'.format(
+        plugin_name, plugin_version, objects))
+    return objects

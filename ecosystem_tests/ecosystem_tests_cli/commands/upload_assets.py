@@ -16,7 +16,7 @@
 import os
 import sys
 
-from ecosystem_cicd_tools.new_cicd import github
+from ecosystem_cicd_tools.new_cicd import actions
 from ...ecosystem_tests_cli import (logger, ecosystem_tests)
 
 
@@ -56,7 +56,7 @@ def upload_assets(assets,
         'Uploading these assets to the {} {} release: {}.'.format(
             repo, release, ', '.join(kwargs['assets'].keys())))
 
-    github.upload_assets_to_release(**kwargs)
+    actions.upload_assets_to_release(**kwargs)
 
 
 def get_assets_dict(assets_tuple=None):
