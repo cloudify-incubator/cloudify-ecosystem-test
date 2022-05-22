@@ -16,21 +16,32 @@ import json
 
 from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
-from ecosystem_cicd_tools.packaging import create_plugin_bundle_archive, \
-                                               configure_bundle_archive
+
+from ecosystem_cicd_tools.new_cicd import bundles
 
 
 @ecosystem_tests.command(name='create-bundle',
                          short_help='create plugins bundle.')
+@ecosystem_tests.options.plugins_yaml_version
 @ecosystem_tests.options.json_path
-def create_bundle(json_path):
-    # TODO: Rewrite this to use clear code.
-    if json_path:
-        json_content = get_json_content(json_path)
-    else:
-        json_content = None
-    bundle_path = create_plugin_bundle_archive(
-        *configure_bundle_archive(json_content))
+@ecosystem_tests.options.directory
+@ecosystem_tests.options.workspace
+def create_bundle(plugins_yaml_version=None,
+                  json_path=None,
+                  directory=None,
+                  workspace=None):
+    json_content = get_json_content(json_path)
+    mappings, bundle_name = bundles.get_metadata_mapping(
+        json_content,
+        workspace,
+        get_plugin_yaml_name(plugins_yaml_version)
+    )
+    bundle_path = bundles.package_archive(
+        mappings,
+        bundle_name,
+        directory,
+        workspace,
+        plugins_yaml_version=plugins_yaml_version)
     logger.info("bundle path is {}".format(bundle_path))
 
 
@@ -39,3 +50,12 @@ def get_json_content(json_path):
     data = json.load(f)
     f.close()
     return data
+
+
+def get_plugin_yaml_name(version):
+    plugin_yaml = None
+    if version == 'v1':
+        plugin_yaml = 'plugin.yaml'
+    elif version == 'v2':
+        plugin_yaml = 'v2_plugin.yaml'
+    return plugin_yaml

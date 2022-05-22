@@ -167,6 +167,16 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
+        self.workspace = click.option('-w',
+                                      '--workspace',
+                                      default=None,
+                                      type=click.Path(),
+                                      show_default=None,
+                                      help='A workspace directory, '
+                                           'e.g. workspace/build, '
+                                           'to look for relevant '
+                                           'plugin yamls and wagons.')
+
         self.name = click.option('-n',
                                  '--name',
                                  type=click.STRING,

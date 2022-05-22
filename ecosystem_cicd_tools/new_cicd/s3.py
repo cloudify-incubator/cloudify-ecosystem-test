@@ -120,6 +120,9 @@ def download_from_s3(local_path,
             local_path,
             Config=TransferConfig(use_threads=False))
 
+    if os.path.exists(local_path):
+        logger.info('The file exists: {}.'.format(local_path))
+
 
 def object_exists(o):
     try:
