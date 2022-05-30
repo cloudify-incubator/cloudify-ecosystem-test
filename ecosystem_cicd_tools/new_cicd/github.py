@@ -121,3 +121,33 @@ def upload_asset(release, asset_path, asset_label):
         if asset.label == asset_label:
             asset.delete_asset()
             release.upload_asset(asset_path, asset_label)
+
+
+def create_release(name, version, message, commit, repository):
+    if isinstance(commit, github.Commit.Commit):
+        commit = commit.commit
+    logger.info('Create release params {}, {}, {}, {}'.format(
+        version, name, message, commit))
+    try:
+        return repository.create_git_release(
+            tag=version, name=name, message=message, target_commitish=commit)
+    except (github.GithubException, AssertionError):
+        return repository.create_git_release(
+            tag=version, name=name, message=message)
+
+
+def plugin_release(plugin_name,
+                   version=None,
+                   plugin_release_name=None,
+                   workspace_files=None,
+                   workspace_path=None,
+                   v2_plugin=False):
+
+    plugin_release_name = plugin_release_name or "{0}-v{1}".format(
+        plugin_name, version)
+    version_release = get_release(version)
+    commit = get_commit()
+    if not version_release:
+        version_release = create_release(
+            version, version, plugin_release_name, commit)
+    return version_release
