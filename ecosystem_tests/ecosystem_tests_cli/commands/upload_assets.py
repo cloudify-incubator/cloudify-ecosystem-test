@@ -24,6 +24,7 @@ WORKSPACE_DIR = 'workspace/build'
 INCLUDE_SUFFIX = ['.wgn', '.wgn.md5']
 INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
 
+
 @ecosystem_tests.command(name='upload-assets',
                          short_help='Upload assets to release.')
 @ecosystem_tests.options.github_token
