@@ -38,8 +38,14 @@ def upload_assets(assets,
                   org=None,
                   release=None):
 
+    assets = get_assets_dict(assets)
+
+    if not assets:
+        logger.logger.error('No assets found!')
+        return
+
     kwargs = {
-        'assets': get_assets_dict(assets),
+        'assets': assets,
         'release_name': release,
         'repository_name': repo
     }
@@ -65,9 +71,7 @@ def get_assets_dict(assets_tuple=None):
     assets_tuple = assets_tuple or get_assets_from_workspace()
 
     if not assets_tuple:
-        raise RuntimeError(
-            'You must either provide assets in the format --assets foo=bar, '
-            'or in the directory {}.'.format(WORKSPACE_DIR))
+        return
 
     for pair in assets_tuple:
         try:
