@@ -26,7 +26,10 @@ def upload_assets_to_release(assets, release_name, repository, **_):
     :return:
     """  # noqa
 
+    release_name = release_name or github.get_most_recent_release(repository)
+
     release = github.get_release(release_name, repository)
+
     if not release:
         raise RuntimeError(
             'The release {release} does not exist.'.format(release=release))
