@@ -225,7 +225,6 @@ class Options(object):
 
         self.release = click.option('-re',
                                     '--release',
-                                    default='latest',
                                     type=click.STRING,
                                     help='Github release name.')
 
