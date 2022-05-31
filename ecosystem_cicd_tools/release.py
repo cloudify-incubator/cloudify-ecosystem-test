@@ -93,48 +93,48 @@ def plugin_release(plugin_name,
     if not version_release:
         version_release = create_release(
             version, version, plugin_release_name, commit)
-    if path.exists('plugin.yaml'):
-        logging.info('Uploading plugin YAML {0}'.format('plugin.yaml'))
-        version_release.upload_asset(
-            'plugin.yaml', 'plugin.yaml', 'application/zip')
-        upload_plugin_asset_to_s3('plugin.yaml',
-                                  plugin_name,
-                                  version)
-
-        shutil.copyfile('plugin.yaml', V2_YAML)
-        if v2_plugin:
-            update_yaml_for_v2_bundle(V2_YAML, v2_plugin)
-            version_release.upload_asset(
-                V2_YAML, V2_YAML, 'application/zip')
-            upload_plugin_asset_to_s3(V2_YAML,
-                                      plugin_name,
-                                      version)
-    for workspace_file in workspace_files:
-        if PLUGINS_BUNDLE_NAME in workspace_file:
-            logging.info('Updating bundle {f}'.format(f=workspace_file))
-            update_plugins_bundle(workspace_file)
-            logging.info('plugin_release report_tar_contents')
-            report_tar_contents(workspace_file)
-            continue
-        elif 'plugins.json' in workspace_file:
-            continue
-        elif path.splitext(workspace_file)[1] in ('.wgn', '.md5'):
-
-            logging.info('Uploading plugin {0}'.format(workspace_file))
-            try:
-                version_release.upload_asset(
-                    workspace_file,
-                    path.basename(workspace_file),
-                    'application/zip')
-            except GithubException:
-                logging.error('Failed to upload {0}'.format(workspace_file))
-            upload_plugin_asset_to_s3(workspace_file,
-                                      plugin_name,
-                                      version)
-    workspace_files.append('plugin.yaml')
-    if v2_plugin:
-        workspace_files.append(V2_YAML)
-    update_plugins_json(plugin_name, version, workspace_files, v2_plugin)
+    # if path.exists('plugin.yaml'):
+    #     logging.info('Uploading plugin YAML {0}'.format('plugin.yaml'))
+    #     # version_release.upload_asset(
+    #     #     'plugin.yaml', 'plugin.yaml', 'application/zip')
+    #     # upload_plugin_asset_to_s3('plugin.yaml',
+    #     #                           plugin_name,
+    #     #                           version)
+    #
+    #     shutil.copyfile('plugin.yaml', V2_YAML)
+    #     # if v2_plugin:
+    #     #     update_yaml_for_v2_bundle(V2_YAML, v2_plugin)
+    #     #     version_release.upload_asset(
+    #     #         V2_YAML, V2_YAML, 'application/zip')
+    #     #     upload_plugin_asset_to_s3(V2_YAML,
+    #     #                               plugin_name,
+    #     #                               version)
+    # for workspace_file in workspace_files:
+    #     if PLUGINS_BUNDLE_NAME in workspace_file:
+    #         logging.info('Updating bundle {f}'.format(f=workspace_file))
+    #         update_plugins_bundle(workspace_file)
+    #         logging.info('plugin_release report_tar_contents')
+    #         report_tar_contents(workspace_file)
+    #         continue
+    #     elif 'plugins.json' in workspace_file:
+    #         continue
+    #     elif path.splitext(workspace_file)[1] in ('.wgn', '.md5'):
+    #
+    #         logging.info('Uploading plugin {0}'.format(workspace_file))
+    #         try:
+    #             version_release.upload_asset(
+    #                 workspace_file,
+    #                 path.basename(workspace_file),
+    #                 'application/zip')
+    #         except GithubException:
+    #             logging.error('Failed to upload {0}'.format(workspace_file))
+    #         upload_plugin_asset_to_s3(workspace_file,
+    #                                   plugin_name,
+    #                                   version)
+    # workspace_files.append('plugin.yaml')
+    # if v2_plugin:
+    #     workspace_files.append(V2_YAML)
+    # update_plugins_json(plugin_name, version, workspace_files, v2_plugin)
     return version_release
 
 

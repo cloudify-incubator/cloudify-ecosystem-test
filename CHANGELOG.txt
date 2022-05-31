@@ -1,3 +1,4 @@
+2.7.3: Remove Asset Uploads from Release
 2.7.2: Set dependencies.
 2.7.1: Bump version.
 2.7.0: Validate Plugins YAML.
