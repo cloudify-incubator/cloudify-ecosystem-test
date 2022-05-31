@@ -24,6 +24,7 @@ setup(
         'requests',
         'click>7,<8',
         'nose>=1.3',
-        'pytest==4.6.11'
+        'pytest==4.6.11',
+        'deepdiff'
     ]
 )

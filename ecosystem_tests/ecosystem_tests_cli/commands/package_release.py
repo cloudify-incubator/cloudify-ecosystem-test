@@ -27,6 +27,13 @@ from ecosystem_cicd_tools.release import (
 @ecosystem_tests.options.name
 @ecosystem_tests.options.v2_plugin
 def package_release(directory, name, v2_plugin=False):
+    # TODO: Rewrite all this.
+    # The process should be as follows:
+    # Validate Plugin YAML
+    # Create a new numbered release.
+    # Create new plugins.json and v2_plugins.json
+    # Build a new Bundle.
+    # Update the "latest" release.
     if not name:
         raise ValueError('Argument name can not be "NoneType"')
     try:

@@ -167,6 +167,16 @@ class Options(object):
                                       show_default=DEFAULT_DIRECTORY_PATH,
                                       help=helptexts.DIRECTORY_PATH)
 
+        self.workspace = click.option('-w',
+                                      '--workspace',
+                                      default=None,
+                                      type=click.Path(),
+                                      show_default=None,
+                                      help='A workspace directory, '
+                                           'e.g. workspace/build, '
+                                           'to look for relevant '
+                                           'plugin yamls and wagons.')
+
         self.name = click.option('-n',
                                  '--name',
                                  type=click.STRING,
@@ -178,12 +188,53 @@ class Options(object):
                                       is_flag=True,
                                       help=helptexts.V2_PLUGIN)
 
+        self.upload_to_s3 = click.option('-u',
+                                         '--upload-to-s3',
+                                         default=False,
+                                         type=click.BOOL,
+                                         is_flag=True,
+                                         help='If to upload to s3.')
+
+        self.plugins_yaml_version = click.option('-pyv',
+                                                 '--plugins-yaml-version',
+                                                 default='v1',
+                                                 type=click.STRING,
+                                                 show_default='v1',
+                                                 help='For example, '
+                                                      '--plugins-yaml-version '
+                                                      'v3')
+
         self.repo = click.option('-R',
                                  '--repo',
                                  default=None,
                                  type=click.STRING,
                                  show_default=DEFAULT_REPO,
                                  help=helptexts.REPO)
+
+        self.org = click.option('-O',
+                                '--org',
+                                default='cloudify-cosmo',
+                                type=click.STRING,
+                                help='github username')
+
+        self.assets = click.option('-A',
+                                   '--assets',
+                                   type=click.STRING,
+                                   multiple=True,
+                                   help='File assets.')
+
+        self.release = click.option('-re',
+                                    '--release',
+                                    default='latest',
+                                    type=click.STRING,
+                                    help='Github release name.')
+
+        self.github_token = click.option('-gt',
+                                         '--github-token',
+                                         default=os.environ.get(
+                                             'RELEASE_BUILD_TOKEN'),
+                                         type=click.STRING,
+                                         help='Github API token.')
 
         self.branch = click.option('-B',
                                    '--branch',

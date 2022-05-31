@@ -15,6 +15,8 @@
 
 import os
 import sys
+import json
+import deepdiff
 from copy import deepcopy
 from yaml import safe_load
 
@@ -41,7 +43,7 @@ def validate_plugin_yamls(directory):
     for plugin_yaml in plugin_yamls:
         check_required_plugin_yaml(directory, plugin_yaml)
 
-    check_content_rules()
+    check_content_rules(directory)
 
     if any(exit_codes):
         sys.exit(1)
@@ -57,10 +59,10 @@ def check_required_plugin_yaml(directory, filename):
         content[filename] = safe_load(open(fullpath)) or {}
 
 
-def check_content_rules():
+def check_content_rules(directory):
     check_v1_plugin_yaml_no_forbidden_keys()
     check_v2_plugin_yaml_required_keys()
-    compare_v2_v1_plugin_yaml()
+    compare_v2_v1_plugin_yaml(directory)
 
 
 def check_v1_plugin_yaml_no_forbidden_keys():
@@ -88,7 +90,7 @@ def check_v2_plugin_yaml_required_keys():
             exit_codes.append(1)
 
 
-def compare_v2_v1_plugin_yaml():
+def compare_v2_v1_plugin_yaml(directory):
     """Make sure that plugin.yaml and v2_plugin.yaml are the same core."""
     if not content['v2_plugin.yaml']:
         return
@@ -97,6 +99,26 @@ def compare_v2_v1_plugin_yaml():
         if expected in cp_v2_plugin_yaml:
             del cp_v2_plugin_yaml[expected]
     if not cp_v2_plugin_yaml == content['plugin.yaml']:
-        logger.error('plugin.yaml and v2_plugin.yaml '
-                     'are not equivalent after removing v2 features.')
-        exit_codes.append(1)
+        if not ignore_plugin_yaml_differences(content['plugin.yaml'],
+                                              cp_v2_plugin_yaml,
+                                              directory):
+            logger.error('plugin.yaml and v2_plugin.yaml '
+                         'are not equivalent after removing v2 features.')
+            exit_codes.append(1)
+
+
+def ignore_plugin_yaml_differences(v1, v2, directory):
+    str_diff = ''
+    path = os.path.join(directory, 'ignore_plugin_yaml_differences')
+    diff = deepdiff.DeepDiff(v1, v2)
+    str_diff = str(diff)
+    if os.path.exists(path):
+        with open(path) as outfile:
+            current = outfile.read()
+            if current == str_diff:
+                return True
+            logger.debug('current {}'.format(current))
+    if str_diff:
+        logger.debug('strdiff {}'.format(str_diff))
+    logger.debug('If those differences are expected, '
+                 'please update the file ignore_plugin_yaml_differences')
