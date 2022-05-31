@@ -1,3 +1,4 @@
+2.7.5: Allow empty assets.
 2.7.4: Handle existing dir in bundler.
 2.7.3: Remove Asset Uploads from Release
 2.7.2: Set dependencies.
