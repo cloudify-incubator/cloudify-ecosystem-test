@@ -175,7 +175,10 @@ def download_or_find_wagon_and_yaml(wagon_url,
 
     logger.info('Downloading {} and {}'.format(wagon_url, yaml_url))
     plugin_root_dir = os.path.basename(wagon_url).rsplit('.', 1)[0]
-    os.mkdir(os.path.join(tempdir, plugin_root_dir))
+    try:
+        os.mkdir(os.path.join(tempdir, plugin_root_dir))
+    except FileExistsError:
+        pass
     downloaded_wagon_path = get_file_from_s3_or_workspace(
         wagon_url, plugin_root_dir, tempdir, workspace)
     downloaded_yaml_path = get_file_from_s3_or_workspace(
