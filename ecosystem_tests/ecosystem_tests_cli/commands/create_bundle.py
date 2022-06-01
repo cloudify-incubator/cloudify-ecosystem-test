@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import os
 import json
 import shutil
 
@@ -44,7 +46,9 @@ def create_bundle(plugins_yaml_version=None,
         workspace,
         plugins_yaml_version=plugins_yaml_version)
     if workspace:
-        shutil.copyfile(bundle_path, workspace)
+        shutil.copyfile(
+            bundle_path,
+            os.path.join(workspace, os.path.basename(bundle_path)))
     logger.info("bundle path is {}".format(bundle_path))
 
 
