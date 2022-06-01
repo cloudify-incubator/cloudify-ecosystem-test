@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import shutil
 
 from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
@@ -42,6 +43,8 @@ def create_bundle(plugins_yaml_version=None,
         directory,
         workspace,
         plugins_yaml_version=plugins_yaml_version)
+    if workspace:
+        shutil.copyfile(bundle_path, workspace)
     logger.info("bundle path is {}".format(bundle_path))
 
 
