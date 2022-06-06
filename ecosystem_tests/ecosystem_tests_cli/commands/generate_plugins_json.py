@@ -57,8 +57,7 @@ def output_file(directory, filename, json_formatted_string):
 
 
 def upload_file(filename):
-    remote_name = '{}/{}/{}'.format(
-            s3.BUCKET_NAME,
+    remote_name = '{}/{}'.format(
             s3.BUCKET_FOLDER,
             os.path.basename(filename),
         )
