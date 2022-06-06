@@ -72,7 +72,6 @@ def find_plugin_yaml_in_workspace(filename,
             for n, p in data['plugins'].items():
                 if plugin_version in p['package_version'] and \
                         plugin_name in p['package_name']:
-                    logger.info('This is really happening!!!')
                     return filename
     return plugin_yaml
 
@@ -86,7 +85,8 @@ def find_wagon_in_workspace(
         for filename in os.listdir(workspace):
             if plugin_name in filename and \
                     plugin_version in filename and \
-                    distro in filename:
+                    distro in filename and \
+                    filename.endswith('.wgn'):
                 return get_local_file_from_workspace(
                     filename,
                     workspace
