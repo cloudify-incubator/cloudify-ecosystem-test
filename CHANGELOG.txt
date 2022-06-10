@@ -1,3 +1,4 @@
+2.7.10: Support building bundles in non-plugin repos.
 2.7.9: Make sure our wagons are wagons and not md5s.
 2.7.8: Fix JSON upload.
 2.7.7: Fix the naming.
