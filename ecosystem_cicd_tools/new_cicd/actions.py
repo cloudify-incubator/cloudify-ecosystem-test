@@ -1,4 +1,4 @@
-
+import os
 from copy import deepcopy
 from urllib.parse import urlparse
 
@@ -6,6 +6,7 @@ from . import s3
 from . import github
 from . import logging
 from . import plugins_json
+from . import marketplace
 
 
 @github.with_github_client
@@ -36,6 +37,13 @@ def upload_assets_to_release(assets, release_name, repository, **_):
     for label, path, in assets.items():
         github.upload_asset(release, path, label)
         s3.upload_plugin_asset_to_s3(path, repository.name, release_name)
+
+    if repository.name.endswith('-plugin'):
+        marketplace.call_plugins_webhook(
+            repository.name,
+            release_name,
+            os.environ.get('CIRCLE_USERNAME', 'earthmant')
+        )
 
 
 @github.with_github_client

@@ -1,3 +1,4 @@
+2.7.12: Change the situations when we call marketplace webhook
 2.7.11: Call Marketplace webhook when the plugin release completes.
 2.7.10: Support building bundles in non-plugin repos.
 2.7.9: Make sure our wagons are wagons and not md5s.
