@@ -17,10 +17,8 @@ import re
 import shutil
 import logging
 import requests
-from os import path, environ
+from os import path
 from tempfile import NamedTemporaryFile
-
-from .new_cicd.marketplace import call_plugins_webhook
 
 from .github_stuff import (
     get_assets,
@@ -147,12 +145,6 @@ def plugin_release_with_latest(plugin_name,
                        plugin_release_name=version_release.body,
                        workspace_files=plugins,
                        v2_plugin=v2_plugin)
-        if plugin_name.endswith('-plugin'):
-            call_plugins_webhook(
-                plugin_name,
-                plugin_release_name,
-                environ.get('CIRCLE_USERNAME', 'earthmant')
-            )
 
 
 def blueprint_release_with_latest(blueprint_name,
