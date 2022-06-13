@@ -18,7 +18,7 @@ import requests
 URL = 'https://9t51ojrwrb.execute-api.eu-west-1.amazonaws.com/prod/' \
       'scrape-plugins-git-webhook'
 
-1
+
 def call_plugins_webhook(plugin_name, plugin_version, github_user):
     result = requests.post(
         URL,
@@ -30,4 +30,5 @@ def call_plugins_webhook(plugin_name, plugin_version, github_user):
     )
     if not result.ok:
         raise RuntimeError(
-            'Failed to update marketplace with plugin release.')
+            'Failed to update marketplace with plugin release. '
+            '{}'.format(result.text))
