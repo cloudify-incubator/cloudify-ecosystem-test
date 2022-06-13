@@ -26,7 +26,7 @@ def call_plugins_webhook(plugin_name, plugin_version, github_user):
         plugin_name, plugin_version, github_user))
     result = requests.post(
         URL,
-        {
+        json={
             'plugin_name': plugin_name,
             'version': plugin_version,
             'creator': github_user,
