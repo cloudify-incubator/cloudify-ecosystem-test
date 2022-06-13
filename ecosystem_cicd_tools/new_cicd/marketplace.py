@@ -22,15 +22,15 @@ URL = 'https://9t51ojrwrb.execute-api.eu-west-1.amazonaws.com/prod/' \
 
 
 def call_plugins_webhook(plugin_name, plugin_version, github_user):
-    logger.info('Calling marketplace webhook {} {} {}'.format(
-        plugin_name, plugin_version, github_user))
+    payload = {
+        'plugin_name': plugin_name,
+        'version': plugin_version,
+        'creator': github_user,
+    }
+    logger.info('Calling marketplace webhook {}.'.format(payload))
     result = requests.post(
         URL,
-        json={
-            'plugin_name': plugin_name,
-            'version': plugin_version,
-            'creator': github_user,
-        }
+        json=payload
     )
     if not result.ok:
         raise RuntimeError(
