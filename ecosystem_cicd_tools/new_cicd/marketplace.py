@@ -15,11 +15,15 @@
 
 import requests
 
+from .logging import logger
+
 URL = 'https://9t51ojrwrb.execute-api.eu-west-1.amazonaws.com/prod/' \
       'scrape-plugins-git-webhook'
 
 
 def call_plugins_webhook(plugin_name, plugin_version, github_user):
+    logger.info('Calling marketplace webhook {} {} {}'.format(
+        plugin_name, plugin_version, github_user))
     result = requests.post(
         URL,
         {
