@@ -158,11 +158,15 @@ def get_largest_version(versions):
     return largest
 
 
-def get_pull_request(number, repo=None):
+def get_pull_requests(numbers, repo=None):
     """Get a PR by number"""
-    logging.info('Attempting to get PR {number}'.format(number=number))
+    logging.info('Attempting to get PRs {number}'.format(number=numbers))
     repo = repo or get_repository()
-    return repo.get_pull(number)
+    prs = []
+    numbers = numbers or []
+    for number in numbers:
+        prs.append(repo.get_pull(number))
+    return prs
 
 
 def raise_if_unmergeable(pull):
@@ -189,7 +193,7 @@ def raise_if_unmergeable(pull):
                 approved=approved))
 
 
-def get_pull_request_branch_name(pull_number=None, pull=None, repo=None):
+def get_pull_request_branch_names(pull_numbers=None, pulls=None, repo=None):
     """
     Find the HEAD branch name of a pull request.
     :param pull_number:
@@ -197,11 +201,16 @@ def get_pull_request_branch_name(pull_number=None, pull=None, repo=None):
     :param repo:
     :return:
     """
-    pull = pull or get_pull_request(pull_number, repo)
-    return pull.head.label
+    prs = []
+    pulls = pulls or []
+    for pull in pulls:
+        prs.append(pull.head.label)
+    for pull in get_pull_requests(pull_numbers, repo):
+        prs.append(pull.head.label)
+    return prs
 
 
-def get_pull_request_jira_ids(pull_number=None, pull=None, repo=None):
+def get_pull_request_jira_ids(pull_numbers=None, pulls=None, repo=None):
     """
     Return JIRA IDs in the PR HEAD Branch Name.
     :param pull_number: The number of the PR.
@@ -209,12 +218,14 @@ def get_pull_request_jira_ids(pull_number=None, pull=None, repo=None):
     :param repo:
     :return:
     """
-    branch_name = get_pull_request_branch_name(pull_number, pull, repo)
+    logging.info('Pull numbers {} pulls {}'.format(pull_numbers, pulls))
+    branch_names = get_pull_request_branch_names(pull_numbers, pulls, repo)
     # Find find strings in the form CYBL-1234 or CY-12345.
-    return findall(r'(?:CY|CYBL|RD)\-\d*', branch_name)
+    return [findall(r'(?:CY|CYBL|RD)\-\d*',
+                    branch_name) for branch_name in branch_names]
 
 
-def get_branch_pr(branch_name, repo=None):
+def get_branch_prs(branch_name, repo=None):
     """
     Get the PR number from the current merge commit.
     :param branch_name: The current branch (master).
@@ -229,14 +240,13 @@ def get_branch_pr(branch_name, repo=None):
     logging.info('Looking for PR number in {msg}'.format(
         msg=branch.commit.commit.message))
     number_sign_nums = findall(r'\#\d+', branch.commit.commit.message)
-    if len(number_sign_nums) != 1:
+    if len(number_sign_nums) < 1:
         raise Exception(
-            'The branch name {branch} contains more than one \#. '
+            'The branch name {branch} contains less than one \#. '
             'In order to identify the PR, '
-            'we look for \# in the commit message. '
-            'Please remove any \# that you have added.'.format(
+            'we look for \# in the commit message. '.format(
                 branch=branch_name))
-    return int(number_sign_nums[0].replace('#', ''))
+    return [int(pr.replace('#', '')) for pr in number_sign_nums]
 
 
 def validate_docs_requirement(message):
@@ -291,34 +301,37 @@ def merge_documentation_pulls(repo=None, docs_repo=None, branch='master'):
     repo = repo or get_repository()
     docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
-    pr_number = get_branch_pr(branch, repo)
-    if not pr_number:
+    pr_numbers = get_branch_prs(branch, repo)
+    if not pr_numbers:
         return
-    if not check_if_label_in_pr_labels(pr_number):
+    if not check_if_label_in_pr_labels(pr_numbers):
         return
-    jira_ids = get_pull_request_jira_ids(pr_number)
+    jira_ids = get_pull_request_jira_ids(pr_numbers)
     _merge_documentation_pulls(docs_repo, jira_ids)
 
 
-def find_pull_request_number(branch, repo):
+def find_pull_request_numbers(branch, repo):
     """
     Finds PR number associated with a branch.
     If the branch is master then then pr returned is the pr associated with the
     latest merge commit which contains the PR number.
     """
     if branch == 'master':
-        pull_request_number = get_branch_pr(branch, repo)
+        pull_request_numbers = get_branch_prs(branch, repo)
     else:
         pr_url = environ.get('CIRCLE_PULL_REQUEST', '/0')
         pr = pr_url.split('/')[-1]
-        pull_request_number = int(pr)
+        pull_request_numbers = [int(pr)]
 
-    return pull_request_number
+    return pull_request_numbers
 
 
-def get_files_changed_in_pr(pr_number, repo):
-    pr = get_pull_request(pr_number, repo)
-    return [pr_file.filename for pr_file in pr.get_files()]
+def get_files_changed_in_pr(pr_numbers, repo):
+    prs = get_pull_requests(pr_numbers, repo)
+    files = []
+    for pr in prs:
+        files.extend([pr_file.filename for pr_file in pr.get_files()])
+    return files
 
 
 def find_changed_files_in_branch_pr_or_master(repo=None, branch_name=None):
@@ -329,29 +342,31 @@ def find_changed_files_in_branch_pr_or_master(repo=None, branch_name=None):
     """
     repo = repo or get_repository()
     branch = branch_name or environ['CIRCLE_BRANCH']
-    pr_number = find_pull_request_number(branch, repo)
-    if not pr_number and branch != 'master':
+    pr_numbers = find_pull_request_numbers(branch, repo)
+    if not pr_numbers and branch != 'master':
         logging.info('No PR found, list of changed files is empty.')
         return []
-    return get_files_changed_in_pr(pr_number, repo)
+    return get_files_changed_in_pr(pr_numbers, repo)
 
 
-def get_pr_labels(pr_number, repo):
-    pr = get_pull_request(pr_number, repo)
-    return pr.get_labels()
+def get_pr_labels(pr_numbers, repo):
+    pr_labels = []
+    for pr in get_pull_requests(pr_numbers, repo):
+        pr_labels.extend(pr.get_labels())
+    return pr_labels
 
 
-def check_if_label_in_pr_labels(pr_number, repo=None, label_name=None):
+def check_if_label_in_pr_labels(pr_numbers, repo=None, label_name=None):
     label_name = label_name or 'enhancement'
     repo = repo or get_repository()
-    labels = get_pr_labels(pr_number, repo)
-    if labels.totalCount == 0:
+    labels = get_pr_labels(pr_numbers, repo)
+    if len(labels) == 0:
         raise Exception(
             'The PR {} in repo {} does not provide any labels. '
             'Please add labels to your PR. '
             'For example, if the PR is for a feature, '
             'then use the label "enhancement". If the PR is for a bug, '
-            'then use the label "bug".'.format(pr_number, repo.name))
+            'then use the label "bug".'.format(pr_numbers, repo.name))
     for label in labels:
         if label_name.lower() in label.name.lower():
             return label
