@@ -163,6 +163,7 @@ def get_pull_requests(numbers, repo=None):
     logging.info('Attempting to get PRs {number}'.format(number=numbers))
     repo = repo or get_repository()
     prs = []
+    numbers = numbers or []
     for number in numbers:
         prs.append(repo.get_pull(number))
     return prs
@@ -192,7 +193,7 @@ def raise_if_unmergeable(pull):
                 approved=approved))
 
 
-def get_pull_request_branch_names(pull_numbers=None, pull=None, repo=None):
+def get_pull_request_branch_names(pull_numbers=None, pulls=None, repo=None):
     """
     Find the HEAD branch name of a pull request.
     :param pull_number:
@@ -200,15 +201,16 @@ def get_pull_request_branch_names(pull_numbers=None, pull=None, repo=None):
     :param repo:
     :return:
     """
-    pulls = []
-    if pull:
-        pulls.append(pull.head.label)
+    prs = []
+    pulls = pulls or []
+    for pull in pulls:
+        prs.append(pull.head.label)
     for pull in get_pull_requests(pull_numbers, repo):
-        pulls.append(pull.head.label)
-    return pulls
+        prs.append(pull.head.label)
+    return prs
 
 
-def get_pull_request_jira_ids(pull_numbers=None, pull=None, repo=None):
+def get_pull_request_jira_ids(pull_numbers=None, pulls=None, repo=None):
     """
     Return JIRA IDs in the PR HEAD Branch Name.
     :param pull_number: The number of the PR.
@@ -216,7 +218,8 @@ def get_pull_request_jira_ids(pull_numbers=None, pull=None, repo=None):
     :param repo:
     :return:
     """
-    branch_names = get_pull_request_branch_names(pull_numbers, pull, repo)
+    logging.info('Pull numbers {} pulls {}'.format(pull_numbers, pulls))
+    branch_names = get_pull_request_branch_names(pull_numbers, pulls, repo)
     # Find find strings in the form CYBL-1234 or CY-12345.
     return [findall(r'(?:CY|CYBL|RD)\-\d*',
                     branch_name) for branch_name in branch_names]
@@ -350,14 +353,14 @@ def get_pr_labels(pr_numbers, repo):
     pr_labels = []
     for pr in get_pull_requests(pr_numbers, repo):
         pr_labels.extend(pr.get_labels())
-    return pr_labels.get_labels()
+    return pr_labels
 
 
 def check_if_label_in_pr_labels(pr_numbers, repo=None, label_name=None):
     label_name = label_name or 'enhancement'
     repo = repo or get_repository()
     labels = get_pr_labels(pr_numbers, repo)
-    if labels.totalCount == 0:
+    if len(labels) == 0:
         raise Exception(
             'The PR {} in repo {} does not provide any labels. '
             'Please add labels to your PR. '

@@ -15,8 +15,8 @@ from .github_stuff import (
     raise_if_unmergeable,
     get_pull_request_jira_ids,
     get_repository,
-    get_pull_request,
-    find_pull_request_number,
+    get_pull_requests,
+    find_pull_request_numbers,
     check_if_label_in_pr_labels)
 
 VERSION_EXAMPLE = """
@@ -193,14 +193,16 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     branch = branch or os.environ.get('CIRCLE_BRANCH')
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
 
-    pr_number = find_pull_request_number(branch, repo)
-    if not pr_number and branch != 'master':
+    pr_numbers = find_pull_request_numbers(branch, repo)
+    if not pr_numbers and branch != 'master':
         logging.info('A PR has not yet been opened.')
         return
+    logging.info('Found these PR numbers: {}'.format(pr_numbers))
 
-    pull_request = get_pull_request(pr_number)
-    jira_ids = get_pull_request_jira_ids(pull=pull_request)
+    pull_requests = get_pull_requests(pr_numbers)
+    logging.info('Found these PRs: {}'.format(pull_requests))
+    jira_ids = get_pull_request_jira_ids(pulls=pull_requests)
 
-    if not check_if_label_in_pr_labels(pr_number):
+    if not check_if_label_in_pr_labels(pr_numbers):
         return
     _validate_documenation_pulls(docs_repo, jira_ids)
