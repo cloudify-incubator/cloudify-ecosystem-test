@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from ecosystem_cicd_tools.github_stuff import merge_documentation_pulls
 from ...ecosystem_tests_cli import ecosystem_tests
 
@@ -21,4 +23,7 @@ from ...ecosystem_tests_cli import ecosystem_tests
                          short_help='merge docs.')
 @ecosystem_tests.options.repo
 def merge_docs(repo):
-    merge_documentation_pulls(repo)
+    if 'CIRCLE_BRANCH' in os.environ:
+        merge_documentation_pulls(repo, branch=os.environ['CIRCLE_BRANCH'])
+    else:
+        merge_documentation_pulls(repo)
