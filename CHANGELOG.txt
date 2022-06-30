@@ -1,3 +1,4 @@
+2.7.20: Handle main and master.
 2.7.19: Handle main and master.
 2.7.18: Rewrite release stuff.
 2.7.17: Use multiple branchs in commit message for validate docs.
