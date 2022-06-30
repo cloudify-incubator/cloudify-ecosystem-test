@@ -3,6 +3,9 @@ from functools import wraps
 from pkg_resources import parse_version
 
 import github
+import requests
+import urllib3
+import http
 
 from .logging import logger
 
@@ -109,18 +112,20 @@ def upload_asset(release, asset_path, asset_label):
     logger.info('Uploading {} {} to {}.'.format(
         asset_path, asset_label, release
     ))
+    for asset in release.get_assets():
+        if asset.label == asset_label:
+            asset.delete_asset()
+            upload_asset(release, asset_path, asset_label)
     try:
         release.upload_asset(asset_path, asset_label)
+    except (http.client.RemoteDisconnected, urllib3.exceptions.ProtocolError, requests.exceptions.ConnectionError):
+        upload_asset(release, asset_path, asset_label)
     except github.GithubException as e:
         if e.status != 422:
             logger.error('Failed to upload new asset: '
                          '{path}:{label} to release {name}.'.format(
                 path=asset_path, label=asset_label, name=release))
             raise
-    for asset in release.get_assets():
-        if asset.label == asset_label:
-            asset.delete_asset()
-            release.upload_asset(asset_path, asset_label)
 
 
 def create_release(name, version, message, commit, repository):
