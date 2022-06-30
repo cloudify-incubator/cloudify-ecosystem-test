@@ -194,7 +194,7 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
 
     pr_numbers = find_pull_request_numbers(branch, repo)
-    if not pr_numbers and branch != 'master':
+    if not pr_numbers and branch not in ['master', 'main']:
         logging.info('A PR has not yet been opened.')
         return
     logging.info('Found these PR numbers: {}'.format(pr_numbers))
