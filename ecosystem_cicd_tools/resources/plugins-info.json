@@ -132,7 +132,7 @@
       "title":"Terragrunt",
       "description":"Deploy and manage Cloud resources with Terragrunt",
       "repo":"cloudify-cosmo/cloudify-terragrunt-plugin",
-      "icon":"https://cloudify.co/wp-content/uploads/2020/07/terraform-icon.png"
+      "icon":"https://cloudify-release-eu.s3.eu-west-1.amazonaws.com/cloudify/wagons/cloudify-terragrunt-plugin/image.png"
    },
    {
       "name":"cloudify-docker-plugin",
