@@ -139,7 +139,8 @@ class Options(object):
         method - if not, it's an attribute.
         """
         self.generate_new_aws_token = click.option('--generate-new-aws-token',
-                                                   type=click.BOOL)
+                                                   type=click.BOOL,
+                                                   is_flag=True)
 
         self.json_path = click.option('-j',
                                       '--json-path',
