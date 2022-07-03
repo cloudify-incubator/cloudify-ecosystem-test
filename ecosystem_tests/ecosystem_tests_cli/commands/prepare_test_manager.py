@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from boto3 import client
 from cloudify import ctx
 
@@ -52,12 +53,11 @@ def prepare_test_manager(license,
     This command responsible for prepare test manager.
     """
     if generate_new_aws_token:
-        aws_access_key_id, aws_secret_access_key, aws_session = \
+        aws_access_key_id, aws_secret_access_key = \
             generate_new_credentials(timeout)
 
         encoded_secret.update({'aws_acces_key_id': aws_access_key_id})
         encoded_secret.update({'aws_secret_access_key': aws_secret_access_key})
-        encoded_secret.update({'aws_session': aws_session})
 
     secrets_dict = prepare_secrets_dict_for_prepare_test(secret,
                                                          file_secret,
@@ -73,9 +73,8 @@ def generate_new_credentials(timeout):
     if timeout < 900:
         timeout = 900
         ctx.logger.info('Minimum timeout 900, setting to 900')
-    sts = client('sts')
-    response = sts.get_session_token(DurationSeconds=timeout)
-    aws_access_key_id = response['Credentials']['AccessKeyId']
-    aws_secret_access_key = response['Credentials']['SecretAccessKey']
-    aws_session_token = response['Credentials']['SessionToken']
-    return aws_access_key_id, aws_secret_access_key, aws_session_token
+    iam = client('iam')
+    response = iam.create_access_key(UserName=os.environ['IAM_USERNAME'])
+    aws_access_key_id = response['AccessKey']['AccessKeyId']
+    aws_secret_access_key = response['AccessKey']['SecretAccessKey']
+    return aws_access_key_id, aws_secret_access_key
