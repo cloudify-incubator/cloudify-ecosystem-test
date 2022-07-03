@@ -138,6 +138,9 @@ class Options(object):
         a developer sees an option. It it can receive arguments, it's a
         method - if not, it's an attribute.
         """
+        self.generate_new_aws_token = click.option('--generate-new-aws-token',
+                                                   type=click.BOOL)
+
         self.json_path = click.option('-j',
                                       '--json-path',
                                       default=None,
