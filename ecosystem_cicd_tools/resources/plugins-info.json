@@ -78,14 +78,7 @@
       "repo":"cloudify-cosmo/cloudify-fabric-plugin",
       "icon":"https://cloudify.co/wp-content/uploads/2019/08/fabriclogo-150x117.png"
    },
-   { 
-      "name":"cloudify-diamond-plugin", 
-      "title":"Diamond",
-      "description":"Cloudify diamond monitoring plugin",
-      "repo":"cloudify-cosmo/cloudify-diamond-plugin",
-      "icon":"https://cloudify.co/wp-content/uploads/2019/08/diamondlogo-150x150.png"
-   },
-   {  
+   {
       "name":"cloudify-psutil-plugin",
       "title":"PSUTIL",
       "description":"A plugin for sending operating system metrics to Cloudify",
