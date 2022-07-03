@@ -432,33 +432,6 @@
         "yaml": "http://repository.cloudifysource.org/cloudify/wagons/cloudify-host-pool-plugin/1.5.3/v2_plugin.yaml"
     },
     {
-        "description": "Cloudify diamond monitoring plugin",
-        "releases": "https://github.com/cloudify-cosmo/cloudify-diamond-plugin/releases",
-        "title": "Diamond",
-        "version": "1.3.19",
-        "link": null,
-        "wagons": [
-            {
-                "name": "Centos Core",
-                "url": null,
-                "md5url": null
-            },
-            {
-                "name": "Centos AltArch",
-                "url": null,
-                "md5url": null
-            },
-            {
-                "name": "Redhat Maipo",
-                "url": null,
-                "md5url": null
-            }
-        ],
-        "icon": "https://cloudify.co/wp-content/uploads/2019/08/diamondlogo-150x150.png",
-        "name": "cloudify-diamond-plugin",
-        "yaml": null
-    },
-    {
         "description": "OpenStack (v2): A Cloudify Plugin that provisions resources in OpenStack using the OpenStack APIs. (deprecated).",
         "releases": "https://github.com/cloudify-cosmo/cloudify-openstack-plugin/releases",
         "title": "OpenStack",
