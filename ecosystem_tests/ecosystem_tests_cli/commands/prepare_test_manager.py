@@ -52,12 +52,11 @@ def prepare_test_manager(license,
     This command responsible for prepare test manager.
     """
     if generate_new_aws_token:
-         aws_access_key_id, aws_secret_access_key, aws_session = \
+        aws_access_key_id, aws_secret_access_key, aws_session = \
              generate_new_credentials(timeout)
-
-         encoded_secret.update({'aws_acces_key_id': aws_access_key_id})
-         encoded_secret.update({'aws_secret_access_key': aws_secret_access_key})
-         encoded_secret.update({'aws_session_token': aws_session})
+        encoded_secret.update({'aws_acces_key_id': aws_access_key_id})
+        encoded_secret.update({'aws_secret_access_key': aws_secret_access_key})
+        encoded_secret.update({'aws_session_token': aws_session})
 
     secrets_dict = prepare_secrets_dict_for_prepare_test(secret,
                                                          file_secret,
