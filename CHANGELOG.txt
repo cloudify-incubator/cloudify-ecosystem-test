@@ -1,4 +1,5 @@
-2.7.21: RD-4811 generate new token for tests
+2.7.22: RD-4811 generate new token for tests
+2.7.21: Update plugins list.
 2.7.20: Handle main and master.
 2.7.19: Handle main and master.
 2.7.18: Rewrite release stuff.

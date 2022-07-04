@@ -231,17 +231,6 @@ JSON_TEMPLATE = [
         "yaml": None
     },
     {
-        "description": "Cloudify diamond monitoring plugin",
-        "releases": "https://github.com/cloudify-cosmo/cloudify-diamond-plugin/releases",
-        "title": "Diamond",
-        "version": None,
-        "link": None,
-        "wagons": [],
-        "icon": "https://cloudify.co/wp-content/uploads/2019/08/diamondlogo-150x150.png",
-        "name": "cloudify-diamond-plugin",
-        "yaml": None
-    },
-    {
         "description": "OpenStack (v2): A Cloudify Plugin that provisions resources in OpenStack using the OpenStack APIs. (deprecated).",
         "releases": "https://github.com/cloudify-cosmo/cloudify-openstack-plugin/releases",
         "title": "OpenStack",
