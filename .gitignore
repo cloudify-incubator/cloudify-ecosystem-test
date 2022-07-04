@@ -29,8 +29,7 @@ nosetests.xml
 cover
 coverage.xml
 license.yaml
-.license.yaml
-license
+
 # Translations
 *.mo
 
