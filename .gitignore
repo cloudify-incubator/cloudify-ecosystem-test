@@ -28,9 +28,9 @@ pip-log.txt
 nosetests.xml
 cover
 coverage.xml
-.license.yaml
 license.yaml
-
+.license.yaml
+license
 # Translations
 *.mo
 
