@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 from boto3 import client
 from cloudify import ctx
 
@@ -79,3 +80,10 @@ def generate_new_credentials(timeout):
     aws_secret_access_key = response['Credentials']['SecretAccessKey']
     aws_session_token = response['Credentials']['SessionToken']
     return aws_access_key_id, aws_secret_access_key, aws_session_token
+    # aws_access_key_id = base64.b64encode(
+    #     response['Credentials']['AccessKeyId'].encode('utf-8'))
+    # aws_secret_access_key = base64.b64encode(
+    #     response['Credentials']['SecretAccessKey'].encode('utf-8'))
+    # aws_session_token = base64.b64encode(
+    #     response['Credentials']['SessionToken'].encode('utf-8'))
+    # return aws_access_key_id, aws_secret_access_key, aws_session_token

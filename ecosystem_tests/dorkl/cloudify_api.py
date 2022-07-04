@@ -219,11 +219,8 @@ def secrets_create(name, is_file=False):
     """
     logger.info('Creating secret: {0}.'.format(name))
     try:
-        logger.info('**secret1: {0}'.format(os.environ[name]))
-        logger.info('**secret2: {0}'.format(os.environ[name].encode('utf-8')))
-        logger.info('**secret3: {0}'.format(base64.b64decode(os.environ[name].encode('utf-8'))))
-        value = (base64.b64decode(os.environ[name].encode('utf-8'))).decode(
-            'ascii')
+        # base64.b64decode(os.environ[name].encode('utf-8')).decode('ascii'))
+        value = os.environ[name]
     except KeyError:
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
