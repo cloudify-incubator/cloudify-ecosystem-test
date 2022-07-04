@@ -133,11 +133,16 @@ class Options(object):
         """The options api is nicer when you use each option by calling
         `@ecosystem_tests.options.some_option` instead of
         `@ecosystem_tests.some_option`.
-        Note that some options are attributes and some are static methods.
+        Note that sogme options are attributes and some are static methods.
         The reason for that is that we want to be explicit regarding how
         a developer sees an option. It it can receive arguments, it's a
         method - if not, it's an attribute.
         """
+
+        self.generate_new_aws_token = click.option('--generate-new-aws-token',
+                                                   type=click.BOOL,
+                                                   is_flag=True)
+
         self.json_path = click.option('-j',
                                       '--json-path',
                                       default=None,
