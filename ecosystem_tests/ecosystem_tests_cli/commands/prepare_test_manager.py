@@ -16,6 +16,7 @@
 import base64
 from boto3 import client
 from cloudify import ctx
+import os
 
 from ..utilities import prepare_test_env
 from ...dorkl.runners import prepare_test_dev
@@ -56,7 +57,7 @@ def prepare_test_manager(license,
         aws_access_key_id, aws_secret_access_key, aws_session = \
             generate_new_credentials(timeout)
 
-        encoded_secret.update({'aws_acces_key_id': aws_access_key_id})
+        encoded_secret.update({'aws_access_key_id': aws_access_key_id})
         encoded_secret.update({'aws_secret_access_key': aws_secret_access_key})
         encoded_secret.update({'aws_session_token': aws_session})
 
@@ -76,14 +77,15 @@ def generate_new_credentials(timeout):
         ctx.logger.info('Minimum timeout 900, setting to 900')
     sts = client('sts')
     response = sts.get_session_token(DurationSeconds=timeout)
-    aws_access_key_id = response['Credentials']['AccessKeyId']
-    aws_secret_access_key = response['Credentials']['SecretAccessKey']
-    aws_session_token = response['Credentials']['SessionToken']
-    return aws_access_key_id, aws_secret_access_key, aws_session_token
-    # aws_access_key_id = base64.b64encode(
-    #     response['Credentials']['AccessKeyId'].encode('utf-8'))
-    # aws_secret_access_key = base64.b64encode(
-    #     response['Credentials']['SecretAccessKey'].encode('utf-8'))
-    # aws_session_token = base64.b64encode(
-    #     response['Credentials']['SessionToken'].encode('utf-8'))
-    # return aws_access_key_id, aws_secret_access_key, aws_session_token
+
+    os.environ['aws_access_key_id'] = base64.b64encode(
+        response['Credentials']['AccessKeyId'].encode('utf-8')).decode()
+    os.environ['aws_secret_access_key'] = base64.b64encode(
+        response['Credentials']['SecretAccessKey'].encode('utf-8')).decode()
+    os.environ['aws_session_token'] = base64.b64encode(
+        response['Credentials']['SessionToken'].encode('utf-8')).decode()
+
+    return \
+        os.environ['aws_access_key_id'], \
+        os.environ['aws_secret_access_key'], \
+        os.environ['aws_session_token']
