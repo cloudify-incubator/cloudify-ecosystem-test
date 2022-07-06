@@ -163,6 +163,7 @@ def validate_plugin_version(plugin_directory=None,
 def _validate_documenation_pulls(docs_repo, jira_ids):
     merges = 0
     pulls = docs_repo.get_pulls(state='open')
+    logging.info('validate documentation pulls jira_ids = {}'.format(jira_ids))
     for jira_id in jira_ids:
         for pull in pulls:
             if jira_id in pull.head.label:
