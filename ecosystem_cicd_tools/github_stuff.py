@@ -221,8 +221,11 @@ def get_pull_request_jira_ids(pull_numbers=None, pulls=None, repo=None):
     logging.info('Pull numbers {} pulls {}'.format(pull_numbers, pulls))
     branch_names = get_pull_request_branch_names(pull_numbers, pulls, repo)
     # Find find strings in the form CYBL-1234 or CY-12345.
-    return [findall(r'(?:CY|CYBL|RD)\-\d*',
-                    branch_name) for branch_name in branch_names]
+    ids = []
+    for matches in [findall(r'(?:CY|CYBL|RD)\-\d*',
+                            branch_name) for branch_name in branch_names]:
+        ids.extend(matches)
+    return ids
 
 
 def get_branch_prs(branch_name, repo=None):
