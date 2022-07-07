@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import base64
 from boto3 import client
 from cloudify import ctx
-import os
 
 from ..utilities import prepare_test_env
 from ...dorkl.runners import prepare_test_dev
