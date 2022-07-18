@@ -10,10 +10,12 @@ from .logging import logger
 CORE_INDEX = 0
 ALTARCH_INDEX = 1
 MAIPO_INDEX = 2
+OOTPA_INDEX = 3
 
 CORE_ID = 'centos-Core'
 ALTARCH_ID = 'centos-altarch'
 MAIPO_ID = 'redhat-Maipo'
+OOTPA_ID = 'redhat-Ootpa'
 
 
 def get_wagons_list(plugin_name, plugin_version):
@@ -49,6 +51,8 @@ def get_wagons_list(plugin_name, plugin_version):
                 wagons_list[ALTARCH_INDEX].update(wagon_dict)
             if MAIPO_ID in url and MAIPO_ID in md5url:
                 wagons_list[MAIPO_INDEX].update(wagon_dict)
+            if OOTPA_ID in url and OOTPA_ID in md5url:
+                wagons_list[OOTPA_INDEX].update(wagon_dict)
 
     return wagons_list
 
@@ -278,6 +282,11 @@ WAGONS_LIST_TEMPLATE = [
     },
     {
         "name": "Redhat Maipo",
+        "url": None,
+        "md5url": None,
+    },
+    {
+        "name": "Redhat Ootpa",
         "url": None,
         "md5url": None,
     },
