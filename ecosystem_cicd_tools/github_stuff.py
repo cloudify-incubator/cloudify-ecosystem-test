@@ -319,12 +319,15 @@ def find_pull_request_numbers(branch, repo):
     If the branch is master then then pr returned is the pr associated with the
     latest merge commit which contains the PR number.
     """
-    if branch in ['master', 'main']:
+    if branch in ['master', 'main', '2.X-master']:
         pull_request_numbers = get_branch_prs(branch, repo)
     else:
         pr_url = environ.get('CIRCLE_PULL_REQUEST', '/0')
         pr = pr_url.split('/')[-1]
         pull_request_numbers = [int(pr)]
+
+    if 0 in pull_request_numbers:
+        pull_request_numbers.remove(0)
 
     return pull_request_numbers
 
