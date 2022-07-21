@@ -326,6 +326,9 @@ def find_pull_request_numbers(branch, repo):
         pr = pr_url.split('/')[-1]
         pull_request_numbers = [int(pr)]
 
+    if 0 in pull_request_numbers:
+        pull_request_numbers.remove(0)
+
     return pull_request_numbers
 
 
