@@ -1,3 +1,4 @@
+2.7.24: Support Openstack v2 master in validate docs.
 2.7.23: Add redhat 8 to plugins json and bundle.
 2.7.22: Improve jira id validations.
 2.7.21: Update plugins list.
