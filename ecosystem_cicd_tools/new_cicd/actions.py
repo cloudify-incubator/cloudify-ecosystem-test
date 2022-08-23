@@ -1,6 +1,10 @@
 import os
+import time
 from copy import deepcopy
 from urllib.parse import urlparse
+from cfy_lint.yamllint_ext.utils import (get_node_types_for_plugin_version,
+                                         get_plugin_versions_from_marketplace,
+                                         get_plugin_id_from_marketplace)
 
 from . import s3
 from . import github
@@ -45,6 +49,24 @@ def upload_assets_to_release(assets, release_name, repository, **_):
             os.environ.get('CIRCLE_USERNAME', 'earthmant')
         )
 
+    time.sleep(180)
+    plugin_id = get_plugin_id_from_marketplace(assets['plugin.yaml'])
+    version = get_plugin_versions_from_marketplace(plugin_id)
+    try:
+        new_version = version[-1]
+        if new_version != release:
+            raise RuntimeError(
+                'Failed to update marketplace with plugin release.')
+
+        node_types = get_node_types_for_plugin_version(assets['plugin.yaml'],
+                                                       version)
+        if not node_types:
+            raise RuntimeError(
+                'Failed to update marketplace with plugin release.')
+    except:
+        raise RuntimeError(
+            'Failed to update marketplace with plugin release.')
+
 
 @github.with_github_client
 def get_latest_version(repository, **kwargs):
@@ -84,6 +106,6 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['version'] = version
         plugin_content['link'] = plugin_yaml_url
         plugin_content['yaml'] = plugin_yaml_url
-        plugin_content['wagons'] =  wagons_list
+        plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
