@@ -1,7 +1,10 @@
 import os
+import time
 from copy import deepcopy
 from urllib.parse import urlparse
-
+from cfy_lint.yamllint_ext.utils import (get_node_types_for_plugin_version,
+                                         get_plugin_versions_from_marketplace,
+                                         get_plugin_id_from_marketplace)
 from . import s3
 from . import github
 from . import logging
@@ -44,6 +47,18 @@ def upload_assets_to_release(assets, release_name, repository, **_):
             release_name,
             os.environ.get('CIRCLE_USERNAME', 'earthmant')
         )
+
+    time.sleep(180)
+
+    name_plugin = repository.name
+    plugin_id = get_plugin_id_from_marketplace(name_plugin)
+    version = get_plugin_versions_from_marketplace(plugin_id)[-1]
+    node_types = get_node_types_for_plugin_version(name_plugin,
+                                                   version)
+
+    if release_name not in version and not node_types:
+        raise RuntimeError(
+            'Failed to update marketplace with plugin release.')
 
 
 @github.with_github_client
