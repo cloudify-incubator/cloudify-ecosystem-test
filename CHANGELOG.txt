@@ -1,4 +1,8 @@
-2.7.22: RD-4811 generate new token for tests
+2.7.26: RD-4811 generate new token for tests
+2.7.25: Remove Meaningless 0 from PRs.
+2.7.24: Support Openstack v2 master in validate docs.
+2.7.23: Add redhat 8 to plugins json and bundle.
+2.7.22: Improve jira id validations.
 2.7.21: Update plugins list.
 2.7.20: Handle main and master.
 2.7.19: Handle main and master.

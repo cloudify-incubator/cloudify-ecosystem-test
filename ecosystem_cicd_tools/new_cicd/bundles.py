@@ -26,14 +26,17 @@ from .logging import logger
 ARM64 = 'Centos AltArch'
 CENTOS = 'Centos Core'
 REDHAT = 'Redhat Maipo'
+REDHAT8 = 'Redhat Ootpa'
 DISTROS = {
     CENTOS: 'centos-Core',
     REDHAT: 'redhat-Maipo',
+    REDHAT8: 'redhat-Ootpa',
     ARM64: 'centos-altarch'
 }
 DISTROS_TO_BUNDLE = [
     CENTOS,
     REDHAT,
+    REDHAT8,
     ARM64]
 PLUGINS_TO_BUNDLE = [
     'vsphere',

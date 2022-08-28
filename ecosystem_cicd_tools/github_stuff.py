@@ -221,8 +221,11 @@ def get_pull_request_jira_ids(pull_numbers=None, pulls=None, repo=None):
     logging.info('Pull numbers {} pulls {}'.format(pull_numbers, pulls))
     branch_names = get_pull_request_branch_names(pull_numbers, pulls, repo)
     # Find find strings in the form CYBL-1234 or CY-12345.
-    return [findall(r'(?:CY|CYBL|RD)\-\d*',
-                    branch_name) for branch_name in branch_names]
+    ids = []
+    for matches in [findall(r'(?:CY|CYBL|RD)\-\d*',
+                            branch_name) for branch_name in branch_names]:
+        ids.extend(matches)
+    return ids
 
 
 def get_branch_prs(branch_name, repo=None):
@@ -316,12 +319,15 @@ def find_pull_request_numbers(branch, repo):
     If the branch is master then then pr returned is the pr associated with the
     latest merge commit which contains the PR number.
     """
-    if branch in ['master', 'main']:
+    if branch in ['master', 'main', '2.X-master']:
         pull_request_numbers = get_branch_prs(branch, repo)
     else:
         pr_url = environ.get('CIRCLE_PULL_REQUEST', '/0')
         pr = pr_url.split('/')[-1]
         pull_request_numbers = [int(pr)]
+
+    if 0 in pull_request_numbers:
+        pull_request_numbers.remove(0)
 
     return pull_request_numbers
 

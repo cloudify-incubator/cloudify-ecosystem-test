@@ -163,6 +163,7 @@ def validate_plugin_version(plugin_directory=None,
 def _validate_documenation_pulls(docs_repo, jira_ids):
     merges = 0
     pulls = docs_repo.get_pulls(state='open')
+    logging.info('validate documentation pulls jira_ids = {}'.format(jira_ids))
     for jira_id in jira_ids:
         for pull in pulls:
             if jira_id in pull.head.label:
@@ -194,7 +195,7 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     logging.info('Checking pull requests for {branch}'.format(branch=branch))
 
     pr_numbers = find_pull_request_numbers(branch, repo)
-    if not pr_numbers and branch not in ['master', 'main']:
+    if not pr_numbers and branch not in ['master', 'main', '2.X-master']:
         logging.info('A PR has not yet been opened.')
         return
     logging.info('Found these PR numbers: {}'.format(pr_numbers))
