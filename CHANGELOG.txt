@@ -1,3 +1,4 @@
+2.7.27: Verify that marketplace plugin update RD-5439
 2.7.26: RD-4811 generate new token for tests
 2.7.25: Remove Meaningless 0 from PRs.
 2.7.24: Support Openstack v2 master in validate docs.
