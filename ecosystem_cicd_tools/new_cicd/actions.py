@@ -1,10 +1,8 @@
 import os
-import time
+from time import sleep
 from copy import deepcopy
 from urllib.parse import urlparse
-from cfy_lint.yamllint_ext.utils import (get_node_types_for_plugin_version,
-                                         get_plugin_versions_from_marketplace,
-                                         get_plugin_id_from_marketplace)
+
 from . import s3
 from . import github
 from . import logging
@@ -48,17 +46,50 @@ def upload_assets_to_release(assets, release_name, repository, **_):
             os.environ.get('CIRCLE_USERNAME', 'earthmant')
         )
 
-    time.sleep(180)
+    # Time to wait for the plugin to load
+    # And checking that everything was updated correctly
+    max_time = 180  # it should not take longer than 180 seconds.
+    min_time = 20  # It should definitely take longer than 20 seconds.
+    interval = 10  # We check every 10 seconds.
+    current = 0
+    while True:
+        if current < min_time:
+            current += interval
+            continue
+        if max_time <= current:
+            raise RuntimeError(
+                'Timed out waiting for marketplace plugin update.')
+        if checking_the_upload_of_the_plugin(release_name,
+                                             release,
+                                             repository):
+            break
+        sleep(interval)
+        current += interval
+
+
+def checking_the_upload_of_the_plugin(release_name, release, repository, **_):
 
     name_plugin = repository.name
-    plugin_id = get_plugin_id_from_marketplace(name_plugin)
-    version = get_plugin_versions_from_marketplace(plugin_id)[-1]
-    node_types = get_node_types_for_plugin_version(name_plugin,
-                                                   version)
+    plugin_id = marketplace.get_plugin_id(name_plugin)
+    version = marketplace.get_plugin_versions(plugin_id)[-1]
+    node_types = marketplace.get_node_types_for_plugin_version(name_plugin,
+                                                               version)
+    assets = release.get_assets()
+    assets_list = []
+
+    for asset in assets:
+        assets_list.append(asset.label)
+
+    if 'plugin.yaml' not in assets_list:
+        raise RuntimeError(
+            'Failed to update marketplace with plugin release.'
+            'The plugin.yaml file does not exist')
 
     if release_name not in version and not node_types:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.')
+
+    return True
 
 
 @github.with_github_client
