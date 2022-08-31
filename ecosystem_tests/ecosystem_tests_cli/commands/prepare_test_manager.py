@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import base64
+from boto3 import client
+from cloudify import ctx
+
 from ..utilities import prepare_test_env
 from ...dorkl.runners import prepare_test_dev
 from ...ecosystem_tests_cli import ecosystem_tests
@@ -32,6 +37,8 @@ from ..secrets import prepare_secrets_dict_for_prepare_test
 @ecosystem_tests.options.skip_bundle_upload
 @ecosystem_tests.options.container_name
 @ecosystem_tests.options.yum_packages
+@ecosystem_tests.options.generate_new_aws_token
+@ecosystem_tests.options.timeout
 def prepare_test_manager(license,
                          secret,
                          file_secret,
@@ -40,10 +47,19 @@ def prepare_test_manager(license,
                          bundle_path,
                          skip_bundle_upload,
                          container_name,
-                         yum_package):
+                         yum_package,
+                         generate_new_aws_token,
+                         timeout):
     """
     This command responsible for prepare test manager.
     """
+    if generate_new_aws_token:
+        aws_access_key_id, aws_secret_access_key, aws_session = \
+            generate_new_credentials(timeout)
+
+        encoded_secret.update({'aws_access_key_id': aws_access_key_id})
+        encoded_secret.update({'aws_secret_access_key': aws_secret_access_key})
+        encoded_secret.update({'aws_session_token': aws_session})
 
     secrets_dict = prepare_secrets_dict_for_prepare_test(secret,
                                                          file_secret,
@@ -53,3 +69,23 @@ def prepare_test_manager(license,
                      execute_bundle_upload=not skip_bundle_upload,
                      bundle_path=bundle_path,
                      yum_packages=yum_package)
+
+
+def generate_new_credentials(timeout):
+    if timeout < 900:
+        timeout = 900
+        ctx.logger.info('Minimum timeout 900, setting to 900')
+    sts = client('sts')
+    response = sts.get_session_token(DurationSeconds=timeout)
+
+    os.environ['aws_access_key_id'] = base64.b64encode(
+        response['Credentials']['AccessKeyId'].encode('utf-8')).decode()
+    os.environ['aws_secret_access_key'] = base64.b64encode(
+        response['Credentials']['SecretAccessKey'].encode('utf-8')).decode()
+    os.environ['aws_session_token'] = base64.b64encode(
+        response['Credentials']['SessionToken'].encode('utf-8')).decode()
+
+    return \
+        os.environ['aws_access_key_id'], \
+        os.environ['aws_secret_access_key'], \
+        os.environ['aws_session_token']
