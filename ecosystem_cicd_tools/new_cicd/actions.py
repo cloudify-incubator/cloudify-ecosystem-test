@@ -62,6 +62,8 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         if checking_the_upload_of_the_plugin(release_name,
                                              release,
                                              repository):
+            logging.logger.info(
+                'Verified plugin release in {} seconds'.format(current))
             break
         sleep(interval)
         current += interval
@@ -72,19 +74,22 @@ def checking_the_upload_of_the_plugin(release_name, release, repository, **_):
     name_plugin = repository.name
     plugin_id = marketplace.get_plugin_id(name_plugin)
     version = marketplace.get_plugin_versions(plugin_id)[-1]
-    node_types = marketplace.get_node_types_for_plugin_version(name_plugin,
-                                                               version)
+
     assets = release.get_assets()
     assets_list = []
 
     for asset in assets:
         assets_list.append(asset.label)
 
-    if 'plugin.yaml' not in assets_list:
+    if 'plugin.yaml' not in assets_list or \
+            'plugin_1_4.yaml' not in assets_list or \
+            'v2_plugin.yaml' not in assets_list:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.'
-            'The plugin.yaml file does not exist')
+            'Not all the .yaml files does exist.')
 
+    node_types = marketplace.get_node_types_for_plugin_version(name_plugin,
+                                                               version)
     if release_name not in version and not node_types:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.')
