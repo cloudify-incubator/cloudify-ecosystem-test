@@ -1,4 +1,5 @@
 import os
+import requests
 from time import sleep
 from copy import deepcopy
 from urllib.parse import urlparse
@@ -9,6 +10,7 @@ from . import logging
 from . import plugins_json
 from . import marketplace
 
+URL_MARKETPLACE = "https://marketplace.cloudify.co"
 
 @github.with_github_client
 def upload_assets_to_release(assets, release_name, repository, **_):
@@ -76,14 +78,29 @@ def checking_the_upload_of_the_plugin(release_name, release, repository, **_):
     version = marketplace.get_plugin_versions(plugin_id)[-1]
 
     assets = release.get_assets()
-    assets_list = []
-
+    assets_list_github = []
+    # github
     for asset in assets:
-        assets_list.append(asset.label)
+        assets_list_github.append(asset.label)
 
-    if 'plugin.yaml' not in assets_list or \
-            'plugin_1_4.yaml' not in assets_list or \
-            'v2_plugin.yaml' not in assets_list:
+    if 'plugin.yaml' not in assets_list_github or \
+            'plugin_1_4.yaml' not in assets_list_github or \
+            'v2_plugin.yaml' not in assets_list_github:
+        raise RuntimeError(
+            'Failed to update marketplace with plugin release.'
+            'Not all the .yaml files does exist.')
+
+    # s3 marketplace
+    list_versions = list_versions_from_marketplace(plugin_id)
+    items = list_versions.json().get('items')
+    assets_list_s3 = []
+    yaml_urls = items['yaml_urls']
+    for yaml in yaml_urls:
+        assets_list_s3.append(yaml['url'])
+
+    if 'plugin.yaml' not in assets_list_s3 or \
+            'plugin_1_4.yaml' not in assets_list_s3 or \
+            'v2_plugin.yaml' not in assets_list_s3:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.'
             'Not all the .yaml files does exist.')
@@ -95,6 +112,11 @@ def checking_the_upload_of_the_plugin(release_name, release, repository, **_):
             'Failed to update marketplace with plugin release.')
 
     return True
+
+
+def list_versions_from_marketplace(plugin_id):
+    return requests.get(
+        f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]
 
 
 @github.with_github_client
@@ -135,6 +157,6 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['version'] = version
         plugin_content['link'] = plugin_yaml_url
         plugin_content['yaml'] = plugin_yaml_url
-        plugin_content['wagons'] =  wagons_list
+        plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
