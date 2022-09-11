@@ -15,11 +15,11 @@
 
 import json
 import requests
-from . import github
 import urllib.request
 from .logging import logger
 from packaging.version import parse as version_parse
 
+URL_MARKETPLACE = "https://marketplace.cloudify.co"
 
 URL = 'https://9t51ojrwrb.execute-api.eu-west-1.amazonaws.com/prod/' \
       'scrape-plugins-git-webhook'
@@ -61,18 +61,6 @@ def get_plugin_versions(plugin_id):
     return []
 
 
-def get_release(name, repository):
-    print('Attempting to get release {name} from repo {repo}.'.format(
-        name=name, repo=repository.name))
-    try:
-        return repository.get_release(name)
-    except github.UnknownObjectException:
-        print(
-            'Failed to get release {name} from repo {repo}.'.format(
-                name=name, repo=repository.name))
-        return
-
-
 def get_node_types_for_plugin_version(plugin_name, plugin_version):
     url = 'https://marketplace.cloudify.co/node-types?' \
           '&plugin_name={}' \
@@ -91,3 +79,8 @@ def get_json(url):
         return {}
     body = resp.read()
     return json.loads(body)
+
+
+def list_versions(plugin_id):
+    return requests.get(
+        f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]

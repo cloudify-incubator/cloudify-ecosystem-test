@@ -10,7 +10,6 @@ from . import logging
 from . import plugins_json
 from . import marketplace
 
-URL_MARKETPLACE = "https://marketplace.cloudify.co"
 
 @github.with_github_client
 def upload_assets_to_release(assets, release_name, repository, **_):
@@ -61,9 +60,7 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         if max_time <= current:
             raise RuntimeError(
                 'Timed out waiting for marketplace plugin update.')
-        if checking_the_upload_of_the_plugin(release_name,
-                                             release,
-                                             repository):
+        if checking_the_upload_of_the_plugin(repository, assets):
             logging.logger.info(
                 'Verified plugin release in {} seconds'.format(current))
             break
@@ -71,52 +68,48 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         current += interval
 
 
-def checking_the_upload_of_the_plugin(release_name, release, repository, **_):
+def checking_the_upload_of_the_plugin(repository, asset_workspace):
+    asset_workspace = list(asset_workspace.keys())
 
-    name_plugin = repository.name
-    plugin_id = marketplace.get_plugin_id(name_plugin)
-    version = marketplace.get_plugin_versions(plugin_id)[-1]
-
-    assets = release.get_assets()
-    assets_list_github = []
     # github
-    for asset in assets:
+    latest_release = github.get_latest_release(repository)
+    assets_list_github = []
+    for asset in latest_release.get_assets():
         assets_list_github.append(asset.label)
 
-    if 'plugin.yaml' not in assets_list_github or \
-            'plugin_1_4.yaml' not in assets_list_github or \
-            'v2_plugin.yaml' not in assets_list_github:
-        raise RuntimeError(
-            'Failed to update marketplace with plugin release.'
-            'Not all the .yaml files does exist.')
-
-    # s3 marketplace
-    list_versions = list_versions_from_marketplace(plugin_id)
+    # marketplace
+    plugin_id = marketplace.get_plugin_id(repository.name)
+    version = marketplace.get_plugin_versions(plugin_id)[-1]
+    list_versions = marketplace.list_versions(plugin_id)
     items = list_versions.json().get('items')
-    assets_list_s3 = []
+    assets_list_marketplace = []
+
     yaml_urls = items['yaml_urls']
     for yaml in yaml_urls:
-        assets_list_s3.append(yaml['url'])
+        assets_list_marketplace.append(yaml['url'])
 
-    if 'plugin.yaml' not in assets_list_s3 or \
-            'plugin_1_4.yaml' not in assets_list_s3 or \
-            'v2_plugin.yaml' not in assets_list_s3:
-        raise RuntimeError(
-            'Failed to update marketplace with plugin release.'
-            'Not all the .yaml files does exist.')
+    wagon_urls = items['wagon_urls']
+    for wagon in wagon_urls:
+        assets_list_marketplace.append(wagon['url'])
 
-    node_types = marketplace.get_node_types_for_plugin_version(name_plugin,
+    node_types = marketplace.get_node_types_for_plugin_version(repository.name,
                                                                version)
-    if release_name not in version and not node_types:
+    if not node_types:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.')
 
+    # s3
+    list_objects = s3.get_assets(repository.name, version)
+    assets_list_s3 = []
+
+    for asset in asset_workspace:
+        if "wgn.md5" not in asset and asset not in assets_list_marketplace \
+                and asset not in assets_list_github \
+                and asset not in assets_list_s3:
+            raise RuntimeError(
+                'Failed to update marketplace with plugin release.')
+
     return True
-
-
-def list_versions_from_marketplace(plugin_id):
-    return requests.get(
-        f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]
 
 
 @github.with_github_client
@@ -160,3 +153,5 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
+
+
