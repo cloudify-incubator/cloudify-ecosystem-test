@@ -60,7 +60,7 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         if max_time <= current:
             raise RuntimeError(
                 'Timed out waiting for marketplace plugin update.')
-        if checking_the_upload_of_the_plugin(repository, assets):
+        if checking_the_upload_of_the_plugin(repository, release_name, assets):
             logging.logger.info(
                 'Verified plugin release in {} seconds'.format(current))
             break
@@ -68,7 +68,7 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         current += interval
 
 
-def checking_the_upload_of_the_plugin(repository, asset_workspace):
+def checking_the_upload_of_the_plugin(repository, release_name, asset_workspace):
     asset_workspace = list(asset_workspace.keys())
 
     # github
@@ -78,34 +78,20 @@ def checking_the_upload_of_the_plugin(repository, asset_workspace):
         assets_list_github.append(asset.label)
 
     # marketplace
-    plugin_id = marketplace.get_plugin_id(repository.name)
-    version = marketplace.get_plugin_versions(plugin_id)[-1]
-    list_versions = marketplace.list_versions(plugin_id)
-    items = list_versions.json().get('items')
-    assets_list_marketplace = []
-
-    yaml_urls = items['yaml_urls']
-    for yaml in yaml_urls:
-        assets_list_marketplace.append(yaml['url'])
-
-    wagon_urls = items['wagon_urls']
-    for wagon in wagon_urls:
-        assets_list_marketplace.append(wagon['url'])
-
+    assets_list_marketplace = marketplace.get_assets(repository)
     node_types = marketplace.get_node_types_for_plugin_version(repository.name,
-                                                               version)
+                                                               release_name)
     if not node_types:
         raise RuntimeError(
             'Failed to update marketplace with plugin release.')
 
     # s3
-    list_objects = s3.get_assets(repository.name, version)
-    assets_list_s3 = []
+    assets_list_s3 = s3.get_assets(repository.name, release_name)
 
     for asset in asset_workspace:
         if "wgn.md5" not in asset and asset not in assets_list_marketplace \
-                and asset not in assets_list_github \
-                and asset not in assets_list_s3:
+                or asset not in assets_list_github \
+                or asset not in assets_list_s3:
             raise RuntimeError(
                 'Failed to update marketplace with plugin release.')
 
@@ -153,5 +139,3 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
-
-

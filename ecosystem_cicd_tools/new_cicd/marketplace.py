@@ -84,3 +84,17 @@ def get_json(url):
 def list_versions(plugin_id):
     return requests.get(
         f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]
+
+
+def get_assets(repository):
+    plugin_id = get_plugin_id(repository.name)
+    items = list_versions(plugin_id).json().get('items')
+    assets_list_marketplace = []
+
+    yaml_urls = items['yaml_urls']
+    for yaml in yaml_urls:
+        assets_list_marketplace.append(yaml['url'])
+
+    wagon_urls = items['wagon_urls']
+    for wagon in wagon_urls:
+        assets_list_marketplace.append(wagon['url'])

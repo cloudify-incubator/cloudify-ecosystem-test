@@ -107,12 +107,18 @@ def upload_to_s3(local_path,
 @with_s3_client
 def get_assets(plugin_name,
                plugin_version,
-               bucket_name=BUCKET_NAME):
-    client = get_client()  # s3
+               bucket_name=BUCKET_NAME,
+               s3=None):
     url = '{bucket_folder}/{plugin_name}/{plugin_version}/'\
         .format(bucket_folder=bucket_name, plugin_name=plugin_name,
                 plugin_version=plugin_version)
-    return client.list_objects(Bucket=bucket_name, Prefix=url)['Contents']
+    # s3.list_objects(Bucket=bucket_name, Prefix=url)['Contents']
+
+    assets_list_s3 = []
+    my_bucket = s3.Bucket(BUCKET_NAME)
+    for object_summary in my_bucket.objects.filter(Prefix=url):
+        assets_list_s3.append(object_summary.key)
+    return assets_list_s3
 
 
 @with_s3_client
