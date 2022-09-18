@@ -1,5 +1,19 @@
+########
+# Copyright (c) 2014-2022 Cloudify Platform Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
-import requests
 from time import sleep
 from copy import deepcopy
 from urllib.parse import urlparse
@@ -57,10 +71,12 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         if current < min_time:
             current += interval
             continue
-        if max_time <= current:
+        elif current > max_time:
             raise RuntimeError(
                 'Timed out waiting for marketplace plugin update.')
-        if checking_the_upload_of_the_plugin(repository, release_name, assets):
+        elif checking_the_upload_of_the_plugin(repository,
+                                               release_name,
+                                               assets):
             logging.logger.info(
                 'Verified plugin release in {} seconds'.format(current))
             break
@@ -68,8 +84,14 @@ def upload_assets_to_release(assets, release_name, repository, **_):
         current += interval
 
 
-def checking_the_upload_of_the_plugin(repository, release_name, asset_workspace):
-    asset_workspace = list(asset_workspace.keys())
+def checking_the_upload_of_the_plugin(repository,
+                                      release_name,
+                                      asset_workspace):
+
+    # marketplace
+    if not marketplace.get_node_types_for_plugin_version(
+            repository.name, release_name):
+        return False
 
     # github
     latest_release = github.get_latest_release(repository)
@@ -77,24 +99,29 @@ def checking_the_upload_of_the_plugin(repository, release_name, asset_workspace)
     for asset in latest_release.get_assets():
         assets_list_github.append(asset.label)
 
-    # marketplace
-    assets_list_marketplace = marketplace.get_assets(repository)
-    node_types = marketplace.get_node_types_for_plugin_version(repository.name,
-                                                               release_name)
-    if not node_types:
-        raise RuntimeError(
-            'Failed to update marketplace with plugin release.')
+    return check_asset_problems(
+        marketplace.get_assets(repository),
+        assets_list_github,
+        s3.get_assets(repository.name, release_name),
+        list(asset_workspace.keys())
+    )
 
-    # s3
-    assets_list_s3 = s3.get_assets(repository.name, release_name)
 
-    for asset in asset_workspace:
-        if "wgn.md5" not in asset and asset not in assets_list_marketplace \
-                or asset not in assets_list_github \
-                or asset not in assets_list_s3:
-            raise RuntimeError(
-                'Failed to update marketplace with plugin release.')
-
+def check_asset_problems(marketplace_assets, github_assets, s3_assets, assets):
+    problems = []
+    for asset in assets:
+        if asset.endswith('wgn.md5'):
+            continue
+        if asset not in marketplace_assets:
+            problems.append('{} not found in marketplace_assets'.format(asset))
+        if asset not in github_assets:
+            problems.append('{} not found in github_assets'.format(asset))
+        if asset not in s3_assets:
+            problems.append('{} not found in s3_assets'.format(asset))
+    if problems:
+        logging.logger.error(
+            'Failed to verify all assets: {}'.format(problems))
+        return False
     return True
 
 

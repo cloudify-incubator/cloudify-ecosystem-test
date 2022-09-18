@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import requests
-import urllib.request
-from .logging import logger
 from packaging.version import parse as version_parse
+
+from .logging import logger
+from ..utils import get_json
 
 URL_MARKETPLACE = "https://marketplace.cloudify.co"
 
@@ -72,15 +72,6 @@ def get_node_types_for_plugin_version(plugin_name, plugin_version):
     return node_types
 
 
-def get_json(url):
-    try:
-        resp = urllib.request.urlopen(url)
-    except urllib.error.HTTPError:
-        return {}
-    body = resp.read()
-    return json.loads(body)
-
-
 def list_versions(plugin_id):
     return requests.get(
         f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]
@@ -98,3 +89,4 @@ def get_assets(repository):
     wagon_urls = items['wagon_urls']
     for wagon in wagon_urls:
         assets_list_marketplace.append(wagon['url'])
+    return assets_list_marketplace

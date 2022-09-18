@@ -21,11 +21,11 @@ import logging
 import tarfile
 import zipfile
 import mimetypes
+import urllib.request
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile, mkdtemp
 
 import boto3
-from botocore.exceptions import ClientError
 
 logging.basicConfig(level=logging.INFO)
 
@@ -234,3 +234,12 @@ def create_archive(source_directory, destination):
                 file_path, os.path.relpath(file_path, source_dir))
     zip_file.close()
     logging.info('Finished writing archive {0}'.format(destination))
+
+
+def get_json(url):
+    try:
+        resp = urllib.request.urlopen(url)
+    except urllib.error.HTTPError:
+        return {}
+    body = resp.read()
+    return json.loads(body)
