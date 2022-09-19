@@ -109,15 +109,13 @@ def get_assets(plugin_name,
                plugin_version,
                bucket_name=BUCKET_NAME,
                s3=None):
-    url = '{bucket_folder}/{plugin_name}/{plugin_version}/'\
-        .format(bucket_folder=bucket_name, plugin_name=plugin_name,
-                plugin_version=plugin_version)
-    # s3.list_objects(Bucket=bucket_name, Prefix=url)['Contents']
-
+    url = 'cloudify/wagons/{plugin_name}/{plugin_version}/'.format(
+        plugin_name=plugin_name,
+        plugin_version=plugin_version)
     assets_list_s3 = []
-    my_bucket = s3.Bucket(BUCKET_NAME)
+    my_bucket = s3.Bucket(bucket_name)
     for object_summary in my_bucket.objects.filter(Prefix=url):
-        assets_list_s3.append(object_summary.key)
+        assets_list_s3.append(object_summary.key.split(url)[-1])
     return assets_list_s3
 
 

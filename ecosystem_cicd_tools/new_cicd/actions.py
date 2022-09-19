@@ -94,26 +94,39 @@ def checking_the_upload_of_the_plugin(repository,
         return False
 
     # github
-    latest_release = github.get_latest_release(repository)
+    latest_release = github.get_release(release_name, repository)
     assets_list_github = []
     for asset in latest_release.get_assets():
-        assets_list_github.append(asset.label)
+        logging.logger.info('Asset in release: {}'.format(asset.name))
+        assets_list_github.append(asset.name)
 
     return check_asset_problems(
-        marketplace.get_assets(repository),
+        marketplace.get_assets(repository, release_name),
         assets_list_github,
         s3.get_assets(repository.name, release_name),
-        list(asset_workspace.keys())
+        list(asset_workspace.keys()),
+        repository.name,
+        release_name
     )
 
 
-def check_asset_problems(marketplace_assets, github_assets, s3_assets, assets):
+def check_asset_problems(marketplace_assets,
+                         github_assets,
+                         s3_assets,
+                         assets,
+                         plugin_name,
+                         version):
     problems = []
     for asset in assets:
         if asset.endswith('wgn.md5'):
             continue
-        if asset not in marketplace_assets:
-            problems.append('{} not found in marketplace_assets'.format(asset))
+        marketplace_key = 'https://github.com/cloudify-cosmo/{}/' \
+                          'releases/download/{}/{}'.format(plugin_name,
+                                                           version,
+                                                           asset)
+        if marketplace_key not in marketplace_assets:
+            problems.append('{} not found in marketplace_assets'.format(
+                marketplace_key))
         if asset not in github_assets:
             problems.append('{} not found in github_assets'.format(asset))
         if asset not in s3_assets:

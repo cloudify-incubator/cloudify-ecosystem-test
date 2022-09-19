@@ -1,3 +1,4 @@
+2.7.29: Fixes for RD 5658
 2.7.28: RD-5658 Verify plugins JSON latest.
 2.7.27: Verify that marketplace plugin update RD-5439
 2.7.26: RD-4811 generate new token for tests
