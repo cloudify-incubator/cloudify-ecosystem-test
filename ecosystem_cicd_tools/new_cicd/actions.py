@@ -166,3 +166,37 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
+
+
+def check_plugins_json(plugin_name,
+                       version,
+                       plugins_json_content,
+                       plugin_yaml_name):
+
+    if plugin_yaml_name == 'v1':
+        plugin_yaml_file_name = 'plugin.yaml'
+    else:
+        plugin_yaml_file_name = 'v2_plugin.yaml'
+    wagons_list = plugins_json.get_wagons_list(
+        plugin_name=plugin_name,
+        plugin_version=version
+    )
+    plugin_yaml_url = s3.get_plugin_yaml_url(
+        plugin_name=plugin_name,
+        filename=plugin_yaml_file_name,
+        plugin_version=version,
+    )
+    for plugin_content in plugins_json_content:
+        if plugin_name != plugin_content['name']:
+            continue
+        else:
+            try:
+                assert version == plugin_content['version']
+                assert plugin_yaml_url == plugin_content['link']
+                assert plugin_yaml_url == plugin_content['yaml']
+                assert wagons_list == plugin_content['wagons']
+                return True
+            except AssertionError:
+                raise RuntimeError('Plugins JSON does not contain: '
+                                   '{} {}'.format(plugin_name, version))
+    return False
