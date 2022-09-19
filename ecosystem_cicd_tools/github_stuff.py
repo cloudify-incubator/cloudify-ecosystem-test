@@ -85,7 +85,8 @@ def upload_asset(release_name, asset_path, asset_label):
                      name=release_name))
     release = get_release(release_name)
     try:
-        release.upload_asset(asset_path, asset_label)
+        release.upload_asset(
+            asset_path, asset_label, content_type="application/zip")
     except GithubException as e:
         if e.status != 422:
             logging.info('Failed to upload new asset: '

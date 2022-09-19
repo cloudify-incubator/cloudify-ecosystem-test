@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import logging
+
 import requests
+import urllib.request
 from packaging.version import parse as version_parse
 
 from .logging import logger
@@ -73,13 +77,39 @@ def get_node_types_for_plugin_version(plugin_name, plugin_version):
 
 
 def list_versions(plugin_id):
-    return requests.get(
-        f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions')[0]
+    url = f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions'
+    json_resp = get_json_from_marketplace(url)
+    if 'items' in json_resp:
+        versions = [item['version'] for item in json_resp['items']]
+        return sorted(versions, key=lambda x: version_parse(x))
+    return []
 
 
-def get_assets(repository):
+def get_json_from_marketplace(url):
+    logger.info('get_json_from_marketplace request {}.'.format(url))
+    try:
+        resp = urllib.request.urlopen(url)
+    except urllib.error.HTTPError:
+        return {}
+    body = resp.read()
+    result = json.loads(body)
+    logger.info('get_json_from_marketplace response {}.'.format(result))
+    return result
+
+
+def get_plugin_release_spec_from_marketplace(plugin_id, plugin_version):
+    release_url = 'https://marketplace.cloudify.co/plugins/{}/{}'.format(
+        plugin_id, plugin_version)
+    return get_json_from_marketplace(release_url)
+
+
+def get_assets(repository, version):
     plugin_id = get_plugin_id(repository.name)
-    items = list_versions(plugin_id).json().get('items')
+    logger.info('PLUGIN IN {}.'.format(plugin_id))
+    items = get_plugin_release_spec_from_marketplace(plugin_id, version)
+    logger.info('Items: {}.'.format(items))
+    if not items:
+        return items
     assets_list_marketplace = []
 
     yaml_urls = items['yaml_urls']
