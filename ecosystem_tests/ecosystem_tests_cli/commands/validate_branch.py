@@ -8,4 +8,3 @@ from ...ecosystem_tests_cli import ecosystem_tests
 @ecosystem_tests.options.branch
 def validate_pull_request(repo, branch):
     validate_pulls(repo, branch=branch)
-
