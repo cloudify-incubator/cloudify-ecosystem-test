@@ -5,6 +5,7 @@ import subprocess
 from re import match
 from yaml import safe_load
 from yaml.parser import ParserError
+from ecosystem_cicd_tools.github_stuff import get_client
 
 try:
     from packaging.version import parse as parse_version
@@ -26,7 +27,22 @@ version = version_file.read().strip()"""
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+def does_protected_branch_have_build_source(pull_request):
+    string_pattern = '[0-9.]*-build'
+    import re
+    pattern = re.compile(string_pattern)
+    if pull_request.base.ref in ['main', 'master'] and not pattern.match(pull_request.title):
+        raise Exception('Protected branches "main" and "master" require build branch. Branch name is {}'.format(pull_request.title))
 
+def validate_pulls(repo_name, branch_name):
+    client = get_client()
+    repo = client.get_repo(repo_name)
+    pulls = repo.get_pulls()
+    for pull in pulls: 
+        if pull.head.ref == branch_name:
+            does_protected_branch_have_build_source(pull)
+    
+    
 def get_plugin_version(file_path=None):
     """
 
