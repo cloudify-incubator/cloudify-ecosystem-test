@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import subprocess
-from re import match
+from re import match, compile
 from yaml import safe_load
 from yaml.parser import ParserError
 from ecosystem_cicd_tools.github_stuff import get_client
@@ -30,11 +30,13 @@ logger.setLevel(logging.DEBUG)
 
 def does_protected_branch_have_build_source(pull_request):
     string_pattern = '[0-9.]*-build'
-    import re
-    pattern = re.compile(string_pattern)
-    if pull_request.base.ref in ['main', 'master'] and not pattern.match(pull_request.title):
-        raise Exception('Protected branches "main" and "master" require build branch. Branch name is {}'.format(
-            pull_request.title))
+    pattern = compile(string_pattern)
+    if pull_request.base.ref in ['main', 'master'] \
+        and not pattern.match(pull_request.title):
+        logging.error(
+            'Protected branches "main" and "master" require build branch. '
+            'Branch name is {}'.format(pull_request.title))
+        sys.exit(1)
 
 
 def validate_pulls(repo_name, branch_name):
