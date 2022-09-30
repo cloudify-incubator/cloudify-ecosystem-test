@@ -21,6 +21,7 @@ from .commands import (merge_docs,
                        package_release,
                        swap_plugin_code,
                        validate_blueprint,
+                       verify_plugins_json,
                        prepare_test_manager,
                        local_blueprint_test,
                        generate_plugins_json,
@@ -43,6 +44,7 @@ def _register_commands():
     _ecosystem_test.add_command(package_release.package_release)
     _ecosystem_test.add_command(swap_plugin_code.swap_plugin_code)
     _ecosystem_test.add_command(validate_blueprint.validate_blueprint)
+    _ecosystem_test.add_command(verify_plugins_json.verify_plugins_json)
     _ecosystem_test.add_command(local_blueprint_test.local_blueprint_test)
     _ecosystem_test.add_command(prepare_test_manager.prepare_test_manager)
     _ecosystem_test.add_command(generate_plugins_json.generate_plugins_json)

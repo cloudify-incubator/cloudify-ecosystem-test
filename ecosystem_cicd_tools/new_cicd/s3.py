@@ -105,6 +105,21 @@ def upload_to_s3(local_path,
 
 
 @with_s3_client
+def get_assets(plugin_name,
+               plugin_version,
+               bucket_name=BUCKET_NAME,
+               s3=None):
+    url = 'cloudify/wagons/{plugin_name}/{plugin_version}/'.format(
+        plugin_name=plugin_name,
+        plugin_version=plugin_version)
+    assets_list_s3 = []
+    my_bucket = s3.Bucket(bucket_name)
+    for object_summary in my_bucket.objects.filter(Prefix=url):
+        assets_list_s3.append(object_summary.key.split(url)[-1])
+    return assets_list_s3
+
+
+@with_s3_client
 def download_from_s3(local_path,
                      remote_path,
                      s3=None):

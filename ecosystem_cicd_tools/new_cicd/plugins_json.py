@@ -266,7 +266,18 @@ JSON_TEMPLATE = [
         "icon": "https://cloudify.co/wp-content/uploads/2020/11/helm-icon.png",
         "name": "cloudify-helm-plugin",
         "yaml": None
-    }
+    },
+    {
+        "description": "Cloudify Serverless plugin",
+        "releases": "https://github.com/cloudify-incubator/cloudify-serverless-plugin/releases",
+        "title": "Serverless",
+        "version": None,
+        "link": None,
+        "wagons": [],
+        "icon": "https://cloudify.co/wp-content/uploads/2022/09/serverless-icon.png",
+        "name": "cloudify-serverless-plugin",
+        "yaml": None
+    },
 ]
 
 WAGONS_LIST_TEMPLATE = [

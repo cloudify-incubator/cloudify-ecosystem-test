@@ -1,4 +1,20 @@
+########
+# Copyright (c) 2014-2022 Cloudify Platform Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
+from time import sleep
 from copy import deepcopy
 from urllib.parse import urlparse
 
@@ -45,6 +61,82 @@ def upload_assets_to_release(assets, release_name, repository, **_):
             os.environ.get('CIRCLE_USERNAME', 'earthmant')
         )
 
+    # Time to wait for the plugin to load
+    # And checking that everything was updated correctly
+    max_time = 180  # it should not take longer than 180 seconds.
+    min_time = 20  # It should definitely take longer than 20 seconds.
+    interval = 10  # We check every 10 seconds.
+    current = 0
+    while True:
+        if current < min_time:
+            current += interval
+            continue
+        elif current > max_time:
+            raise RuntimeError(
+                'Timed out waiting for marketplace plugin update.')
+        elif checking_the_upload_of_the_plugin(repository,
+                                               release_name,
+                                               assets):
+            logging.logger.info(
+                'Verified plugin release in {} seconds'.format(current))
+            break
+        sleep(interval)
+        current += interval
+
+
+def checking_the_upload_of_the_plugin(repository,
+                                      release_name,
+                                      asset_workspace):
+
+    # marketplace
+    if not marketplace.get_node_types_for_plugin_version(
+            repository.name, release_name):
+        return False
+
+    # github
+    latest_release = github.get_release(release_name, repository)
+    assets_list_github = []
+    for asset in latest_release.get_assets():
+        logging.logger.info('Asset in release: {}'.format(asset.name))
+        assets_list_github.append(asset.name)
+
+    return check_asset_problems(
+        marketplace.get_assets(repository, release_name),
+        assets_list_github,
+        s3.get_assets(repository.name, release_name),
+        list(asset_workspace.keys()),
+        repository.name,
+        release_name
+    )
+
+
+def check_asset_problems(marketplace_assets,
+                         github_assets,
+                         s3_assets,
+                         assets,
+                         plugin_name,
+                         version):
+    problems = []
+    for asset in assets:
+        if asset.endswith('wgn.md5'):
+            continue
+        marketplace_key = 'https://github.com/cloudify-cosmo/{}/' \
+                          'releases/download/{}/{}'.format(plugin_name,
+                                                           version,
+                                                           asset)
+        if marketplace_key not in marketplace_assets:
+            problems.append('{} not found in marketplace_assets'.format(
+                marketplace_key))
+        if asset not in github_assets:
+            problems.append('{} not found in github_assets'.format(asset))
+        if asset not in s3_assets:
+            problems.append('{} not found in s3_assets'.format(asset))
+    if problems:
+        logging.logger.error(
+            'Failed to verify all assets: {}'.format(problems))
+        return False
+    return True
+
 
 @github.with_github_client
 def get_latest_version(repository, **kwargs):
@@ -84,6 +176,40 @@ def populate_plugins_json(plugin_yaml_name='plugin.yaml'):
         plugin_content['version'] = version
         plugin_content['link'] = plugin_yaml_url
         plugin_content['yaml'] = plugin_yaml_url
-        plugin_content['wagons'] =  wagons_list
+        plugin_content['wagons'] = wagons_list
         json_content.append(plugin_content)
     return json_content
+
+
+def check_plugins_json(plugin_name,
+                       version,
+                       plugins_json_content,
+                       plugin_yaml_name):
+
+    if plugin_yaml_name == 'v1':
+        plugin_yaml_file_name = 'plugin.yaml'
+    else:
+        plugin_yaml_file_name = 'v2_plugin.yaml'
+    wagons_list = plugins_json.get_wagons_list(
+        plugin_name=plugin_name,
+        plugin_version=version
+    )
+    plugin_yaml_url = s3.get_plugin_yaml_url(
+        plugin_name=plugin_name,
+        filename=plugin_yaml_file_name,
+        plugin_version=version,
+    )
+    for plugin_content in plugins_json_content:
+        if plugin_name != plugin_content['name']:
+            continue
+        else:
+            try:
+                assert version == plugin_content['version']
+                assert plugin_yaml_url == plugin_content['link']
+                assert plugin_yaml_url == plugin_content['yaml']
+                assert wagons_list == plugin_content['wagons']
+                return True
+            except AssertionError:
+                raise RuntimeError('Plugins JSON does not contain: '
+                                   '{} {}'.format(plugin_name, version))
+    return False
