@@ -50,9 +50,13 @@ def upload_assets_to_release(assets, release_name, repository, **_):
     if not release:
         raise RuntimeError(
             'The release {release} does not exist.'.format(release=release))
+
     for label, path, in assets.items():
         github.upload_asset(release, path, label)
         s3.upload_plugin_asset_to_s3(path, repository.name, release_name)
+
+    if release_name == 'latest':
+        return
 
     if repository.name.endswith('-plugin'):
         marketplace.call_plugins_webhook(
