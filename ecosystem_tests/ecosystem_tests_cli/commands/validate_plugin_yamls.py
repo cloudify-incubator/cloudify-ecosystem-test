@@ -115,7 +115,7 @@ def ignore_plugin_yaml_differences(v1, v2, directory):
     if os.path.exists(path):
         with open(path) as outfile:
             current = outfile.read()
-            if current == str_diff:
+            if current.strip('\n') == str_diff:
                 return True
             logger.debug('current {}'.format(current))
     if str_diff:
