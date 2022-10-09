@@ -1,3 +1,4 @@
+2.8.2: Ignore newlines in strdiff of yaml diff.
 2.8.1: Skip marketplace validation on latest release.
 2.8.0: RD-5156 test branch name before merge to master
 2.7.30: Add SL to plugins json
