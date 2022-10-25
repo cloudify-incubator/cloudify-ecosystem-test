@@ -33,6 +33,9 @@ def create_bundle(plugins_yaml_version=None,
                   json_path=None,
                   directory=None,
                   workspace=None):
+    logger.error(
+        'The "create-bundle" command is deprecated. '
+        'Upload plugins from the Cloudify Marketplace.')
     json_content = get_json_content(json_path)
     mappings, bundle_name = bundles.get_metadata_mapping(
         json_content,

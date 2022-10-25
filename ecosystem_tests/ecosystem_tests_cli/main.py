@@ -18,6 +18,7 @@ from .commands import (merge_docs,
                        validate_docs,
                        upload_assets,
                        create_bundle,
+                       upload_plugins,
                        package_release,
                        swap_plugin_code,
                        validate_blueprint,
@@ -40,6 +41,7 @@ def _register_commands():
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)
     _ecosystem_test.add_command(create_bundle.create_bundle)
+    _ecosystem_test.add_command(upload_plugins.upload_plugins)
     _ecosystem_test.add_command(package_release.package_release)
     _ecosystem_test.add_command(package_release.package_release)
     _ecosystem_test.add_command(swap_plugin_code.swap_plugin_code)

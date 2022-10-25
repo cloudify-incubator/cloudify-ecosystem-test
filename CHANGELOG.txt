@@ -1,3 +1,4 @@
+2.8.4: Add plugins upload command.
 2.8.3: Trim newlines from the end of secrets.
 2.8.2: Ignore newlines in strdiff of yaml diff.
 2.8.1: Skip marketplace validation on latest release.
