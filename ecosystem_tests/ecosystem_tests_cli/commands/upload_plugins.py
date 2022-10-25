@@ -42,13 +42,15 @@ def upload_plugins(plugin_name, plugin_version):
         plugin_id, plugin_version)
     yaml_url_dict = get_spec_item(
         spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_4')
-    wagon_url_dict = get_spec_item(spec['wagon_urls'], 'release', 'Centos Core')
+    wagon_url_dict = get_spec_item(
+        spec['wagon_urls'], 'release', 'Centos Core')
     if not yaml_url_dict['url'] or not wagon_url_dict['url']:
         logging.error('Unable to find wagon or yaml for {} {} in {} {}'.format(
             repo, plugin_version, yaml_url_dict, wagon_url_dict
         ))
         sys.exit(1)
     plugins_upload(wagon_url_dict['url'], yaml_url_dict['url'])
+
 
 def get_latest_version(plugin_id, name):
     versions = get_plugin_versions(plugin_id)

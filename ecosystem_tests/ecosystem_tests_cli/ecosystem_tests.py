@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-from pydoc import cli
 import click
 import base64
 
