@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2021 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2022 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -147,15 +147,23 @@ class Options(object):
                                       default=None,
                                       type=click.Path(),
                                       help=helptexts.JSON_PATH)
+
+        self.plugin_name = click.option('-PN',
+                                        '--plugin-name',
+                                        type=click.STRING,
+                                        help=helptexts.NAME)
+
         self.plugin_version = click.option('-PV',
                                            '--plugin-version',
                                            type=click.STRING,
                                            help=helptexts.VERSION)
+
         self.package = click.option('-P',
                                     '--package',
                                     multiple=True,
                                     type=click.STRING,
                                     help=helptexts.PACKAGE)
+
         self.blueprint_path = click.option('-b',
                                            '--blueprint-path',
                                            default=[DEFAULT_BLUEPRINT_PATH],
