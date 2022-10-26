@@ -90,7 +90,7 @@ def get_assets_from_workspace():
     assets_list = []
     if os.path.exists(WORKSPACE_DIR):
         for f in os.listdir(WORKSPACE_DIR):
-            plugin_yaml = re.search('plugin_\d+_\d+\.yaml', f)
+            plugin_yaml = re.search('plugin_\\d+_\\d+\\.yaml', f)
             if list(filter(f.endswith, INCLUDE_SUFFIX)) or f in INCLUDE_NAMES \
                     or plugin_yaml:
                 assets_list.append('{}={}'.format(
