@@ -88,11 +88,12 @@ def get_assets_dict(assets_tuple=None):
 
 def get_assets_from_workspace():
     assets_list = []
+    search_string = '^plugin_\\d+_\\d+\\.yaml$'
     if os.path.exists(WORKSPACE_DIR):
         for f in os.listdir(WORKSPACE_DIR):
-            plugin_yaml = re.search('plugin_\\d+_\\d+\\.yaml', f)
-            if list(filter(f.endswith, INCLUDE_SUFFIX)) or f in INCLUDE_NAMES \
-                    or plugin_yaml:
+            plugin_yaml = re.search(search_string, f)
+            if list(filter(f.endswith, INCLUDE_SUFFIX)) or \
+                    f in INCLUDE_NAMES or plugin_yaml:
                 assets_list.append('{}={}'.format(
                     f, os.path.join(WORKSPACE_DIR, f)))
     return assets_list
