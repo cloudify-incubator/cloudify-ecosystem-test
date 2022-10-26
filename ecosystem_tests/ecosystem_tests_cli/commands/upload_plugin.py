@@ -25,12 +25,12 @@ from ..utilities import prepare_test_env
 from ...ecosystem_tests_cli import ecosystem_tests
 
 
-@ecosystem_tests.command(name='upload-plugins',
+@ecosystem_tests.command(name='upload-plugin',
                          short_help='Upload plugins.')
 @prepare_test_env
 @ecosystem_tests.options.plugin_name
 @ecosystem_tests.options.plugin_version
-def upload_plugins(plugin_name, plugin_version):
+def upload_plugin(plugin_name, plugin_version):
     """
     Upload wagon and yamls to Cfy Manager.
     """
