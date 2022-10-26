@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import re
 import sys
 
 from ecosystem_cicd_tools.new_cicd import actions
@@ -89,7 +90,9 @@ def get_assets_from_workspace():
     assets_list = []
     if os.path.exists(WORKSPACE_DIR):
         for f in os.listdir(WORKSPACE_DIR):
-            if list(filter(f.endswith, INCLUDE_SUFFIX)) or f in INCLUDE_NAMES:
+            plugin_yaml = re.search('plugin_\d+_\d+\.yaml', f)
+            if list(filter(f.endswith, INCLUDE_SUFFIX)) or f in INCLUDE_NAMES \
+                    or plugin_yaml:
                 assets_list.append('{}={}'.format(
                     f, os.path.join(WORKSPACE_DIR, f)))
     return assets_list
