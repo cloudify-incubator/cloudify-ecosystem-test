@@ -1,3 +1,4 @@
+2.8.6: Change command name upload-plugins - upload-plugin.
 2.8.5: RD-5657 Verify plugins yaml are uploaded (plugin_1_4.yaml)
 2.8.4: Add plugins upload command.
 2.8.3: Trim newlines from the end of secrets.
