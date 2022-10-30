@@ -330,8 +330,8 @@ class Options(object):
 
         self.skip_bundle_upload = click.option('--skip-bundle-upload',
                                                is_flag=True,
-                                               default=False,
-                                               show_default='False',
+                                               default=True,
+                                               show_default='True',
                                                help=helptexts.NO_BUNDLE)
 
         self.on_subsequent_invoke = click.option(
