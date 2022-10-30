@@ -2,6 +2,7 @@ import os
 from functools import wraps
 from pkg_resources import parse_version
 
+import re
 import github
 import requests
 import urllib3
@@ -101,11 +102,20 @@ def get_most_recent_release(repository):
     logger.info('Attempting to get most recent release from repo {repo}.'
                 .format(repo=repository.name))
     releases = sorted(
-        [str(r.title) for r in repository.get_releases() if r.title],
+        [str(r.title) for r in repository.get_releases() if r.title and
+         check_version_valid(r.title)],
         key=parse_version,
     )
     if releases:
         return releases.pop()
+
+
+def check_version_valid(text):
+    logger.info('Looking for version in {text}.'.format(text=text))
+    version = re.findall('(^\\d+.\\d+.\\d+$)', text)
+    if text == 'latest' or len(version) == 1:
+        return True
+    return False
 
 
 def upload_asset(release, asset_path, asset_label):
