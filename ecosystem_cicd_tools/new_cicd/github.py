@@ -111,8 +111,9 @@ def get_most_recent_release(repository):
 
 
 def check_version_valid(text):
-    version = re.findall('(\\d+.\\d+.\\d+)', text)
-    if text == 'latest' or version and text == version[0]:
+    logger.info('Looking for version in {text}.'.format(text=text))
+    version = re.findall('(^\\d+.\\d+.\\d+$)', text)
+    if text == 'latest' or len(version) == 1:
         return True
     return False
 
