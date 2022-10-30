@@ -1,3 +1,4 @@
+2.8.9: Skip Bundle Upload by Default.
 2.8.8: RD-6183 add function check_version_valid
 2.8.7: Make sure no yaml.md5 nonsense.
 2.8.6: Change command name upload-plugins - upload-plugin.

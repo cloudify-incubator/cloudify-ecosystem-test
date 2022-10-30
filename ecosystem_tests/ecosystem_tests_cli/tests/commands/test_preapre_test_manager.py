@@ -33,7 +33,7 @@ class PrepareTestManagerTest(BaseCliCommandTest):
         mock_prepare_test_dev.assert_called_once_with(
             plugins=[],
             secrets={},
-            execute_bundle_upload=True,
+            execute_bundle_upload=False,
             bundle_path=None,
             yum_packages=[])
 
@@ -58,7 +58,7 @@ class PrepareTestManagerTest(BaseCliCommandTest):
         mock_prepare_test_dev.assert_called_once_with(
             plugins=[],
             secrets=expected_secrets_dict,
-            execute_bundle_upload=True,
+            execute_bundle_upload=False,
             bundle_path=None,
             yum_packages=[])
 
@@ -83,7 +83,7 @@ class PrepareTestManagerTest(BaseCliCommandTest):
         mock_prepare_test_dev.assert_called_once_with(
             plugins=[('wagon', 'yaml')],
             secrets={},
-            execute_bundle_upload=True,
+            execute_bundle_upload=False,
             bundle_path=None,
             yum_packages=[])
 
