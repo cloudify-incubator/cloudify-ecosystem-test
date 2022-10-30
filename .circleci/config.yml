@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  wagonorb: cloudify/wagon-bulder-orb@2.5 #orb version
+  wagonorb: cloudify/wagon-bulder-orb@2 #orb version
 
 checkout:
   post:
