@@ -67,7 +67,7 @@ def upload_assets_to_release(assets, release_name, repository, **_):
 
     # Time to wait for the plugin to load
     # And checking that everything was updated correctly
-    max_time = 180  # it should not take longer than 180 seconds.
+    max_time = 360  # it should not take longer than 360 seconds.
     min_time = 20  # It should definitely take longer than 20 seconds.
     interval = 10  # We check every 10 seconds.
     current = 0
