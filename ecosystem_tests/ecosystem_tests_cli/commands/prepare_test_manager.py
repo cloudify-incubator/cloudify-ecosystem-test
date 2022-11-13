@@ -64,6 +64,7 @@ def prepare_test_manager(license,
     secrets_dict = prepare_secrets_dict_for_prepare_test(secret,
                                                          file_secret,
                                                          encoded_secret)
+
     prepare_test_dev(plugins=plugin,
                      secrets=secrets_dict,
                      execute_bundle_upload=not skip_bundle_upload,
@@ -75,6 +76,14 @@ def generate_new_credentials(timeout):
     if timeout < 900:
         timeout = 900
         ctx.logger.info('Minimum timeout 900, setting to 900')
+
+    if 'aws_access_key_id' in os.environ:
+        os.environ['aws_access_key_id'.upper()] = base64.b64encode(
+            os.environ['aws_access_key_id'].encode('utf-8')).decode()
+    if 'aws_secret_access_key' in os.environ:
+        os.environ['aws_secret_access_key'.upper()] = base64.b64encode(
+            os.environ['aws_secret_access_key'].encode('utf-8')).decode()
+
     sts = client('sts')
     response = sts.get_session_token(DurationSeconds=timeout)
 

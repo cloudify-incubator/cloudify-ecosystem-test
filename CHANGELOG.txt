@@ -1,3 +1,4 @@
+2.8.11: RD 3965 add some creds to env.
 2.8.10: Increase polling timeout while checking if a plugin version got relased to marketplace.
 2.8.9: Skip Bundle Upload by Default.
 2.8.8: RD-6183 add function check_version_valid
