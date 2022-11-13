@@ -111,26 +111,9 @@ workflows:
   tests:
     jobs:
       - unittests
-      - wagonorb/build_bundle:
-          filters:
-            branches:
-              only: /([0-9\.]*\-build|master|dev)/
       - release:
           filters:
             branches:
               only: master
           requires:
           - unittests
-  nightly:
-    triggers:
-    - schedule:
-        cron: "0 23 * * *"
-        filters:
-          branches:
-            only:
-              - master
-    jobs:
-      - wagonorb/build_bundle:
-          filters:
-            branches:
-              only: /([0-9\.]*\-build|master|dev)/
