@@ -78,11 +78,11 @@ def generate_new_credentials(timeout):
         ctx.logger.info('Minimum timeout 900, setting to 900')
 
     if 'aws_access_key_id' in os.environ:
-        os.environ['aws_access_key_id'.upper()] = base64.b64encode(
-            os.environ['aws_access_key_id'].encode('utf-8')).decode()
+        os.environ['aws_access_key_id'.upper()] = str(base64.b64decode(
+            os.environ['aws_access_key_id']), 'utf-8').strip('\n')
     if 'aws_secret_access_key' in os.environ:
-        os.environ['aws_secret_access_key'.upper()] = base64.b64encode(
-            os.environ['aws_secret_access_key'].encode('utf-8')).decode()
+        os.environ['aws_secret_access_key'.upper()] = str(base64.b64decode(
+            os.environ['aws_secret_access_key']), 'utf-8').strip('\n')
 
     sts = client('sts')
     response = sts.get_session_token(DurationSeconds=timeout)
