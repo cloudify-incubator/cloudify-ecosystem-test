@@ -129,12 +129,14 @@ def check_asset_problems(marketplace_assets,
                                                            version,
                                                            asset)
         if marketplace_key not in marketplace_assets:
-            problems.append('{} not found in marketplace_assets'.format(
-                marketplace_key))
+            problems.append('{} not found in {}'.format(
+                marketplace_key, marketplace_assets))
         if asset not in github_assets:
-            problems.append('{} not found in github_assets'.format(asset))
+            problems.append('{} not found in {}'.format(
+                asset, github_assets))
         if asset not in s3_assets:
-            problems.append('{} not found in s3_assets'.format(asset))
+            problems.append('{} not found in {}'.format(
+                asset, s3_assets))
     if problems:
         logging.logger.error(
             'Failed to verify all assets: {}'.format(problems))
