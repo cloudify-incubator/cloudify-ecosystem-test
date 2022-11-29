@@ -176,3 +176,30 @@ def get_objects_in_key(plugin_name, plugin_version, s3=None):
     logger.debug('Objects in key: {} {} {}'.format(
         plugin_name, plugin_version, objects))
     return objects
+
+
+@with_s3_client
+def get_objects_in_key(plugin_name=None,
+                       plugin_version=None,
+                       bucket_folder=None,
+                       filter_kwargs=None,
+                       s3=None):
+
+    bucket = s3.Bucket(BUCKET_NAME)
+    if plugin_name and plugin_version and not filter_kwargs:
+        filter_kwargs = dict(
+            Prefix='{}/{}/{}'.format(
+                bucket_folder or BUCKET_FOLDER,
+                plugin_name,
+                plugin_version
+            )
+        )
+    logger.debug('Object filter params: {}'.format(filter_kwargs))
+    objects = bucket.objects.filter(**filter_kwargs)
+    logger.debug('Object filter result: {}'.format(objects))
+
+    sorted_objects = sorted(
+        objects,
+        key=lambda v: v.key)
+    objects = [o.key for o in sorted_objects]
+    return objects
