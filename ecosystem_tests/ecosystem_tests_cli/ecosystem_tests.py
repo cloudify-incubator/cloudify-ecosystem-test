@@ -129,6 +129,7 @@ def yum_packages_callback(ctx, param, value):
 
 
 class Options(object):
+
     def __init__(self):
         """The options api is nicer when you use each option by calling
         `@ecosystem_tests.options.some_option` instead of
@@ -189,10 +190,45 @@ class Options(object):
                                            'to look for relevant '
                                            'plugin yamls and wagons.')
 
-        self.name = click.option('-n',
-                                 '--name',
+        self.name = click.option('--name',
                                  type=click.STRING,
                                  help=helptexts.PLUNGIN_NAME)
+
+        self.image_name = click.option('--image-name',
+                                       type=click.STRING,
+                                       help='Docker image name.')
+
+        self.use_existing_image = click.option(
+            '--use-existing-image',
+            type=click.BOOL,
+            is_flag=True,
+            help='Use existing image. Default - false, will delete existing.')
+
+        self.url = click.option(
+            '--url',
+            type=click.STRING,
+            help='URL to download docker image from. '
+                 'This will cause us to ignore version or release.'
+        )
+
+        self.version = click.option(
+            '--version',
+            type=click.STRING,
+            help='The Cloudify manager version to download, e.g. 6.4.0.'
+        )
+
+        self.release_name = click.option(
+            '--release-name',
+            type=click.STRING,
+            help='The Cloudify Manager release, i.e ga-release or dev1. '
+                 'This requires that --version is also provided.'
+        )
+
+        self.architecture = click.option(
+            '--architecture',
+            type=click.STRING,
+            help='The machine architecture, e.g. x86_64 or aarch64'
+        )
 
         self.v2_plugin = click.option('-v2',
                                       '--v2-plugin',

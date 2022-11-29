@@ -15,7 +15,6 @@
 
 import os
 import sys
-import json
 import deepdiff
 from copy import deepcopy
 from yaml import safe_load
