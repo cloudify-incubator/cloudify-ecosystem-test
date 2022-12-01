@@ -1,3 +1,4 @@
+2.8.15: Temporarily stop verifying v2 and 1_5.
 2.8.14: Support create manager command.
 2.8.13: Report which key not found in which list.
 2.8.12: RD 3965 add some creds to env.
