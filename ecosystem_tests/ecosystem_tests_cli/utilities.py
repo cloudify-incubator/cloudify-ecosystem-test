@@ -94,6 +94,5 @@ def validate_string_is_base64_encoded(encoded_string):
     try:
         base64.b64decode(encoded_string.encode('utf-8')).decode('ascii')
     except (TypeError, binascii.Error):
-        raise EcosystemTestCliException(
-            'string: {val} is not base64 encoded.'.format(
-                val=encoded_string))
+        return False
+    return True

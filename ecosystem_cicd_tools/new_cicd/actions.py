@@ -124,6 +124,10 @@ def check_asset_problems(marketplace_assets,
     for asset in assets:
         if asset.endswith('wgn.md5'):
             continue
+        elif asset.endswith('v2_plugin.yaml'):
+            continue
+        elif asset.endswith('plugin_1_5.yaml'):
+            continue
         marketplace_key = 'https://github.com/cloudify-cosmo/{}/' \
                           'releases/download/{}/{}'.format(plugin_name,
                                                            version,

@@ -37,13 +37,6 @@ class PrepareTestManagerTest(BaseCliCommandTest):
             bundle_path=None,
             yum_packages=[])
 
-    def test_prepare_manager_not_base64_encoded_licence(self):
-        with self.assertRaisesRegexp(EcosystemTestCliException,
-                                     'is not base64 encoded.'):
-            self.runner.invoke(prepare_test_manager,
-                               ['--license', 'not base64 encoded string'],
-                               catch_exceptions=False)
-
     @patch('ecosystem_tests.ecosystem_tests_cli.commands.prepare_test_manager'
            '.prepare_test_dev')
     def test_prepare_manager_test_multiple_secrets(self,

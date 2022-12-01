@@ -84,7 +84,10 @@ def license_callback(ctx, param, value):
         raise EcosystemTestCliException(
             'License not found in default location: {path}'.format(
                 path=DEFAULT_LICENSE_PATH))
-    validate_string_is_base64_encoded(value)
+    if not validate_string_is_base64_encoded(value):
+        message_bytes = value.encode('ascii')
+        base64_bytes = base64.b64encode(message_bytes)
+        value = base64_bytes.decode('ascii')
     return value
 
 
