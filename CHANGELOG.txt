@@ -1,3 +1,4 @@
+2.8.16: Fix verify releases to check for correct org
 2.8.15: Temporarily stop verifying v2 and 1_5.
 2.8.14: Support create manager command.
 2.8.13: Report which key not found in which list.

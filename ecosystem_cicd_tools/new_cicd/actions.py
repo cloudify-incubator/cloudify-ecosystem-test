@@ -109,7 +109,7 @@ def checking_the_upload_of_the_plugin(repository,
         assets_list_github,
         s3.get_assets(repository.name, release_name),
         list(asset_workspace.keys()),
-        repository.name,
+        repository,
         release_name
     )
 
@@ -118,8 +118,10 @@ def check_asset_problems(marketplace_assets,
                          github_assets,
                          s3_assets,
                          assets,
-                         plugin_name,
+                         repository,
                          version):
+    plugin_name = repository.name
+    org_name = repository.organization.login
     problems = []
     for asset in assets:
         if asset.endswith('wgn.md5'):
@@ -128,8 +130,9 @@ def check_asset_problems(marketplace_assets,
             continue
         elif asset.endswith('plugin_1_5.yaml'):
             continue
-        marketplace_key = 'https://github.com/cloudify-cosmo/{}/' \
-                          'releases/download/{}/{}'.format(plugin_name,
+        marketplace_key = 'https://github.com/{}/{}/' \
+                          'releases/download/{}/{}'.format(org_name,
+                                                           plugin_name,
                                                            version,
                                                            asset)
         if marketplace_key not in marketplace_assets:
