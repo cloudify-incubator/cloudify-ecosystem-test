@@ -83,8 +83,5 @@ class SecretsTest(TestCase):
 
     def test_encoded_secrets_not_encoded_values(self):
         not_encoded_value = ['key1=not_encoded_value']
-        with self.assertRaisesRegexp(EcosystemTestCliException,
-                                     'string: {val} is not base64 '
-                                     'encoded'.format(
-                                         val='not_encoded_value')):
-            secrets.encoded_secrets_to_dict(not_encoded_value)
+        result = secrets.encoded_secrets_to_dict(not_encoded_value)
+        assert result == {'key1': 'not_encoded_value'}
