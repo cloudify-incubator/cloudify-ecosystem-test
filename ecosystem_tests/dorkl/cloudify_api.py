@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import posixpath
 import json
 import yaml
 import base64
@@ -255,7 +256,7 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
     blueprint_file = os.path.basename(blueprint_file_name)
     return cloudify_exec(
         'cfy blueprints upload {0} -b {1}'.format(
-            os.path.join(remote_dir, blueprint_file),
+            posixpath.join(remote_dir, blueprint_file),
             blueprint_id), get_json=False)
 
 
