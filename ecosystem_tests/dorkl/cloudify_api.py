@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import os
-import posixpath
 import json
 import yaml
 import base64
+import posixpath
 from time import sleep
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
@@ -253,7 +253,7 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
             'Cant upload blueprint {path} because the file doesn`t '
             'exists.'.format(path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
-    blueprint_file = os.path.basename(blueprint_file_name)
+    blueprint_file = posixpath.basename(blueprint_file_name)
     return cloudify_exec(
         'cfy blueprints upload {0} -b {1}'.format(
             posixpath.join(remote_dir, blueprint_file),

@@ -16,6 +16,7 @@
 import os
 import json
 import base64
+import posixpath
 import subprocess
 from time import sleep
 from shlex import split
@@ -204,7 +205,7 @@ def copy_file_to_docker(local_file_path):
     :return: The remote path inside the container.
     """
 
-    docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
+    docker_path = posixpath.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
                                        get_manager_container_name(),
@@ -224,8 +225,8 @@ def copy_directory_to_docker(local_file_path):
     """
 
     local_dir = os.path.dirname(local_file_path)
-    dir_name = os.path.basename(local_dir)
-    remote_dir = os.path.join('/tmp', dir_name)
+    dir_name = posixpath.basename(local_dir)
+    remote_dir = posixpath.join('/tmp', dir_name)
     try:
         handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,
