@@ -1,3 +1,4 @@
+2.8.18: Increase token timeout.
 2.8.17: Update default manager version to 641.
 2.8.16: Fix verify releases to check for correct org
 2.8.15: Temporarily stop verifying v2 and 1_5.
