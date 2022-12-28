@@ -86,8 +86,8 @@ def prepare_test_manager(license,
 
 
 def generate_new_credentials(timeout):
-    if timeout < 900:
-        timeout = 900
+    if timeout < 1200:
+        timeout = 1200
         ctx.logger.info('Minimum timeout 900, setting to 900')
 
     if 'aws_access_key_id' in os.environ:
