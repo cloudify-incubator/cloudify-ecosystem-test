@@ -171,10 +171,19 @@ def _basic_blueprint_test(blueprint_file_name,
     try:
         deployment_delete(test_name)
         blueprints_delete(test_name)
+        delete_blueprint_from_tmp(blueprint_file_name)
     except Exception as e:
         logger.info(RED +
                     'Failed to delete blueprint, {0}'.format(str(e)) +
                     RESET)
+
+
+def delete_blueprint_from_tmp(filename):
+    delete_docker_manager_file('/tmp/{filename}'.format(filename=filename))
+
+
+def delete_docker_manager_file(filename):
+    docker_exec('rm {}'.format(filename))
 
 
 @contextmanager
