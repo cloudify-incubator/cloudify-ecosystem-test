@@ -170,7 +170,9 @@ def _basic_blueprint_test(blueprint_file_name,
     wait_for_execution(test_name, 'uninstall', timeout)
     try:
         deployment_delete(test_name)
+        logger.info('** blueprints_delete: {}'.format(blueprints_delete))
         blueprints_delete(test_name)
+        logger.info('** blueprint_file_name: {}'.format(blueprint_file_name))
         delete_blueprint_from_tmp(blueprint_file_name)
     except Exception as e:
         logger.info(RED +
@@ -452,6 +454,7 @@ def handle_uninstall_on_success(test_name, timeout):
             dep_id=test_name, blueprint_id=blueprint_of_deployment))
     try:
         deployment_delete(test_name)
+        logger.info('** blueprint_of_deployment: {}'.format(blueprint_of_deployment))
         blueprints_delete(blueprint_of_deployment)
     except Exception as e:
         logger.info(RED +
