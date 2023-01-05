@@ -168,13 +168,14 @@ def _basic_blueprint_test(blueprint_file_name,
     logger.info(BLUE + 'Uninstalling...' + RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
-    try:
-        logger.info('***_basic_blueprint_test')
+    logger.info('***_basic_blueprint_test')
+    logger.info('*** blueprints_delete: {}'.format(blueprints_delete))
+    logger.info('*** blueprint_file_name: {}'.format(blueprint_file_name))
 
+    try:
+        logger.info('*** in try')
         deployment_delete(test_name)
-        logger.info('*** blueprints_delete: {}'.format(blueprints_delete))
         blueprints_delete(test_name)
-        logger.info('*** blueprint_file_name: {}'.format(blueprint_file_name))
         delete_blueprint_from_tmp(blueprint_file_name)
     except Exception as e:
         logger.info(RED +
@@ -327,7 +328,7 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 user_defined_check=user_defined_check,
                 user_defined_check_params=user_defined_check_params)
 
-        except Exception:
+        except Exception as e:
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
