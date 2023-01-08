@@ -168,7 +168,6 @@ def _basic_blueprint_test(blueprint_file_name,
     logger.info(BLUE + 'Uninstalling...' + RESET)
     executions_start('uninstall', test_name, timeout)
     wait_for_execution(test_name, 'uninstall', timeout)
-
     try:
         deployment_delete(test_name)
         blueprints_delete(test_name)
@@ -328,8 +327,8 @@ def basic_blueprint_test_dev(blueprint_file_name,
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
-                'Test {test_id} failed first invoke.'.format(
-                    test_id=test_name))
+                'Test {test_id} failed first invoke. {e}'.format(
+                    test_id=test_name, e=str(e)))
     else:
         validate_on_subsequent_invoke_param(on_subsequent_invoke)
         try:
