@@ -171,10 +171,19 @@ def _basic_blueprint_test(blueprint_file_name,
     try:
         deployment_delete(test_name)
         blueprints_delete(test_name)
+        delete_blueprint_from_tmp(blueprint_file_name)
     except Exception as e:
         logger.info(RED +
                     'Failed to delete blueprint, {0}'.format(str(e)) +
                     RESET)
+
+
+def delete_blueprint_from_tmp(filename):
+    delete_docker_manager_file('/tmp/{filename}'.format(filename=filename))
+
+
+def delete_docker_manager_file(filename):
+    docker_exec('rm {}'.format(filename))
 
 
 @contextmanager
@@ -314,12 +323,12 @@ def basic_blueprint_test_dev(blueprint_file_name,
                 user_defined_check=user_defined_check,
                 user_defined_check_params=user_defined_check_params)
 
-        except Exception:
+        except Exception as e:
             logger.error(traceback.format_exc())
             handle_test_failure(test_name, on_failure, timeout)
             raise EcosystemTestException(
-                'Test {test_id} failed first invoke.'.format(
-                    test_id=test_name))
+                'Test {test_id} failed first invoke. {e}'.format(
+                    test_id=test_name, e=str(e)))
     else:
         validate_on_subsequent_invoke_param(on_subsequent_invoke)
         try:

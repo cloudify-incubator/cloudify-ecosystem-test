@@ -254,10 +254,16 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
             'exists.'.format(path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
     blueprint_file = posixpath.basename(blueprint_file_name)
-    return cloudify_exec(
-        'cfy blueprints upload {0} -b {1}'.format(
+
+    try:
+        output = cloudify_exec('cfy blueprints upload {0} -b {1}'.format(
             posixpath.join(remote_dir, blueprint_file),
             blueprint_id), get_json=False)
+        delete_file_from_docker(remote_dir)
+    except Exception as e:
+        logger.info('Failed to upload blueprint, {0}'
+                    'Maybe You need to clean up the /tmp directory'
+                    .format(str(e)))
 
 
 def blueprints_get(blueprint_id):
