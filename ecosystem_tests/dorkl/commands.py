@@ -209,8 +209,8 @@ def copy_file_to_docker(local_file_path):
     docker_path = posixpath.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp "{0}" {1}:{2}'.format(local_file_path,
-                                       get_manager_container_name(),
-                                       docker_path))
+                                         get_manager_container_name(),
+                                         docker_path))
     return docker_path
 
 
