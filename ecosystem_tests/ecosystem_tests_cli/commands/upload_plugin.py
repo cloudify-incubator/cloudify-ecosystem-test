@@ -21,7 +21,7 @@ from ecosystem_cicd_tools.new_cicd.marketplace import (
     get_plugin_release_spec_from_marketplace)
 from ..logger import logger
 from ...dorkl.cloudify_api import plugins_upload
-from ..utilities import prepare_test_env
+from ..decorators import prepare_test_env
 from ...ecosystem_tests_cli import ecosystem_tests
 
 

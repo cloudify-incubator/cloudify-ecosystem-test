@@ -22,7 +22,8 @@ from tempfile import NamedTemporaryFile
 from ecosystem_tests.dorkl.commands import handle_process
 from ecosystem_tests.ecosystem_tests_cli.logger import logger
 from ecosystem_cicd_tools.new_cicd.s3 import download_from_s3
-
+from ecosystem_tests.ecosystem_tests_cli.utilities import (
+    get_universal_path)
 from .utils import get_url
 
 DOCKER_RUN_COMMAND = """-d --name {container_name} \
@@ -127,7 +128,8 @@ def download_and_load_docker_image(url, image_name=None):
             download_file(url, f.name)
         else:
             download_from_s3(f.name, url)
-        image_name = docker_load(f.name) or image_name
+        filename = get_universal_path(f.name)
+        image_name = docker_load(filename) or image_name
     return image_name
 
 

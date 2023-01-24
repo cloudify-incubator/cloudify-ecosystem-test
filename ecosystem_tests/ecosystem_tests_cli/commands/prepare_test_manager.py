@@ -18,7 +18,7 @@ import base64
 from boto3 import client
 from cloudify import ctx
 
-from ..utilities import prepare_test_env
+from ..decorators import prepare_test_env
 from ...dorkl.runners import prepare_test_dev
 from ...ecosystem_tests_cli import ecosystem_tests
 from ..secrets import prepare_secrets_dict_for_prepare_test

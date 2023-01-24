@@ -14,18 +14,22 @@
 # limitations under the License.
 
 import os
+import sys
 import random
 import string
 import base64
+import pathlib
 import binascii
-import functools
 
 from nose.tools import nottest
 
 from .exceptions import EcosystemTestCliException
-from ..dorkl.commands import get_manager_container_name
-from .constants import (LICENSE_ENVAR_NAME,
-                        MANAGER_CONTAINER_ENVAR_NAME)
+
+
+def get_universal_path(file_path):
+    if 'win' in sys.platform:
+        return pathlib.PureWindowsPath(os.path.relpath(file_path)).as_posix()
+    return file_path
 
 
 def parse_key_value_pair(mapped_input, error_msg):
@@ -40,27 +44,6 @@ def parse_key_value_pair(mapped_input, error_msg):
 
 
 @nottest
-def prepare_test_env(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        old_environ = dict(os.environ)
-        os.environ.update({LICENSE_ENVAR_NAME: kwargs.get('license', '')})
-        os.environ.update({MANAGER_CONTAINER_ENVAR_NAME: kwargs.get(
-            'container_name', get_manager_container_name())})
-        os.environ.update(kwargs.get('secret', {}))
-        os.environ.update(kwargs.get('file_secret', {}))
-        os.environ.update(kwargs.get('encoded_secret', {}))
-        try:
-            ret = func(*args, **kwargs)
-        finally:
-            os.environ.clear()
-            os.environ.update(old_environ)
-        return ret
-
-    return wrapper
-
-
-@nottest
 def validate_and_generate_test_ids(blueprint_path, test_id):
     """
     Validate that if user pass mupltiple bluprints paths so test_id is not
@@ -68,13 +51,13 @@ def validate_and_generate_test_ids(blueprint_path, test_id):
     If the user pass multiple blueprints to test , generate list of tuples:
     [(bp1,id1),(bp2,id2)].
     """
+
     if test_id:
         if len(blueprint_path) > 1:
             raise EcosystemTestCliException(
                 'Please do not provide test-id with multiple blueprints to '
                 'test.')
         test_ids = [test_id]
-
     else:
         # Generate test ids for all blueprints.
         test_ids = [id_generator() for _ in range(len(blueprint_path))]

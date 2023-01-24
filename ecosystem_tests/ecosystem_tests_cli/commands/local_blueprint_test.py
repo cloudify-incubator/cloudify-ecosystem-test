@@ -22,8 +22,10 @@ from nose.tools import nottest
 from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests, decorators
 from ...dorkl.runners import basic_blueprint_test_dev
-from ..utilities import (prepare_test_env,
-                         validate_and_generate_test_ids)
+from ..decorators import prepare_test_env
+from ..utilities import validate_and_generate_test_ids
+from ecosystem_tests.ecosystem_tests_cli.utilities import (
+    get_universal_path)
 
 
 @nottest
@@ -66,6 +68,7 @@ def local_blueprint_test(blueprint_path,
 
     for blueprint, test_id in bp_test_ids:
         environ['__ECOSYSTEM_TEST_ID'] = test_id
+        blueprint = get_universal_path(blueprint)
         basic_blueprint_test_dev(
             blueprint_file_name=blueprint,
             test_name=test_id,
