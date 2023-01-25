@@ -16,12 +16,17 @@
 import os
 import json
 import base64
+import pathlib
+import posixpath
 import subprocess
 from time import sleep
 from shlex import split
+from pathlib import PureWindowsPath
 from tempfile import NamedTemporaryFile
 from datetime import datetime, timedelta
 
+from ecosystem_tests.ecosystem_tests_cli.utilities import (
+    get_universal_path)
 from ecosystem_tests.dorkl.constansts import (logger,
                                               TIMEOUT,
                                               MANAGER_CONTAINER_ENVAR_NAME,
@@ -176,7 +181,7 @@ def replace_plugin_package_on_manager(package_name,
             python=python_version,
             plugin=directory.split('/')[-1]
         )
-    directory = os.path.join(directory, package_name)
+    directory = posixpath.join(directory, package_name)
     if not os.path.exists(directory):
         raise Exception('No such file or directory {}'.format(directory))
     elif not os.path.isdir(directory):
@@ -203,8 +208,8 @@ def copy_file_to_docker(local_file_path):
     :param local_file_path:  The local file path.
     :return: The remote path inside the container.
     """
-
-    docker_path = os.path.join('/tmp/', os.path.basename(local_file_path))
+    local_file_path = get_universal_path(local_file_path)
+    docker_path = posixpath.join('/tmp/', os.path.basename(local_file_path))
     handle_process(
         'docker cp {0} {1}:{2}'.format(local_file_path,
                                        get_manager_container_name(),
@@ -222,10 +227,11 @@ def copy_directory_to_docker(local_file_path):
     :param local_file_path:  The local directory path.
     :return: The remote path inside the container.
     """
-
+    local_file_path = get_universal_path(local_file_path)
     local_dir = os.path.dirname(local_file_path)
     dir_name = os.path.basename(local_dir)
-    remote_dir = os.path.join('/tmp', dir_name)
+    remote_dir = pathlib.PureWindowsPath(
+        posixpath.join('/tmp', dir_name)).as_posix()
     try:
         handle_process(
             'docker cp {0} {1}:/tmp'.format(local_dir,

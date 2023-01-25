@@ -29,19 +29,24 @@ def with_s3_client(func):
 def get_client():
     if ACCESS_KEY in os.environ:
         access_key = os.environ[ACCESS_KEY].strip('\n')
-        os.environ[ACCESS_KEY.upper()] = str(base64.b64decode(
-            access_key), 'utf-8').strip('\n')
+        try:
+            os.environ[ACCESS_KEY.upper()] = str(base64.b64decode(
+                access_key), 'utf-8').strip('\n')
+        except UnicodeDecodeError:
+            pass
     elif ACCESS_KEY.upper() in os.environ:
         pass
     else:
         raise RuntimeError(
             'Please provide {} environment variable.'.format(
                 ACCESS_KEY.upper()))
-
     if ACCESS_SECRET in os.environ:
         access_secret = os.environ[ACCESS_SECRET].strip('\n')
-        os.environ[ACCESS_SECRET.upper()] = str(base64.b64decode(
-            access_secret), 'utf-8').strip('\n')
+        try:
+            os.environ[ACCESS_SECRET.upper()] = str(base64.b64decode(
+                access_secret), 'utf-8').strip('\n')
+        except UnicodeDecodeError:
+            pass
     elif ACCESS_SECRET.upper() in os.environ:
         pass
     else:
