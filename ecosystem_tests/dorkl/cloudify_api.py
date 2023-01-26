@@ -526,16 +526,19 @@ def prepare_inputs(inputs):
     logger.info("Preparing inputs...")
     if not inputs:
         yield
-    elif type(inputs) is dict:
-        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
+    elif isinstance(inputs, dict):
+        try:
+            outfile = NamedTemporaryFile('w+', delete=False)
             yaml.dump(inputs, outfile, allow_unicode=False)
+            outfile.flush()
+            outfile.close()
             logger.debug(
                 "temporary inputs file path {p}".format(p=outfile.name))
             inputs_on_docker = copy_file_to_docker(outfile.name)
-            try:
-                yield inputs_on_docker
-            finally:
-                delete_file_from_docker(inputs_on_docker)
+            yield inputs_on_docker
+        finally:
+            delete_file_from_docker(inputs_on_docker)
+            os.remove(outfile.name)
     elif os.path.isfile(inputs):
         inputs_on_docker = copy_file_to_docker(inputs)
         try:
