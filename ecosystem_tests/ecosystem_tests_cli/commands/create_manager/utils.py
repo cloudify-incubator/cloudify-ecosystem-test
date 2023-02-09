@@ -24,7 +24,7 @@ S3_PROJECT = 'cloudify'
 
 
 def get_url(version=None, release=None, architecture=None):
-    version = version or '6.4.1'
+    version = version or '6.4.2'
     release = release or 'ga-release'
     if not release.endswith('-release'):
         logger.error(
