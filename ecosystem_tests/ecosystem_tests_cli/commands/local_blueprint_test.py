@@ -20,12 +20,13 @@ import yaml
 from nose.tools import nottest
 
 from ..logger import logger
-from ...ecosystem_tests_cli import ecosystem_tests, decorators
-from ...dorkl.runners import basic_blueprint_test_dev
 from ..decorators import prepare_test_env
+from ...dorkl.runners import basic_blueprint_test_dev
 from ..utilities import validate_and_generate_test_ids
+from ecosystem_cicd_tools.new_cicd.ec2 import check_eip_quota
 from ecosystem_tests.ecosystem_tests_cli.utilities import (
     get_universal_path)
+from ...ecosystem_tests_cli import ecosystem_tests, decorators
 
 
 @nottest
@@ -42,6 +43,7 @@ from ecosystem_tests.ecosystem_tests_cli.utilities import (
 @ecosystem_tests.options.container_name
 @ecosystem_tests.options.nested_test
 @ecosystem_tests.options.dry_run
+@ecosystem_tests.options.required_ips
 @decorators.timer_decorator
 def local_blueprint_test(blueprint_path,
                          test_id,
@@ -52,9 +54,11 @@ def local_blueprint_test(blueprint_path,
                          on_subsequent_invoke,
                          container_name,
                          nested_test,
-                         dry_run):
+                         dry_run,
+                         required_ips):
 
     bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
+    check_eip_quota(required_ips)
 
     if dry_run:
         return handle_dry_run(bp_test_ids,
