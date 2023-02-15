@@ -410,5 +410,13 @@ class Options(object):
                                          help=helptexts.YUM_PACKAGES,
                                          callback=yum_packages_callback)
 
+        self.required_ips = click.option('--required-ips',
+                                         type=click.INT,
+                                         default=0,
+                                         help='Validate that enough IPs '
+                                              'are available for the '
+                                              'test. Checks by the reqion in '
+                                              'AWS_REGION_NAME env var.')
+
 
 options = Options()
