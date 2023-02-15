@@ -179,7 +179,7 @@ def replace_plugin_package_on_manager(package_name,
             package=package_name,
             version=plugin_version,
             python=python_version,
-            plugin=directory.split('/')[-1]
+            plugin=os.path.basename(directory)
         )
     directory = posixpath.join(directory, package_name)
     if not os.path.exists(directory):
