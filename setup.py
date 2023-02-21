@@ -5,7 +5,7 @@ setup(
     version='2.8.24',
     license='LICENSE',
     packages=find_packages(),
-    data_files={'ecosystem_tests.dorkl': ['scripts/*']},
+    data_files={'ecosystem_tests/dorkl/scripts': ['rc-cloudify.sh']},
     include_package_data=True,
     description='Stuff that Ecosystem Tests Use',
     entry_points={
