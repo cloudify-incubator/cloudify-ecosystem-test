@@ -67,7 +67,8 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
                                                 get_blueprint_id_of_deployment)
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
-                                            copy_file_to_docker)
+                                            copy_file_to_docker,
+                                            copy_file_from_docker)
 
 
 def prepare_test(plugins=None,
@@ -571,7 +572,7 @@ def handle_test_failure(test_name, on_failure, timeout):
 @nottest
 def prepare_test_dev(plugins=None,
                      secrets=None,
-                     execute_bundle_upload=True,
+                     execute_bundle_upload=False,
                      bundle_path=None,
                      yum_packages=None):
     """
@@ -595,6 +596,21 @@ def prepare_test_dev(plugins=None,
                             execute_bundle_upload,
                             bundle_path=bundle_path)
     create_test_secrets(secrets)
+    setup_root_bash()
+
+
+def setup_root_bash():
+    docker_exec('yum install -y epel-release')
+    docker_exec('yum install -y jq')
+    cloudify_sh = os.path.join(
+        os.path.dirname(__file__), 'scripts', 'rc-cloudify.sh')
+    bashrc = copy_file_from_docker('/root/.bashrc')
+    cloudify_sh_temp = copy_file_to_docker(cloudify_sh)
+    docker_exec('mv {} /root/.rc-cloudify.sh\n'.format(cloudify_sh_temp))
+    with open(bashrc, 'a') as infile:
+        infile.write('. /root/.rc-cloudify.sh')
+    bashrc_temp = copy_file_to_docker(bashrc)
+    docker_exec('mv {} /root/.bashrc'.format(bashrc_temp))
 
 
 def run_user_defined_check(user_defined_check, user_defined_check_params):
