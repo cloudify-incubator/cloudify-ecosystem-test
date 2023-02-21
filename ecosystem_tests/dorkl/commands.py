@@ -16,7 +16,6 @@
 import os
 import json
 import base64
-import pathlib
 import posixpath
 import subprocess
 from time import sleep
@@ -217,6 +216,20 @@ def copy_file_to_docker(local_file_path):
     return docker_path
 
 
+def copy_file_from_docker(docker_file_path):
+    local_file = NamedTemporaryFile()
+    pure_windows = PureWindowsPath(local_file.name)
+    if pure_windows.drive:
+        local_file_path = pure_windows.as_posix().replace('C:', '')
+    else:
+        local_file_path = pure_windows.as_posix()
+    handle_process(
+        'docker cp {0}:{1} {2}'.format(get_manager_container_name(),
+                                       docker_file_path,
+                                       local_file_path))
+    return local_file_path
+
+
 def delete_file_from_docker(docker_path):
     docker_exec('rm -rf {destination}'.format(destination=docker_path))
 
@@ -230,7 +243,7 @@ def copy_directory_to_docker(local_file_path):
     local_file_path = get_universal_path(local_file_path)
     local_dir = os.path.dirname(local_file_path)
     dir_name = os.path.basename(local_dir)
-    remote_dir = pathlib.PureWindowsPath(
+    remote_dir = PureWindowsPath(
         posixpath.join('/tmp', dir_name)).as_posix()
     try:
         handle_process(

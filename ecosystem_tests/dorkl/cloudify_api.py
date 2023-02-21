@@ -565,17 +565,7 @@ def upload_test_plugins_dev(plugins,
     plugins = plugins or []
     bundle_path = bundle_path or ''
     if execute_bundle_upload:
-        if os.path.isfile(bundle_path):
-            logger.info("Using plugins bundle found at: {path}".format(
-                path=bundle_path))
-            cloudify_exec(
-                'cfy plugins bundle-upload --path {bundle_path}'.format(
-                    bundle_path=copy_file_to_docker(bundle_path)),
-                get_json=False)
-        else:
-            cloudify_exec(
-                'cfy plugins bundle-upload', get_json=False)
-
+        logger.info('Skipping bundle upload, because it is deprecated.')
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
