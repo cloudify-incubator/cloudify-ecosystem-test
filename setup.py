@@ -2,11 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.8.24',
+    version='2.8.25',
     license='LICENSE',
     packages=find_packages(),
-    data_files={'ecosystem_tests/dorkl/scripts': ['rc-cloudify.sh']},
-    include_package_data=True,
     description='Stuff that Ecosystem Tests Use',
     entry_points={
         "console_scripts": [

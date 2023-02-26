@@ -23,26 +23,24 @@ from tempfile import NamedTemporaryFile
 
 from nose.tools import nottest
 
-from ecosystem_tests.dorkl.constansts import (RERUN,
-                                              logger,
-                                              RESUME,
-                                              UPDATE,
-                                              CANCEL,
-                                              TIMEOUT,
-                                              DONOTHING,
-                                              ROLLBACK_FULL,
-                                              UNINSTALL_FORCE,
-                                              VPN_CONFIG_PATH,
-                                              ROLLBACK_PARTIAL,
-                                              RED,
-                                              GREEN,
-                                              YELLOW,
-                                              BLUE,
-                                              PINK,
-                                              CYAN,
-                                              RESET,
-                                              BOLD,
-                                              UNDERLINE)
+from ecosystem_tests.dorkl.constansts import (
+    RED,
+    BLUE,
+    GREEN,
+    RESET,
+    RERUN,
+    logger,
+    RESUME,
+    UPDATE,
+    CANCEL,
+    TIMEOUT,
+    DONOTHING,
+    ROLLBACK_FULL,
+    UNINSTALL_FORCE,
+    VPN_CONFIG_PATH,
+    ROLLBACK_PARTIAL,
+    DOCKER_MGMT_COMMANDS,
+)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
@@ -602,10 +600,10 @@ def prepare_test_dev(plugins=None,
 def setup_root_bash():
     docker_exec('yum install -y epel-release')
     docker_exec('yum install -y jq')
-    cloudify_sh = os.path.join(
-        os.path.dirname(__file__), 'scripts', 'rc-cloudify.sh')
     bashrc = copy_file_from_docker('/root/.bashrc')
-    cloudify_sh_temp = copy_file_to_docker(cloudify_sh)
+    with NamedTemporaryFile as tmp:
+        tmp.write(DOCKER_MGMT_COMMANDS)
+        cloudify_sh_temp = copy_file_to_docker(tmp.name)
     docker_exec('mv {} /root/.rc-cloudify.sh\n'.format(cloudify_sh_temp))
     with open(bashrc, 'a') as infile:
         infile.write('. /root/.rc-cloudify.sh')
