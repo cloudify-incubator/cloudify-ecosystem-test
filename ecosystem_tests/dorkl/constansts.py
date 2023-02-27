@@ -43,7 +43,7 @@ RESET = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
-DOCKER_MGMT_COMMANDS = """alias jqids="jq -r '.[].id'"
+DOCKER_MGMT_COMMANDS = b"""alias jqids="jq -r '.[].id'"
 
 xplugins () {
     for plugin in `cfy plugins list --json | jqids`;
