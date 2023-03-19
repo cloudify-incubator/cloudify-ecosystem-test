@@ -142,7 +142,7 @@ def get_plugin_yaml_url(plugin_name, filename, plugin_version, s3=None):
 
 @with_s3_client
 def get_objects_in_key(plugin_name, plugin_version, s3=None):
-    with tqdm(total=100) as pbar:
+    with tqdm(desc='get_objects_in_key', total=100) as pbar:
         bucket = s3.Bucket(BUCKET_NAME)
         pbar.update(20)
         objects = bucket.objects.filter(

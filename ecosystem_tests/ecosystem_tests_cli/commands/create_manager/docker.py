@@ -15,6 +15,8 @@
 
 import json
 import shutil
+import time
+
 import requests
 from tqdm import tqdm
 from urllib.parse import urlparse
@@ -76,7 +78,7 @@ def docker_images():
 
 
 def docker_load(filename):
-    with tqdm(total=100) as pbar:
+    with tqdm(desc='docker_load', total=100) as pbar:
         result = docker('load -i {filename}'.format(filename=filename),
                         json_format=False)
         pbar.update(80)
@@ -118,19 +120,12 @@ def get_repo_and_tag(image_name):
 
 
 def download_file(url, local_filename):
-    with requests.get(url, stream=True) as r:
-        total_size = int(r.headers.get('content-length', 0))
-        block_size = 1024
-        t = tqdm(desc='download_file',
-                 total=total_size,
-                 unit='iB',
-                 unit_scale=True)
-        # download_file: 100%|████████████| 101k/101k [00:00<00:00, 528kiB/s]
-        with open(local_filename, 'wb') as f:
-            for data in r.iter_content(block_size):
-                t.update(len(data))
-                f.write(data)
-        t.close()
+    with tqdm(desc='download_file', total=100) as pbar:
+        with requests.get(url, stream=True) as r:
+            pbar.update(20)
+            with open(local_filename, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+                pbar.update(80)
 
 
 def download_and_load_docker_image(url, image_name=None):
@@ -142,7 +137,8 @@ def download_and_load_docker_image(url, image_name=None):
         if up.scheme in ['http', 'https']:
             download_file(url, f.name)
         else:
-            download_from_s3(f.name, url)
+            # download_from_s3(f.name, url)
+            download_file(url, f.name)
         filename = get_universal_path(f.name)
         image_name = docker_load(filename) or image_name
     return image_name
