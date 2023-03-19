@@ -14,11 +14,15 @@
 # limitations under the License.
 
 import os
+import time
+from mock import patch
 
 from testtools import TestCase
 
 from ...ecosystem_tests_cli import utilities
 from ..exceptions import EcosystemTestCliException
+from ..commands.create_manager.docker import download_and_load_docker_image
+from ..commands.create_manager import docker as module_we_test
 
 
 class UtilitiesTest(TestCase):
@@ -42,3 +46,18 @@ class UtilitiesTest(TestCase):
                                      'multiple blueprints to test.'):
             utilities.validate_and_generate_test_ids(self.blueprints,
                                                      self.test_id)
+
+    @patch('ecosystem_tests.ecosystem_tests_cli.commands.create_manager.'
+           'docker')
+    def test_progress_bar(docker_mock, *_, **__):
+
+        def fake_docker(*args, **kwargs):
+            time.sleep(0.1)
+            if kwargs.get('json_format'):
+                return {}
+            return 'valid result'
+
+        docker_mock.docker = fake_docker
+        module_we_test.download_and_load_docker_image(
+            'https://github.com/docker-library/'
+            'hello-world/archive/refs/heads/master.zip', 'hello-world')
