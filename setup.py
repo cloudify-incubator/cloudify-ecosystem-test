@@ -26,5 +26,6 @@ setup(
         'requests',
         'pyyaml',
         'boto3',
+        'tqdm'
     ]
 )
