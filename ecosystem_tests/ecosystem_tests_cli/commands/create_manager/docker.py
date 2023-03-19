@@ -122,9 +122,9 @@ def download_file(url, local_filename):
         total_size = int(r.headers.get('content-length', 0))
         block_size = 1024
         t = tqdm(desc='download_file',
-               total=total_size,
-               unit='iB',
-               unit_scale=True)
+                 total=total_size,
+                 unit='iB',
+                 unit_scale=True)
         # download_file: 100%|████████████| 101k/101k [00:00<00:00, 528kiB/s]
         with open(local_filename, 'wb') as f:
             for data in r.iter_content(block_size):
