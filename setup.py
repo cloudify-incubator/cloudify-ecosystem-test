@@ -19,7 +19,7 @@ setup(
         'pytest==4.6.11',
         'wagon>=0.10.0',
         'progressbar',
-        'click>7,<8',
+        'click>8,<9',
         'testtools',
         'nose>=1.3',
         'PyGithub',

@@ -1,5 +1,6 @@
 import os
 from functools import wraps
+from tqdm import tqdm
 
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
@@ -141,16 +142,22 @@ def get_plugin_yaml_url(plugin_name, filename, plugin_version, s3=None):
 
 @with_s3_client
 def get_objects_in_key(plugin_name, plugin_version, s3=None):
-    bucket = s3.Bucket(BUCKET_NAME)
-    objects = bucket.objects.filter(
-        Prefix='{}/{}/{}'.format(BUCKET_FOLDER, plugin_name, plugin_version))
-    sorted_objects = sorted(
-        objects,
-        key=lambda v: v.key)
-    objects = [o.key for o in sorted_objects]
-    logger.debug('Objects in key: {} {} {}'.format(
-        plugin_name, plugin_version, objects))
-    return objects
+    with tqdm(total=100) as pbar:
+        bucket = s3.Bucket(BUCKET_NAME)
+        pbar.update(20)
+        objects = bucket.objects.filter(
+            Prefix='{}/{}/{}'.format(BUCKET_FOLDER, plugin_name, plugin_version))
+        pbar.update(20)
+        sorted_objects = sorted(
+            objects,
+            key=lambda v: v.key)
+        pbar.update(20)
+        objects = [o.key for o in sorted_objects]
+        pbar.update(20)
+        logger.debug('Objects in key: {} {} {}'.format(
+            plugin_name, plugin_version, objects))
+        pbar.update(20)
+        return objects
 
 
 @with_s3_client

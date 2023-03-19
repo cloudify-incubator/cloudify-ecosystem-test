@@ -16,6 +16,7 @@
 import json
 import shutil
 import requests
+from tqdm import tqdm
 from urllib.parse import urlparse
 from tempfile import NamedTemporaryFile
 
@@ -75,10 +76,14 @@ def docker_images():
 
 
 def docker_load(filename):
-    result = docker('load -i {filename}'.format(filename=filename),
-                    json_format=False)
-    if 'Loaded image' in result:
-        return result.split()[-1]
+    with tqdm(total=100) as pbar:
+        result = docker('load -i {filename}'.format(filename=filename),
+                        json_format=False)
+        pbar.update(80)
+        if 'Loaded image' in result:
+            pbar.update(20)
+            return result.split()[-1]
+        pbar.update(20)
 
 
 def docker_rmi(image_name):
@@ -114,8 +119,18 @@ def get_repo_and_tag(image_name):
 
 def download_file(url, local_filename):
     with requests.get(url, stream=True) as r:
+        total_size = int(r.headers.get('content-length', 0))
+        block_size = 1024 # 1 Kibibyte
+        t=tqdm(desc='download_file',
+               total=total_size,
+               unit='iB',
+               unit_scale=True)
+        # download_file: 100%|████████████| 101k/101k [00:00<00:00, 528kiB/s]
         with open(local_filename, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
+            for data in r.iter_content(block_size):
+                t.update(len(data))
+                f.write(data)
+        t.close()
 
 
 def download_and_load_docker_image(url, image_name=None):
