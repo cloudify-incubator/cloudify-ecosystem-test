@@ -120,8 +120,8 @@ def get_repo_and_tag(image_name):
 def download_file(url, local_filename):
     with requests.get(url, stream=True) as r:
         total_size = int(r.headers.get('content-length', 0))
-        block_size = 1024 # 1 Kibibyte
-        t=tqdm(desc='download_file',
+        block_size = 1024
+        t = tqdm(desc='download_file',
                total=total_size,
                unit='iB',
                unit_scale=True)
