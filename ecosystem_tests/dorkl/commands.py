@@ -92,7 +92,7 @@ def handle_process(command,
 
     n = 2000.0
     i = 1
-    with tqdm(desc=command, total=n) as pbar:
+    with tqdm(desc='command', total=n) as pbar:
         while p.poll() is None:
             if log:
                 pbar.update((datetime.now() - time_started).total_seconds())

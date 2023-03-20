@@ -107,10 +107,16 @@ def download_from_s3(local_path,
     s3_object = s3.Object(BUCKET_NAME, remote_path)
 
     if object_exists(s3_object):
-        s3_object.download_file(
-            local_path,
-            Config=TransferConfig(use_threads=False))
-
+        file_size = s3_object.content_length
+        with tqdm(desc='s3_object.download_file',
+                  total=file_size,
+                  unit='B',
+                  unit_scale=True) as progress_bar:
+            s3_object.download_file(
+                local_path,
+                Callback=progress_bar.update,
+                Config=TransferConfig(use_threads=False))
+            progress_bar.close()
     if os.path.exists(local_path):
         logger.info('The file exists: {}.'.format(local_path))
 

@@ -97,7 +97,7 @@ def docker(subcommand, json_format=True):
     command.extend(subcommand.split())
     if json_format:
         command.extend(["--format", "'{{json .}}'"])
-    result = handle_process(' '.join(command))
+    result = handle_process(' '.join(command), log=False)
     logger.info('Docker command result: {}'.format(result))
     return result
 
