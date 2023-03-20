@@ -1,3 +1,4 @@
+2.2.29: RD-6902 Add progress bar for functions- get_objects_in_key, docker_load, download_file.
 2.8.28: Add "RND" to regex in order to find new Jira ticket branches.
 2.8.27: Use bytes.
 2.8.26: Get rid of install data. Use constant for mgmt gist.
