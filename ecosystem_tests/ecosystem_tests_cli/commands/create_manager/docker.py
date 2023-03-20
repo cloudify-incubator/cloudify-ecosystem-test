@@ -137,8 +137,7 @@ def download_and_load_docker_image(url, image_name=None):
         if up.scheme in ['http', 'https']:
             download_file(url, f.name)
         else:
-            # download_from_s3(f.name, url)
-            download_file(url, f.name)
+            download_from_s3(f.name, url)
         filename = get_universal_path(f.name)
         image_name = docker_load(filename) or image_name
     return image_name
