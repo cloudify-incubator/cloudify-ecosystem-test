@@ -157,6 +157,7 @@ def get_objects_in_key(plugin_name, plugin_version, s3=None):
         logger.debug('Objects in key: {} {} {}'.format(
             plugin_name, plugin_version, objects))
         pbar.update(20)
+        pbar.close()
         return objects
 
 

@@ -14,8 +14,7 @@
 # limitations under the License.
 
 from ..ecosystem_tests_cli import ecosystem_tests
-from .commands import (test_wait,
-                       merge_docs,
+from .commands import (merge_docs,
                        validate_docs,
                        upload_assets,
                        create_bundle,
@@ -39,7 +38,6 @@ def _ecosystem_test():
 
 
 def _register_commands():
-    _ecosystem_test.add_command(test_wait.wait_until)
     _ecosystem_test.add_command(merge_docs.merge_docs)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)

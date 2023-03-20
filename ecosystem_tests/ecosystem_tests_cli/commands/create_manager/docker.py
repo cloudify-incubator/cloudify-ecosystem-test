@@ -15,7 +15,6 @@
 
 import json
 import shutil
-import time
 
 import requests
 from tqdm import tqdm
