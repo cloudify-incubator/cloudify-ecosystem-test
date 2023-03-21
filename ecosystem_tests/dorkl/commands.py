@@ -18,6 +18,7 @@ import json
 import base64
 import posixpath
 import subprocess
+from tqdm import tqdm
 from time import sleep
 from shlex import split
 from pathlib import PureWindowsPath
@@ -89,14 +90,21 @@ def handle_process(command,
     if detach:
         return p
 
-    while p.poll() is None:
-        if log:
-            logger.info('Command {0} still executing...'.format(command))
-            dump_command_output()
-        if datetime.now() - time_started > timedelta(seconds=timeout):
-            raise EcosystemTimeout('The timeout was reached.')
-        sleep(2)
-    dump_command_output()
+    n = 2000.0
+    with tqdm(desc='Command {0}'.format(command), total=n) as pbar:
+        while p.poll() is None:
+            if log:
+                pbar.update((datetime.now() - time_started).total_seconds())
+                dump_command_output()
+            if datetime.now() - time_started > timedelta(seconds=timeout):
+                raise EcosystemTimeout('The timeout was reached.')
+            sleep(2)
+
+        pbar.refresh()
+        pbar.update(n-pbar.n)
+        sleep(0.1)
+        pbar.close()
+        dump_command_output()
 
     if log:
         logger.info('Command finished {0}...'.format(command))

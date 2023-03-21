@@ -13,12 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
+import time
+from mock import patch
 from testtools import TestCase
 
 from ...ecosystem_tests_cli import utilities
 from ..exceptions import EcosystemTestCliException
+from ..commands import create_manager
+
+docker_module_path = 'ecosystem_tests.ecosystem_tests_cli.' \
+                     'commands.create_manager.docker.docker'
+
+
+def fake_docker(*_, **kwargs):
+    time.sleep(0.1)
+    if kwargs.get('json_format'):
+        return {}
+    return 'valid result'
 
 
 class UtilitiesTest(TestCase):
@@ -42,3 +53,10 @@ class UtilitiesTest(TestCase):
                                      'multiple blueprints to test.'):
             utilities.validate_and_generate_test_ids(self.blueprints,
                                                      self.test_id)
+
+    @patch(docker_module_path, new=fake_docker)
+    def test_progress_bar(self, *_, **__):
+        test_url = 'https://github.com/docker-library/' \
+                   'hello-world/archive/refs/heads/master.zip'
+        create_manager.docker.download_and_load_docker_image(
+            test_url, 'hello-world')

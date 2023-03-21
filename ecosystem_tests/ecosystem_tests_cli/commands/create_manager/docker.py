@@ -15,7 +15,9 @@
 
 import json
 import shutil
+
 import requests
+from tqdm import tqdm
 from urllib.parse import urlparse
 from tempfile import NamedTemporaryFile
 
@@ -75,10 +77,15 @@ def docker_images():
 
 
 def docker_load(filename):
-    result = docker('load -i {filename}'.format(filename=filename),
-                    json_format=False)
-    if 'Loaded image' in result:
-        return result.split()[-1]
+    with tqdm(desc='docker load -i {filename}'.format(filename=filename),
+              total=100) as pbar:
+        result = docker('load -i {filename}'.format(filename=filename),
+                        json_format=False)
+        pbar.update(80)
+        if 'Loaded image' in result:
+            pbar.update(20)
+            return result.split()[-1]
+        pbar.update(20)
 
 
 def docker_rmi(image_name):
@@ -91,7 +98,7 @@ def docker(subcommand, json_format=True):
     command.extend(subcommand.split())
     if json_format:
         command.extend(["--format", "'{{json .}}'"])
-    result = handle_process(' '.join(command))
+    result = handle_process(' '.join(command), log=False)
     logger.info('Docker command result: {}'.format(result))
     return result
 
@@ -113,9 +120,12 @@ def get_repo_and_tag(image_name):
 
 
 def download_file(url, local_filename):
-    with requests.get(url, stream=True) as r:
-        with open(local_filename, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
+    with tqdm(desc='requests GET {}'.format(url), total=100) as pbar:
+        with requests.get(url, stream=True) as r:
+            pbar.update(20)
+            with open(local_filename, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+                pbar.update(80)
 
 
 def download_and_load_docker_image(url, image_name=None):
