@@ -57,3 +57,9 @@ botocore_regions.setLevel(logging.ERROR)
 
 urllib3_connectionpool = logging.getLogger('urllib3.connectionpool')
 urllib3_connectionpool.setLevel(logging.ERROR)
+
+boto3_resources_action = logging.getLogger('boto3.resources.action')
+boto3_resources_action.setLevel(logging.ERROR)
+
+boto3_resources_collection = logging.getLogger('boto3.resources.collection')
+boto3_resources_collection.setLevel(logging.ERROR)
