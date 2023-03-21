@@ -91,12 +91,10 @@ def handle_process(command,
         return p
 
     n = 2000.0
-    i = 1
-    with tqdm(desc='command', total=n) as pbar:
+    with tqdm(desc='Command {0}'.format(command), total=n) as pbar:
         while p.poll() is None:
             if log:
                 pbar.update((datetime.now() - time_started).total_seconds())
-                # gger.info('Command {0} still executing...'.format(command))
                 dump_command_output()
             if datetime.now() - time_started > timedelta(seconds=timeout):
                 raise EcosystemTimeout('The timeout was reached.')

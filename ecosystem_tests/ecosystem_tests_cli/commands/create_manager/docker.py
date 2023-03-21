@@ -77,7 +77,8 @@ def docker_images():
 
 
 def docker_load(filename):
-    with tqdm(desc='docker_load', total=100) as pbar:
+    with tqdm(desc='docker load -i {filename}'.format(filename=filename),
+              total=100) as pbar:
         result = docker('load -i {filename}'.format(filename=filename),
                         json_format=False)
         pbar.update(80)
@@ -119,7 +120,7 @@ def get_repo_and_tag(image_name):
 
 
 def download_file(url, local_filename):
-    with tqdm(desc='download_file', total=100) as pbar:
+    with tqdm(desc='requests GET {}'.format(url), total=100) as pbar:
         with requests.get(url, stream=True) as r:
             pbar.update(20)
             with open(local_filename, 'wb') as f:
