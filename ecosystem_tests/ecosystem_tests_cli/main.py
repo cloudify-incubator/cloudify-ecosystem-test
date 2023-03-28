@@ -28,7 +28,8 @@ from .commands import (merge_docs,
                        local_blueprint_test,
                        generate_plugins_json,
                        validate_plugin_yamls,
-                       validate_plugin_version)
+                       validate_plugin_version,
+                       validate_branch)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -55,6 +56,7 @@ def _register_commands():
     _ecosystem_test.add_command(validate_plugin_yamls.validate_plugin_yamls)
     _ecosystem_test.add_command(
         validate_plugin_version.validate_plugin_version)
+    _ecosystem_test.add_command(validate_branch.validate_pull_request)
 
 
 _register_commands()
