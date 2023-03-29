@@ -34,8 +34,7 @@ from .packaging import (
 from .validations import get_plugin_version
 
 logging.basicConfig(level=logging.INFO)
-VERSION_STRING_RE = \
-    r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
+VERSION_STRING_RE = r"version\s{0,1}=\s{0,1}\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'" # noqa
 
 
 def find_version(__version__py):

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.8.35',
+    version='2.8.36',
     license='LICENSE',
     packages=find_packages(),
     description='Stuff that Ecosystem Tests Use',
