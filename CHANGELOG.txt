@@ -1,3 +1,4 @@
+2.2.34: Fix Bug in PR recognition.
 2.2.33: Fix bug in pulls validations.
 2.2.32: Get branch and repo
 2.2.31: Fix bug in get branch.
