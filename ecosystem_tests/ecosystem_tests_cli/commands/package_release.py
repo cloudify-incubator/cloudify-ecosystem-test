@@ -37,7 +37,7 @@ def package_release(directory, name, v2_plugin=False):
     if not name:
         raise ValueError('Argument name can not be "NoneType"')
     try:
-        __version__py = find_version_file()
+        __version__py = find_version_file(directory)
         plugin_release_with_latest(
             name, find_version(__version__py), v2_plugin=v2_plugin)
     except (RuntimeError, FileNotFoundError):
