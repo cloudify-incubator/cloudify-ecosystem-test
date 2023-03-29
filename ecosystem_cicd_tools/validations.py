@@ -29,14 +29,13 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def does_protected_branch_have_build_source(pull_request):
+def does_protected_branch_have_build_source(pr):
     string_pattern = '[0-9.]*-build'
-    pattern = compile(string_pattern)
-    if pull_request.base.ref in ['main', 'master'] \
-            and not pattern.match(pull_request.title):
+    patt = compile(string_pattern)
+    if pr.base.ref in ['main', 'master'] and not patt.match(pr.head.ref):
         logging.error(
             'Protected branches "main" and "master" require build branch. '
-            'Branch name is {}'.format(pull_request.title))
+            'Branch name is {}'.format(pr.head.ref))
         sys.exit(1)
 
 
