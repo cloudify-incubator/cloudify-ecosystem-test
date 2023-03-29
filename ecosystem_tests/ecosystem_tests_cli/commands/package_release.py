@@ -37,8 +37,8 @@ def package_release(directory, name, v2_plugin=False):
     if not name:
         raise ValueError('Argument name can not be "NoneType"')
     try:
-       version = find_version_in_files(directory)
-       plugin_release_with_latest(name, version, v2_plugin=v2_plugin)
+        version = find_version_in_files(directory)
+        plugin_release_with_latest(name, version, v2_plugin=v2_plugin)
     except (RuntimeError, FileNotFoundError):
         plugin_yaml = os.path.join(directory, 'plugin.yaml')
         plugin_release_with_latest(
