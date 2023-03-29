@@ -38,8 +38,9 @@ VERSION_STRING_RE = \
     r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
 
 
-def find_version(setup_py):
-    with open(setup_py, 'r') as infile:
+def find_version(__version__py):
+    version_string = None
+    with open(__version__py, 'r') as infile:
         version_string = re.findall(VERSION_STRING_RE, infile.read())
     if version_string:
         version = version_string[0].split('=')[1]
