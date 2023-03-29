@@ -49,7 +49,7 @@ def find_version_in_files(directory):
     __version__py = find_version_file(directory)
     try:
         return find_version(__version__py)
-    except RuntimeError:
+    except (TypeError, RuntimeError):
         return find_version(os.path.join(directory, 'setup.py'))
 
 
