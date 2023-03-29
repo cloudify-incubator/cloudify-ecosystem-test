@@ -1,3 +1,4 @@
+2.2.32: Get branch and repo
 2.2.31: Fix bug in get branch.
 2.2.30: Fix validate PR-branch.
 2.2.29: RD-6902 Add progress bar for functions- get_objects_in_key, docker_load, download_file.
