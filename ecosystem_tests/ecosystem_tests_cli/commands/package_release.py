@@ -46,8 +46,8 @@ def package_release(directory, name, v2_plugin=False):
             name, get_plugin_yaml_version(plugin_yaml), v2_plugin=v2_plugin)
 
 
-def find_version_file():
-    return find('__version__.py')
+def find_version_file(directory):
+    return find('__version__.py', directory)
 
 
 def find(name, path):
