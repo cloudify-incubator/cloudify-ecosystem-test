@@ -13,6 +13,6 @@ def validate_pull_request(repo, branch):
         command = 'git rev-parse --abbrev-ref HEAD'
         try:
             branch = handle_process(command)
-        except:
+        except Exception:
             logger.error('Failed to resolve branch: {}'.format(branch))
     validate_pulls(repo, branch)
