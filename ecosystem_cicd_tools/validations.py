@@ -32,14 +32,14 @@ def does_protected_branch_have_build_source(pull_request):
     string_pattern = '[0-9.]*-build'
     pattern = compile(string_pattern)
     if pull_request.base.ref in ['main', 'master'] \
-        and not pattern.match(pull_request.title):
+            and not pattern.match(pull_request.title):
         logging.error(
             'Protected branches "main" and "master" require build branch. '
             'Branch name is {}'.format(pull_request.title))
         sys.exit(1)
 
 
-def validate_pulls(repo_name, branch_name):
+def validate_pulls(repo_name, branch_name=None):
     client = get_client()
     repo = client.get_repo(repo_name)
     pulls = repo.get_pulls()
