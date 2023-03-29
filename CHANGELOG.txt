@@ -1,3 +1,4 @@
+2.2.37: Strip whitespace from version string.
 2.2.36: Update version string regex.
 2.2.35: Search for __version__py instead of setuppy
 2.2.34: Fix Bug in PR recognition.
