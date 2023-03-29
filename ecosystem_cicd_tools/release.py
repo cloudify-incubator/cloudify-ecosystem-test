@@ -48,7 +48,7 @@ def find_version(__version__py):
             version = version.split(',')[0]
         if version.startswith("'") and version.endswith("'"):
             version = version[1:-1]
-        return version
+        return version.strip()
     raise RuntimeError("Unable to find version string.")
 
 
