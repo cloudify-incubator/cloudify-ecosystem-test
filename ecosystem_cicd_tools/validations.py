@@ -7,6 +7,7 @@ from re import match, compile
 from yaml import safe_load
 from yaml.parser import ParserError
 from ecosystem_cicd_tools.github_stuff import get_client
+from cloudify import ctx
 
 try:
     from packaging.version import parse as parse_version
@@ -99,10 +100,11 @@ def read_yaml_file(file_path):
 
 
 def check_changelog_version(version, file_path):
-    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
     if not check_is_latest_version(version, file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
+    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
+
 
 
 def check_is_latest_version(version, file_path):
@@ -211,17 +213,19 @@ def get_plugins(path):
 # plugin.yaml , plugin_1_4.yaml, plugin_1_5.yaml, plugin_v2.yaml
 def check_version_plugins(path, plugins, version):
     path_plugin = os.path.join(os.path.abspath(path))
-    for flag in plugins:
-        version_in_plugin = get_version_in_plugin(path_plugin, flag)
+    for name in plugins:
+        version_in_plugin = get_version_in_plugin(path_plugin, name)
         if version_in_plugin != version:
             raise Exception('Version {version} '
                             'does not match {package_source}.'.format(
                                 version=version_in_plugin,
                                 package_source=path_plugin))
 
+    logging.info('All the plugins yaml with version: {}.'.format(version))
 
-def get_version_in_plugin(rel_file):
-    lines = read(rel_file)
+
+def get_version_in_plugin(rel_file, name):
+    lines = read(os.path.join(rel_file, name))
     for line in lines.splitlines():
         if 'package_version' in line:
             split_line = line.split(':')
@@ -248,7 +252,6 @@ def validate_plugin_version(plugin_directory=None,
     plugins_asset = get_plugins(plugin_directory)
 
     version = get_version_py(plugin_directory)
-
     check_version_plugins(plugin_directory, plugins_asset, version)
 
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
