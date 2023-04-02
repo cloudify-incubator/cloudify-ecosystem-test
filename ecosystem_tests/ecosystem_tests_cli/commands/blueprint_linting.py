@@ -23,15 +23,15 @@ from ...ecosystem_tests_cli import ecosystem_tests
 
 
 @ecosystem_tests.command(
-        name='blueprint-linting', 
+        name='blueprint-linting',
         short_help='validate blueprints in a repo using cfy-lint autofix.')
 @ecosystem_tests.options.access_token
 @ecosystem_tests.options.repo_name
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.pull_request_title
-def blueprint_linting(access_token=None, 
-                      repo_name=None, 
-                      directory=None, 
+def blueprint_linting(access_token=None,
+                      repo_name=None,
+                      directory=None,
                       pull_request_title=None):
 
     time = str(datetime.now())
@@ -48,8 +48,8 @@ def blueprint_linting(access_token=None,
         repo_name = org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME")
     if not directory:
         directory = "/tmp/" + time
-    else:    
-        directory = directory + time 
+    else:
+        directory = directory + time
     if not pull_request_title:
         pull_request_title = "cfy-lint autofix " + time
 
@@ -74,23 +74,24 @@ def blueprint_linting(access_token=None,
             for file in files:
                 if file_name in file:
                     i = i + 1
-                    # If the file matches the desired name, execute the command on it
+                    # If the file matches the desired name, 
+                    # execute the command on it
                     full_path = os.path.join(root, file)
                     full_command = command.format(full_path)
-                    p = subprocess.Popen(full_command.split(), 
-                                         stdout=subprocess.PIPE, 
-                                         stderr=subprocess.PIPE) 
+                    p = subprocess.Popen(full_command.split(),
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
                     stdout, stderr = p.communicate()
                     for line in stderr.decode('utf-8').split('\r\n'):
                         if line:
                             raise StopIteration
     except StopIteration:
         command = "cfy-lint -b {} -af"
-        ################### create branch
+        # create branch
         source_branch = git_repo.default_branch
         sb = git_repo.get_branch(source_branch)
         git_repo.create_git_ref(
-            ref='refs/heads/'+ branch_name, sha=sb.commit.sha)
+            ref='refs/heads/' + branch_name, sha=sb.commit.sha)
         repo.git.pull()
         repo.git.checkout(branch_name)
 
@@ -102,21 +103,24 @@ def blueprint_linting(access_token=None,
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file_name in file:
-                # If the file matches the desired name, execute the command on it
+                # If the file matches the desired name, 
+                # execute the command on it
                 full_path = os.path.join(root, file)
                 full_command = command.format(full_path)
                 print(full_path)
                 print(full_command)
-                p = subprocess.Popen(full_command.split(), 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE) 
+                p = subprocess.Popen(full_command.split(),
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
                 for line in stderr.decode('utf-8').split('\r\n'):
                     print(line)
 
     # check status
     status = repo.git.status()
-    status_no_change = "On branch {}\nYour branch is up to date with 'origin/{}'.\n\nnothing to commit, working tree clean".format(branch_name, branch_name)
+    status_no_change = "On branch {}\nYour branch is up to date with " \
+        "'origin/{}'.\n\nnothing to commit, working tree clean".format(
+        branch_name, branch_name)
     if not status == status_no_change:
         # update files
         repo.git.add("*")
