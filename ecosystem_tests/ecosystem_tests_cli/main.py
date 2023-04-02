@@ -60,8 +60,6 @@ def _register_commands():
     _ecosystem_test.add_command(validate_branch.validate_pull_request)
     _ecosystem_test.add_command(blueprint_linting.blueprint_linting)
 
-
-
 _register_commands()
 
 if __name__ == "__main__":

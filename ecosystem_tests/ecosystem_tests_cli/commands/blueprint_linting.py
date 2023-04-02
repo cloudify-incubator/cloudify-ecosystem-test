@@ -21,19 +21,24 @@ from github import Github
 from datetime import datetime
 from ...ecosystem_tests_cli import ecosystem_tests
 
-@ecosystem_tests.command(name='blueprint-linting',
-                         short_help='validate blueprints in a repo using cfy-lint autofix.')
+
+@ecosystem_tests.command(
+        name='blueprint-linting', 
+        short_help='validate blueprints in a repo using cfy-lint autofix.')
 @ecosystem_tests.options.access_token
 @ecosystem_tests.options.repo_name
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.pull_request_title
-def blueprint_linting(access_token=None, repo_name=None, directory=None, pull_request_title=None):
-    
+def blueprint_linting(access_token=None, 
+                      repo_name=None, 
+                      directory=None, 
+                      pull_request_title=None):
+
     time = str(datetime.now())
     time = time.replace(' ', '_')
     time = time.replace(':', '-')
     time = time.replace('.', '-')
-    
+
     branch_name = time
 
     if not access_token:
@@ -47,7 +52,7 @@ def blueprint_linting(access_token=None, repo_name=None, directory=None, pull_re
         directory = directory + time 
     if not pull_request_title:
         pull_request_title = "cfy-lint autofix " + time
-    
+
     # Define the name of the files of interest
     file_name = ".yaml"
 
@@ -57,7 +62,6 @@ def blueprint_linting(access_token=None, repo_name=None, directory=None, pull_re
     g = Github(access_token)
     # user = g.get_user()
     git_repo = g.get_repo(repo_name)
-
 
     # clone repo to dest_folder
     repo = Repo.clone_from(git_repo.clone_url, os.path.join(
