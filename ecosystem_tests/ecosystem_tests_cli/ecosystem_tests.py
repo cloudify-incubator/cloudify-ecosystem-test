@@ -162,6 +162,22 @@ class Options(object):
                                            type=click.STRING,
                                            help=helptexts.VERSION)
 
+        self.access_token = click.option('-AT',
+                                         '--access-token',
+                                         type=click.STRING,
+                                         help=helptexts.ACCESS_TOKEN)
+        
+        self.repo_name = click.option('-RN',
+                                      '--repo-name',
+                                      type=click.STRING,
+                                      help=helptexts.REPO_NAME)
+        
+        self.pull_request_title = click.option(
+            '-PRT',
+            '--pull-request-title',
+            type=click.STRING,
+            help=helptexts.PULL_REQUEST_TITLE)
+        
         self.package = click.option('-P',
                                     '--package',
                                     multiple=True,
