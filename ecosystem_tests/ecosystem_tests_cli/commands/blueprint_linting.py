@@ -74,7 +74,7 @@ def blueprint_linting(access_token=None,
             for file in files:
                 if file_name in file:
                     i = i + 1
-                    # If the file matches the desired name, 
+                    # If the file matches the desired name,
                     # execute the command on it
                     full_path = os.path.join(root, file)
                     full_command = command.format(full_path)
@@ -103,7 +103,7 @@ def blueprint_linting(access_token=None,
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file_name in file:
-                # If the file matches the desired name, 
+                # If the file matches the desired name,
                 # execute the command on it
                 full_path = os.path.join(root, file)
                 full_command = command.format(full_path)
@@ -120,7 +120,7 @@ def blueprint_linting(access_token=None,
     status = repo.git.status()
     status_no_change = "On branch {}\nYour branch is up to date with " \
         "'origin/{}'.\n\nnothing to commit, working tree clean".format(
-        branch_name, branch_name)
+            branch_name, branch_name)
     if not status == status_no_change:
         # update files
         repo.git.add("*")
