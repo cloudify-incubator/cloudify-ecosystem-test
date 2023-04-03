@@ -103,8 +103,6 @@ def check_changelog_version(version, file_path):
     if not check_is_latest_version(version, file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
-    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
-
 
 
 def check_is_latest_version(version, file_path):
@@ -182,15 +180,15 @@ def read(rel_path):
 # __version__.py
 def get_version_py(plugin_directory):
     for f in os.listdir(plugin_directory):
-        if 'cloudify' in f and 'plugin' not in f:
+        if 'cloudify' in f and 'plugin' not in f or 'fabric_plugin' == f:
             lib = os.path.join(plugin_directory, f)
             for file in os.listdir(lib):
                 if '__version__.py' == file:
                     line = read(os.path.join(lib, file))
                     version = re.search(r"\d+\.\d+\.\d+", line).group()
-                    logging.info('Version {version} is in __version__.py.'.
-                        format(version=version))
                     return version
+            raise Exception(
+                'Failed to get version from file __verison__.py')
 
 
 # plugin asset
@@ -204,9 +202,9 @@ def get_plugins(path):
             name = re.search(search_string, f)
             if name and f == name.group():
                 assets_list.append(f)
-    logging.info('Plugins yaml: {assets_list} is in {path}.'
-                 .format(assets_list=assets_list, path=path))
 
+    if not assets_list:
+        raise Exception('Failed to get the plugin list')
     return assets_list
 
 
@@ -221,8 +219,6 @@ def check_version_plugins(path, plugins, version):
                                 version=version_in_plugin,
                                 package_source=path_plugin))
 
-    logging.info('All the plugins yaml with version: {}.'.format(version))
-
 
 def get_version_in_plugin(rel_file, name):
     lines = read(os.path.join(rel_file, name))
@@ -234,9 +230,7 @@ def get_version_in_plugin(rel_file, name):
             return line_no_quotes.strip('\n')
 
 
-def validate_plugin_version(plugin_directory=None,
-                            plugin_yaml='plugin.yaml',
-                            changelog='CHANGELOG.txt'):
+def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
     """
     Validate plugin version.
 
@@ -250,11 +244,11 @@ def validate_plugin_version(plugin_directory=None,
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
     plugins_asset = get_plugins(plugin_directory)
-
     version = get_version_py(plugin_directory)
     check_version_plugins(plugin_directory, plugins_asset, version)
-
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
+    logging.info('The official version of this plugin is {version}'
+                 .format(version=version))
     return version
 
 
