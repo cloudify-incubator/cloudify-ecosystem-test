@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import logging
 import subprocess
@@ -24,6 +25,8 @@ from .new_cicd.github import with_github_client
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
 version = version_file.read().strip()"""
+
+INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -95,7 +98,6 @@ def read_yaml_file(file_path):
 
 
 def check_changelog_version(version, file_path):
-    logging.info('Version {version} is in CHANGELOG.'.format(version=version))
     if not check_is_latest_version(version, file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
@@ -168,9 +170,68 @@ def get_plugin_yaml_version(file_path):
     return package_version
 
 
-def validate_plugin_version(plugin_directory=None,
-                            plugin_yaml='plugin.yaml',
-                            changelog='CHANGELOG.txt'):
+def read_file(rel_path):
+    with open(rel_path, 'r') as fp:
+        return fp.read()
+
+
+def get_version_py(plugin_directory):
+    for f in os.listdir(plugin_directory):
+        """ The folders we are looking for 'cloudify_{name}' This is the template.
+        But fabric_plugin is an exception."""
+        if 'cloudify' in f and 'plugin' not in f or 'fabric_plugin' == f:
+            lib = os.path.join(plugin_directory, f)
+            for file in os.listdir(lib):
+                if '__version__.py' == file:
+                    line = read_file(os.path.join(lib, file))
+                    version = re.search(r"\d+\.\d+\.\d+", line).group()
+                    return version
+            raise Exception(
+                'Failed to get version from file __verison__.py')
+
+
+def get_plugins(path):
+    """
+    Returns a list of yaml files.
+    like: [plugin.yaml , plugin_1_4.yaml, plugin_1_5.yaml, plugin_v2.yaml]
+    """
+    assets_list = []
+    search_string = '^plugin_\\d+_\\d+\\.yaml$'
+    if os.path.exists(path):
+        for f in os.listdir(path):
+            if f in INCLUDE_NAMES:
+                assets_list.append(f)
+            name = re.search(search_string, f)
+            if name and f == name.group():
+                assets_list.append(f)
+
+    if not assets_list:
+        raise Exception('Failed to get the plugin list')
+    return assets_list
+
+
+def check_version_plugins(path, plugins, version):
+    path_plugin = os.path.join(os.path.abspath(path))
+    for name in plugins:
+        version_in_plugin = get_version_in_plugin(path_plugin, name)
+        if version_in_plugin != version:
+            raise Exception('Version {version} '
+                            'does not match {package_source}.'.format(
+                                version=version_in_plugin,
+                                package_source=path_plugin))
+
+
+def get_version_in_plugin(rel_file, name):
+    lines = read_file(os.path.join(rel_file, name))
+    for line in lines.splitlines():
+        if 'package_version' in line:
+            split_line = line.split(':')
+            line_no_space = split_line[-1].replace(' ', '')
+            line_no_quotes = line_no_space.replace('\'', '')
+            return line_no_quotes.strip('\n')
+
+
+def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
     """
     Validate plugin version.
 
@@ -182,10 +243,13 @@ def validate_plugin_version(plugin_directory=None,
 
     plugin_directory = plugin_directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-    version = get_plugin_yaml_version(
-        os.path.join(plugin_directory, plugin_yaml))
+
+    plugins_asset = get_plugins(plugin_directory)
+    version = get_version_py(plugin_directory)
+    check_version_plugins(plugin_directory, plugins_asset, version)
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
-    check_setuppy_version(version, plugin_directory)
+    logging.info('The official version of this plugin is {version}'
+                 .format(version=version))
     return version
 
 
