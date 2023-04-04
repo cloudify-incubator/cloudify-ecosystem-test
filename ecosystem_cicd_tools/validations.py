@@ -7,7 +7,6 @@ from re import match, compile
 from yaml import safe_load
 from yaml.parser import ParserError
 from ecosystem_cicd_tools.github_stuff import get_client
-from cloudify import ctx
 
 try:
     from packaging.version import parse as parse_version
@@ -172,27 +171,31 @@ def get_plugin_yaml_version(file_path):
     return package_version
 
 
-def read(rel_path):
+def read_file(rel_path):
     with open(rel_path, 'r') as fp:
         return fp.read()
 
 
-# __version__.py
 def get_version_py(plugin_directory):
     for f in os.listdir(plugin_directory):
+        """ The folders we are looking for 'cloudify_{name}' This is the template.
+        But fabric_plugin is an exception."""
         if 'cloudify' in f and 'plugin' not in f or 'fabric_plugin' == f:
             lib = os.path.join(plugin_directory, f)
             for file in os.listdir(lib):
                 if '__version__.py' == file:
-                    line = read(os.path.join(lib, file))
+                    line = read_file(os.path.join(lib, file))
                     version = re.search(r"\d+\.\d+\.\d+", line).group()
                     return version
             raise Exception(
                 'Failed to get version from file __verison__.py')
 
 
-# plugin asset
 def get_plugins(path):
+    """
+    Returns a list of yaml files.
+    like: [plugin.yaml , plugin_1_4.yaml, plugin_1_5.yaml, plugin_v2.yaml]
+    """
     assets_list = []
     search_string = '^plugin_\\d+_\\d+\\.yaml$'
     if os.path.exists(path):
@@ -208,7 +211,6 @@ def get_plugins(path):
     return assets_list
 
 
-# plugin.yaml , plugin_1_4.yaml, plugin_1_5.yaml, plugin_v2.yaml
 def check_version_plugins(path, plugins, version):
     path_plugin = os.path.join(os.path.abspath(path))
     for name in plugins:
@@ -221,7 +223,7 @@ def check_version_plugins(path, plugins, version):
 
 
 def get_version_in_plugin(rel_file, name):
-    lines = read(os.path.join(rel_file, name))
+    lines = read_file(os.path.join(rel_file, name))
     for line in lines.splitlines():
         if 'package_version' in line:
             split_line = line.split(':')
@@ -299,5 +301,3 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     if not check_if_label_in_pr_labels(pr_numbers):
         return
     _validate_documenation_pulls(docs_repo, jira_ids)
-
-
