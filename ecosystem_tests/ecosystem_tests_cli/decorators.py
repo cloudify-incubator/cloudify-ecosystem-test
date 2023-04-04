@@ -21,10 +21,16 @@
     click decorators are located in the class Options in ecosystem_tests.py
 """
 
+import os
 import time
+import functools
+from nose.tools import nottest
 
 from .logger import logger
 from .constants import YELLOW, RESET
+from .constants import (LICENSE_ENVAR_NAME,
+                        MANAGER_CONTAINER_ENVAR_NAME)
+from ..dorkl.commands import get_manager_container_name
 
 
 def timer_decorator(fn):
@@ -44,4 +50,25 @@ def timer_decorator(fn):
                     "Test ran for {} seconds".format(end - start) +
                     RESET)
         return result
+    return wrapper
+
+
+@nottest
+def prepare_test_env(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        old_environ = dict(os.environ)
+        os.environ.update({LICENSE_ENVAR_NAME: kwargs.get('license', '')})
+        os.environ.update({MANAGER_CONTAINER_ENVAR_NAME: kwargs.get(
+            'container_name', get_manager_container_name())})
+        os.environ.update(kwargs.get('secret', {}))
+        os.environ.update(kwargs.get('file_secret', {}))
+        os.environ.update(kwargs.get('encoded_secret', {}))
+        try:
+            ret = func(*args, **kwargs)
+        finally:
+            os.environ.clear()
+            os.environ.update(old_environ)
+        return ret
+
     return wrapper

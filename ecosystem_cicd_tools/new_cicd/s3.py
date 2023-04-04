@@ -1,12 +1,12 @@
 import os
-import base64
 from functools import wraps
+from tqdm import tqdm
 
-from boto3 import resource
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
 
 from .logging import logger
+from .boto3 import get_boto_service
 
 BUCKET_NAME = 'cloudify-release-eu'
 BUCKET_FOLDER = 'cloudify/wagons'
@@ -27,31 +27,7 @@ def with_s3_client(func):
 
 
 def get_client():
-    if ACCESS_KEY in os.environ:
-        access_key = os.environ[ACCESS_KEY].strip('\n')
-        os.environ[ACCESS_KEY.upper()] = str(base64.b64decode(
-            access_key), 'utf-8').strip('\n')
-    elif ACCESS_KEY.upper() in os.environ:
-        pass
-    else:
-        raise RuntimeError(
-            'Please provide {} environment variable.'.format(
-                ACCESS_KEY.upper()))
-
-    if ACCESS_SECRET in os.environ:
-        access_secret = os.environ[ACCESS_SECRET].strip('\n')
-        os.environ[ACCESS_SECRET.upper()] = str(base64.b64decode(
-            access_secret), 'utf-8').strip('\n')
-    elif ACCESS_SECRET.upper() in os.environ:
-        pass
-    else:
-        raise RuntimeError(
-            'Please provide {} environment variable.'.format(
-                ACCESS_SECRET.upper()))
-    if 'AWS_DEFAULT_REGION' not in os.environ:
-        os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
-
-    return resource('s3')
+    return get_boto_service('s3')
 
 
 def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
@@ -131,10 +107,16 @@ def download_from_s3(local_path,
     s3_object = s3.Object(BUCKET_NAME, remote_path)
 
     if object_exists(s3_object):
-        s3_object.download_file(
-            local_path,
-            Config=TransferConfig(use_threads=False))
-
+        file_size = s3_object.content_length
+        with tqdm(desc='Downloading {}'.format(remote_path),
+                  total=file_size,
+                  unit='B',
+                  unit_scale=True) as progress_bar:
+            s3_object.download_file(
+                local_path,
+                Callback=progress_bar.update,
+                Config=TransferConfig(use_threads=False))
+            progress_bar.close()
     if os.path.exists(local_path):
         logger.info('The file exists: {}.'.format(local_path))
 
@@ -166,16 +148,24 @@ def get_plugin_yaml_url(plugin_name, filename, plugin_version, s3=None):
 
 @with_s3_client
 def get_objects_in_key(plugin_name, plugin_version, s3=None):
-    bucket = s3.Bucket(BUCKET_NAME)
-    objects = bucket.objects.filter(
-        Prefix='{}/{}/{}'.format(BUCKET_FOLDER, plugin_name, plugin_version))
-    sorted_objects = sorted(
-        objects,
-        key=lambda v: v.key)
-    objects = [o.key for o in sorted_objects]
-    logger.debug('Objects in key: {} {} {}'.format(
-        plugin_name, plugin_version, objects))
-    return objects
+    with tqdm(desc='Looking for {} {}'.format(plugin_name, plugin_version),
+              total=100) as pbar:
+        bucket = s3.Bucket(BUCKET_NAME)
+        pbar.update(20)
+        objects = bucket.objects.filter(
+            Prefix='{}/{}/{}'.format(BUCKET_FOLDER, plugin_name, plugin_version))
+        pbar.update(20)
+        sorted_objects = sorted(
+            objects,
+            key=lambda v: v.key)
+        pbar.update(20)
+        objects = [o.key for o in sorted_objects]
+        pbar.update(20)
+        logger.debug('Objects in key: {} {} {}'.format(
+            plugin_name, plugin_version, objects))
+        pbar.update(20)
+        pbar.close()
+        return objects
 
 
 @with_s3_client

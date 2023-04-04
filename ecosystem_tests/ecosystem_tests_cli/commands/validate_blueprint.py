@@ -15,8 +15,8 @@
 
 from ...dorkl.runners import blueprint_validate
 from ...ecosystem_tests_cli import ecosystem_tests
-from ..utilities import (prepare_test_env,
-                         validate_and_generate_test_ids)
+from ..decorators import prepare_test_env
+from ..utilities import validate_and_generate_test_ids
 
 
 @ecosystem_tests.command(name='validate-blueprint',

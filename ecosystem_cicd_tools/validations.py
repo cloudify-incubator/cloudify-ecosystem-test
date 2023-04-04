@@ -19,6 +19,7 @@ from .github_stuff import (
     get_pull_requests,
     find_pull_request_numbers,
     check_if_label_in_pr_labels)
+from .new_cicd.github import with_github_client
 
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
@@ -28,21 +29,28 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def does_protected_branch_have_build_source(pull_request):
+def does_protected_branch_have_build_source(pr):
     string_pattern = '[0-9.]*-build'
-    pattern = compile(string_pattern)
-    if pull_request.base.ref in ['main', 'master'] \
-        and not pattern.match(pull_request.title):
+    patt = compile(string_pattern)
+    if pr.base.ref in ['main', 'master'] and not patt.match(pr.head.ref):
         logging.error(
             'Protected branches "main" and "master" require build branch. '
-            'Branch name is {}'.format(pull_request.title))
+            'Branch name is {}'.format(pr.head.ref))
         sys.exit(1)
 
 
-def validate_pulls(repo_name, branch_name):
-    client = get_client()
-    repo = client.get_repo(repo_name)
-    pulls = repo.get_pulls()
+@with_github_client
+def validate_pulls(repo_name=None,
+                   branch_name=None,
+                   github_client=None,
+                   repository=None,
+                   **kwargs):
+    if repo_name:
+        repo = github_client.get_repo(
+            '{}/{}'.format(kwargs.get('organization_name'), repo_name))
+        pulls = repo.get_pulls()
+    else:
+        pulls = repository.get_pulls()
     for pull in pulls:
         if pull.head.ref == branch_name:
             does_protected_branch_have_build_source(pull)

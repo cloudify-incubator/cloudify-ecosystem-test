@@ -23,26 +23,24 @@ from tempfile import NamedTemporaryFile
 
 from nose.tools import nottest
 
-from ecosystem_tests.dorkl.constansts import (RERUN,
-                                              logger,
-                                              RESUME,
-                                              UPDATE,
-                                              CANCEL,
-                                              TIMEOUT,
-                                              DONOTHING,
-                                              ROLLBACK_FULL,
-                                              UNINSTALL_FORCE,
-                                              VPN_CONFIG_PATH,
-                                              ROLLBACK_PARTIAL,
-                                              RED,
-                                              GREEN,
-                                              YELLOW,
-                                              BLUE,
-                                              PINK,
-                                              CYAN,
-                                              RESET,
-                                              BOLD,
-                                              UNDERLINE)
+from ecosystem_tests.dorkl.constansts import (
+    RED,
+    BLUE,
+    GREEN,
+    RESET,
+    RERUN,
+    logger,
+    RESUME,
+    UPDATE,
+    CANCEL,
+    TIMEOUT,
+    DONOTHING,
+    ROLLBACK_FULL,
+    UNINSTALL_FORCE,
+    VPN_CONFIG_PATH,
+    ROLLBACK_PARTIAL,
+    DOCKER_MGMT_COMMANDS,
+)
 from ecosystem_tests.dorkl.exceptions import (EcosystemTimeout,
                                               EcosystemTestException)
 from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
@@ -67,7 +65,8 @@ from ecosystem_tests.dorkl.cloudify_api import (use_cfy,
                                                 get_blueprint_id_of_deployment)
 from ecosystem_tests.dorkl.commands import (docker_exec,
                                             cloudify_exec,
-                                            copy_file_to_docker)
+                                            copy_file_to_docker,
+                                            copy_file_from_docker)
 
 
 def prepare_test(plugins=None,
@@ -571,7 +570,7 @@ def handle_test_failure(test_name, on_failure, timeout):
 @nottest
 def prepare_test_dev(plugins=None,
                      secrets=None,
-                     execute_bundle_upload=True,
+                     execute_bundle_upload=False,
                      bundle_path=None,
                      yum_packages=None):
     """
@@ -595,6 +594,21 @@ def prepare_test_dev(plugins=None,
                             execute_bundle_upload,
                             bundle_path=bundle_path)
     create_test_secrets(secrets)
+    setup_root_bash()
+
+
+def setup_root_bash():
+    docker_exec('yum install -y epel-release')
+    docker_exec('yum install -y jq')
+    bashrc = copy_file_from_docker('/root/.bashrc')
+    with NamedTemporaryFile() as tmp:
+        tmp.write(DOCKER_MGMT_COMMANDS)
+        cloudify_sh_temp = copy_file_to_docker(tmp.name)
+    docker_exec('mv {} /root/.rc-cloudify.sh\n'.format(cloudify_sh_temp))
+    with open(bashrc, 'a') as infile:
+        infile.write('. /root/.rc-cloudify.sh')
+    bashrc_temp = copy_file_to_docker(bashrc)
+    docker_exec('mv {} /root/.bashrc'.format(bashrc_temp))
 
 
 def run_user_defined_check(user_defined_check, user_defined_check_params):

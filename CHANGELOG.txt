@@ -1,3 +1,24 @@
+2.2.38: More cleanup of version string.
+2.2.37: Strip whitespace from version string.
+2.2.36: Update version string regex.
+2.2.35: Search for __version__py instead of setuppy
+2.2.34: Fix Bug in PR recognition.
+2.2.33: Fix bug in pulls validations.
+2.2.32: Get branch and repo
+2.2.31: Fix bug in get branch.
+2.2.30: Fix validate PR-branch.
+2.2.29: RD-6902 Add progress bar for functions- get_objects_in_key, docker_load, download_file.
+2.8.28: Add "RND" to regex in order to find new Jira ticket branches.
+2.8.27: Use bytes.
+2.8.26: Get rid of install data. Use constant for mgmt gist.
+2.8.25: Get rid of install data. Use constant for mgmt gist.
+2.8.24: Skip Bundle Upload
+2.8.23:
+  - Check Required IPs
+  - Improve swap code for windows.
+2.8.22: update version 6.4.2.
+2.8.21: Handle windows host.
+2.8.20: Handle windows host.
 2.8.19: add delete_docker_manager_file remove the blueprint from tmp file.
 2.8.18: Increase token timeout.
 2.8.17: Update default manager version to 641.

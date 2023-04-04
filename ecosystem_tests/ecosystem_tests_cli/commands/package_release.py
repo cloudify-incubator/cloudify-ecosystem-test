@@ -37,10 +37,53 @@ def package_release(directory, name, v2_plugin=False):
     if not name:
         raise ValueError('Argument name can not be "NoneType"')
     try:
-        setup_py = os.path.join(directory, 'setup.py')
-        plugin_release_with_latest(
-            name, find_version(setup_py), v2_plugin=v2_plugin)
+        version = find_version_in_files(directory)
+        plugin_release_with_latest(name, version, v2_plugin=v2_plugin)
     except (RuntimeError, FileNotFoundError):
         plugin_yaml = os.path.join(directory, 'plugin.yaml')
         plugin_release_with_latest(
             name, get_plugin_yaml_version(plugin_yaml), v2_plugin=v2_plugin)
+
+
+def find_version_in_files(directory):
+    __version__py = find_version_file(directory)
+    try:
+        return find_version(__version__py)
+    except (TypeError, RuntimeError):
+        return find_version(os.path.join(directory, 'setup.py'))
+
+
+def find_version_file(directory):
+    return find('__version__.py', directory)
+
+
+def find(name, path):
+    for root, _, files in walklevel(path, depth=2):
+        if name in files:
+            return os.path.join(root, name)
+
+
+def walklevel(path, depth=1):
+    """It works just like os.walk, but you can pass it a level parameter
+       that indicates how deep the recursion will go.
+       If depth is 1, the current directory is listed.
+       If depth is 0, nothing is returned.
+       If depth is -1 (or less than 0), the full depth is walked.
+    """
+    # Borrowed: https://gist.githubusercontent.com/TheMatt2/
+    # faf5ca760c61a267412c46bb977718fa/raw/
+    # ad5643dd1fedf0fd3addcbbd4e22a05136edca02/walklevel.py
+
+    if depth < 0:
+        for root, dirs, files in os.walk(path):
+            yield root, dirs[:], files
+        return
+    elif depth == 0:
+        return
+
+    base_depth = path.rstrip(os.path.sep).count(os.path.sep)
+    for root, dirs, files in os.walk(path):
+        yield root, dirs[:], files
+        cur_depth = root.count(os.path.sep)
+        if base_depth + depth <= cur_depth:
+            del dirs[:]

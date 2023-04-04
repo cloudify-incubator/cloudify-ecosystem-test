@@ -31,6 +31,8 @@ except ImportError:
 from wagon import show
 
 
+from ecosystem_tests.ecosystem_tests_cli.utilities import (
+    get_universal_path)
 from ecosystem_cicd_tools.packaging import (
     get_workspace_files,
     find_wagon_local_path,
@@ -227,15 +229,20 @@ def secrets_create(name, is_file=False):
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
-        with NamedTemporaryFile(mode='w+', delete=True) as outfile:
+        try:
+            outfile = NamedTemporaryFile(mode='w+', delete=False)
             outfile.write(value)
             outfile.flush()
+            outfile.close()
             cmd = 'cfy secrets create -u {0} -f {1}'.format(
                 name,
                 copy_file_to_docker(outfile.name))
-            return cloudify_exec(cmd,
-                                 get_json=False,
-                                 log=False)
+            result = cloudify_exec(cmd,
+                                   get_json=False,
+                                   log=False)
+        finally:
+            os.remove(outfile.name)
+        return result
 
     return cloudify_exec('cfy secrets create -u {0} -s {1}'.format(
         name, value), get_json=False, log=False)
@@ -248,15 +255,18 @@ def blueprints_upload(blueprint_file_name, blueprint_id):
     :param blueprint_id:
     :return:
     """
+    logger.info('Blueprint file name: {}'.format(blueprint_file_name))
+    blueprint_file_name = get_universal_path(blueprint_file_name)
     if not os.path.isfile(blueprint_file_name):
         raise EcosystemTestException(
             'Cant upload blueprint {path} because the file doesn`t '
             'exists.'.format(path=blueprint_file_name))
     remote_dir = copy_directory_to_docker(blueprint_file_name)
-    blueprint_file = posixpath.basename(blueprint_file_name)
+    blueprint_file = get_universal_path(os.path.basename(blueprint_file_name))
+    logger.info('Blueprint file: {}'.format(blueprint_file))
 
     try:
-        output = cloudify_exec('cfy blueprints upload {0} -b {1}'.format(
+        cloudify_exec('cfy blueprints upload {0} -b {1}'.format(
             posixpath.join(remote_dir, blueprint_file),
             blueprint_id), get_json=False)
         delete_file_from_docker(remote_dir)
@@ -516,17 +526,19 @@ def prepare_inputs(inputs):
     logger.info("Preparing inputs...")
     if not inputs:
         yield
-    elif type(inputs) is dict:
-        with NamedTemporaryFile(mode='w+', delete=False) as outfile:
-            yaml.dump(inputs, outfile, allow_unicode=False)
-        logger.debug(
-            "temporary inputs file path {p}".format(p=outfile.name))
-        inputs_on_docker = copy_file_to_docker(outfile.name)
-        os.remove(outfile.name)
+    elif isinstance(inputs, dict):
         try:
+            outfile = NamedTemporaryFile('w+', delete=False)
+            yaml.dump(inputs, outfile, allow_unicode=False)
+            outfile.flush()
+            outfile.close()
+            logger.debug(
+                "temporary inputs file path {p}".format(p=outfile.name))
+            inputs_on_docker = copy_file_to_docker(outfile.name)
             yield inputs_on_docker
         finally:
             delete_file_from_docker(inputs_on_docker)
+            os.remove(outfile.name)
     elif os.path.isfile(inputs):
         inputs_on_docker = copy_file_to_docker(inputs)
         try:
@@ -553,17 +565,7 @@ def upload_test_plugins_dev(plugins,
     plugins = plugins or []
     bundle_path = bundle_path or ''
     if execute_bundle_upload:
-        if os.path.isfile(bundle_path):
-            logger.info("Using plugins bundle found at: {path}".format(
-                path=bundle_path))
-            cloudify_exec(
-                'cfy plugins bundle-upload --path {bundle_path}'.format(
-                    bundle_path=copy_file_to_docker(bundle_path)),
-                get_json=False)
-        else:
-            cloudify_exec(
-                'cfy plugins bundle-upload', get_json=False)
-
+        logger.info('Skipping bundle upload, because it is deprecated.')
     for plugin in plugins:
         sleep(3)
         output = plugins_upload(plugin[0], plugin[1])
