@@ -424,7 +424,7 @@ def log_events(execution_id):
     :return:
     """
     for event in events_list(execution_id):
-        if event['context']['task_error_causes']:
+        if 'null' not in event['context']['task_error_causes']:
             logger.info(event['context']['task_error_causes'])
 
 

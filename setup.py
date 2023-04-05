@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cloudify-ecosystem-test',
-    version='2.8.39',
+    version='2.8.40',
     license='LICENSE',
     packages=find_packages(),
     description='Stuff that Ecosystem Tests Use',
@@ -16,7 +16,7 @@ setup(
         'cloudify-common>=5.1.0',
         'urllib3>=1.25.4',
         'deepdiff==5.7.0',
-        'pytest==4.6.11',
+        'pytest',
         'wagon>=0.10.0',
         'progressbar',
         'click>8,<9',
