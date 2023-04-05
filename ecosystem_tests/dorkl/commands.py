@@ -71,13 +71,13 @@ def handle_process(command,
             if stdout_lines:
                 logger.info(stdout_color + 'Execution output: ' + RESET)
                 for stdout_line in stdout_lines:
-                    logger.info(stdout_color + stdout_line + RESET)
+                    logger.info(stdout_color + stdout_line.strip() + RESET)
             stderr_file.flush()
             error_lines = stderr_file_read.readlines()
             if error_lines:
                 logger.info(RED + 'Execution error: ' + RESET)
                 for stderr_line in error_lines:
-                    logger.error(RED + stderr_line + RESET)
+                    logger.error(RED + stderr_line.strip() + RESET)
 
     def return_parsable_output():
         stdout_file.flush()
