@@ -30,20 +30,17 @@ from ecosystem_cicd_tools.new_cicd.github import with_github_client
         short_help='validate blueprints in a repo using cfy-lint autofix.')
 @ecosystem_tests.options.github_token
 @ecosystem_tests.options.repo_name
-@ecosystem_tests.options.directory
 @ecosystem_tests.options.pull_request_title
 def blueprint_linting(github_token=None,
                       repo_name=None,
-                      directory=None,
                       pull_request_title=None):
 
     branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
-
     github_token = github_token or os.environ("GITHUB_TOKEN")
-    org_name = os.environ("CIRCLE_PROJECT_USERNAME")
     repo_name = repo_name or \
-        (org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME"))
-    directory = directory or tempfile.mkdtmp(prefix=time)
+        (os.environ("CIRCLE_PROJECT_USERNAME") + "/" + \
+         os.environ("CIRCLE_PROJECT_REPONAME"))
+    directory = tempfile.mkdtemp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
 
     # Define the name of the files of interest
@@ -61,49 +58,16 @@ def blueprint_linting(github_token=None,
         os.getcwd(), directory))
 
     # check if there are issues in the blueprints
-    try:
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if file.endswith(file_type):
-                    # If the file matches the desired name,
-                    # execute the command on it
-                    full_path = os.path.join(root, file)
-                    full_command = command.format(full_path)
-                    p = subprocess.Popen(full_command.split(),
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
-                    stdout, stderr = p.communicate()
-                    for line in stderr.decode('utf-8').split('\r\n'):
-                        if line:
-                            raise StopIteration
-    except StopIteration:
-        command = "cfy-lint -b {} -af"
-        # create branch
-        source_branch = git_repo.default_branch
-        sb = git_repo.get_branch(source_branch)
-        git_repo.create_git_ref(
-            ref='refs/heads/' + branch_name, sha=sb.commit.sha)
-        repo.git.pull()
-        repo.git.checkout(branch_name)
-
-    if command == "cfy-lint -b {}":
+    files_to_fix = run_command_on_dir(directory, file_type, command)
+    if not files_to_fix:
         # return 0
         raise StopIteration
 
-    # run auto fix
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith(file_type):
-                # If the file matches the desired name,
-                # execute the command on it
-                full_path = os.path.join(root, file)
-                full_command = command.format(full_path)
-                p = subprocess.Popen(full_command.split(),
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-                stdout, stderr = p.communicate()
-                for line in stderr.decode('utf-8').split('\r\n'):
-                    logger.info(line)
+    command = "cfy-lint -b {} -af"
+    source_branch = create_branch(git_repo, branch_name)
+    repo.git.pull()
+    repo.git.checkout(branch_name)
+    run_command_on_dir(directory, file_type, command)
 
     # check status
     status = repo.git.status()
@@ -122,6 +86,33 @@ def blueprint_linting(github_token=None,
 
         # create PR
         title = pull_request_title
-        body = "testing"
+        body = "this was create using ecosystem-test blueprint linting"
         pr = git_repo.create_pull(
             title=title, body=body, head=branch_name, base=source_branch)
+
+
+def run_command_on_dir(directory, file_type, command):
+    i = 0
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(file_type):
+                # If the file matches the desired name,
+                # execute the command on it
+                full_path = os.path.join(root, file)
+                full_command = command.format(full_path)
+                p = subprocess.Popen(full_command.split(),
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+                for line in stderr.decode('utf-8').split('\r\n'):
+                    i += 1
+    return i
+
+
+def create_branch(git_repo, branch_name):
+    source_branch = git_repo.default_branch
+    sb = git_repo.get_branch(source_branch)
+    git_repo.create_git_ref(
+        ref='refs/heads/' + branch_name, sha=sb.commit.sha)
+    return source_branch
+    
