@@ -41,7 +41,8 @@ def blueprint_linting(github_token=None,
 
     github_token = github_token or os.environ("GITHUB_TOKEN")
     org_name = os.environ("CIRCLE_PROJECT_USERNAME")
-    repo_name = repo_name or (org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME"))
+    repo_name = repo_name or \
+        (org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME"))
     directory = directory or tempfile.mkdtmp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
 
@@ -124,5 +125,3 @@ def blueprint_linting(github_token=None,
         body = "testing"
         pr = git_repo.create_pull(
             title=title, body=body, head=branch_name, base=source_branch)
-
-
