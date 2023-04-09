@@ -162,8 +162,8 @@ class Options(object):
                                            type=click.STRING,
                                            help=helptexts.VERSION)
 
-        self.access_token = click.option('-AT',
-                                         '--access-token',
+        self.github_token = click.option('-GT',
+                                         '--github-token',
                                          type=click.STRING,
                                          help=helptexts.ACCESS_TOKEN)
 

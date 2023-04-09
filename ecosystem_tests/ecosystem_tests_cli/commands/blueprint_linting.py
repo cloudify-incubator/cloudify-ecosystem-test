@@ -15,51 +15,43 @@
 
 import os
 import json
+import tempfile
 import subprocess
 from git import Repo
 from github import Github
+from ..logger import logger
 from datetime import datetime
 from ...ecosystem_tests_cli import ecosystem_tests
+from ecosystem_cicd_tools.new_cicd.github import with_github_client
 
 
 @ecosystem_tests.command(
         name='blueprint-linting',
         short_help='validate blueprints in a repo using cfy-lint autofix.')
-@ecosystem_tests.options.access_token
+@ecosystem_tests.options.github_token
 @ecosystem_tests.options.repo_name
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.pull_request_title
-def blueprint_linting(access_token=None,
+def blueprint_linting(github_token=None,
                       repo_name=None,
                       directory=None,
                       pull_request_title=None):
 
-    time = str(datetime.now())
-    time = time.replace(' ', '_')
-    time = time.replace(':', '-')
-    time = time.replace('.', '-')
+    branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
 
-    branch_name = time
-
-    if not access_token:
-        access_token = os.environ("GITHUB_TOKEN")
-    if not repo_name:
-        org_name = os.environ("CIRCLE_PROJECT_USERNAME")
-        repo_name = org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME")
-    if not directory:
-        directory = "/tmp/" + time
-    else:
-        directory = directory + time
-    if not pull_request_title:
-        pull_request_title = "cfy-lint autofix " + time
+    github_token = github_token or os.environ("GITHUB_TOKEN")
+    org_name = os.environ("CIRCLE_PROJECT_USERNAME")
+    repo_name = repo_name or (org_name + "/" + os.environ("CIRCLE_PROJECT_REPONAME"))
+    directory = directory or tempfile.mkdtmp(prefix=time)
+    pull_request_title = pull_request_title or "cfy-lint autofix " + time
 
     # Define the name of the files of interest
-    file_name = ".yaml"
+    file_type = ".yaml"
 
     command = "cfy-lint -b {} --format JSON"
 
     # get github objects
-    g = Github(access_token)
+    g = Github(github_token)
     # user = g.get_user()
     git_repo = g.get_repo(repo_name)
 
@@ -68,12 +60,10 @@ def blueprint_linting(access_token=None,
         os.getcwd(), directory))
 
     # check if there are issues in the blueprints
-    i = 0
     try:
         for root, dirs, files in os.walk(directory):
             for file in files:
-                if file_name in file:
-                    i = i + 1
+                if file.endswith(file_type):
                     # If the file matches the desired name,
                     # execute the command on it
                     full_path = os.path.join(root, file)
@@ -102,19 +92,17 @@ def blueprint_linting(access_token=None,
     # run auto fix
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file_name in file:
+            if file.endswith(file_type):
                 # If the file matches the desired name,
                 # execute the command on it
                 full_path = os.path.join(root, file)
                 full_command = command.format(full_path)
-                print(full_path)
-                print(full_command)
                 p = subprocess.Popen(full_command.split(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
                 for line in stderr.decode('utf-8').split('\r\n'):
-                    print(line)
+                    logger.info(line)
 
     # check status
     status = repo.git.status()
@@ -127,7 +115,7 @@ def blueprint_linting(access_token=None,
         repo.git.commit("-m", "test test test")
         origin = repo.remote(name="origin")
         origin_url = origin.url
-        new_url = origin_url.replace("https://", f"https://{access_token}@")
+        new_url = origin_url.replace("https://", f"https://{github_token}@")
         origin.set_url(new_url)
         origin.push()
 
@@ -136,3 +124,5 @@ def blueprint_linting(access_token=None,
         body = "testing"
         pr = git_repo.create_pull(
             title=title, body=body, head=branch_name, base=source_branch)
+
+
