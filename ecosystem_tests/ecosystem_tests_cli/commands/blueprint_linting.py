@@ -38,7 +38,7 @@ def blueprint_linting(github_token=None,
     branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
     github_token = github_token or os.environ("GITHUB_TOKEN")
     repo_name = repo_name or \
-        (os.environ("CIRCLE_PROJECT_USERNAME") + "/" + \
+        (os.environ("CIRCLE_PROJECT_USERNAME") + "/" +
          os.environ("CIRCLE_PROJECT_REPONAME"))
     directory = tempfile.mkdtemp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
@@ -115,4 +115,3 @@ def create_branch(git_repo, branch_name):
     git_repo.create_git_ref(
         ref='refs/heads/' + branch_name, sha=sb.commit.sha)
     return source_branch
-    
