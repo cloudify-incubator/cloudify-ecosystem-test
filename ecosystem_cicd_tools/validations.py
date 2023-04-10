@@ -255,16 +255,20 @@ def check_version_plugins_and_update(path, plugins, version):
 
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
     logging.info('Update version in {}'.format(file_name))
-
-    with open(os.path.join(rel_file, file_name), 'r') as f:
-        file_contents = f.read()
-
     pattern = r"(package_version:\s*)'\d+.\d+.\d+'"
     replacement = 'package_version: ' + "'{}'".format(version)
-    modified_string = re.sub(pattern, replacement, file_contents)
 
+    with open(os.path.join(rel_file, file_name), 'r') as f:
+        lines = f.readlines()
+    c = -1
+    for line in lines:
+        c += 1
+        if 'package_version:' in line:
+            break
+
+    lines[c] = re.sub(pattern, replacement, lines[c])
     with open(os.path.join(rel_file, file_name), 'w') as fp:
-        fp.write(modified_string)
+        fp.writelines(lines)
 
 
 def _validate_documenation_pulls(docs_repo, jira_ids):
