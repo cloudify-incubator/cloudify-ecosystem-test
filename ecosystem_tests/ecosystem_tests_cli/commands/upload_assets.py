@@ -16,6 +16,7 @@
 import os
 import re
 import sys
+import shutil
 
 from ecosystem_cicd_tools.new_cicd import actions
 from ...ecosystem_tests_cli import (logger, ecosystem_tests)
@@ -39,6 +40,7 @@ def upload_assets(assets,
                   org=None,
                   release=None):
 
+    copy_files_to_workspace()
     assets = get_assets_dict(assets)
 
     if not assets:
@@ -97,3 +99,15 @@ def get_assets_from_workspace():
                 assets_list.append('{}={}'.format(
                     f, os.path.join(WORKSPACE_DIR, f)))
     return assets_list
+
+
+def copy_files_to_workspace():
+    plugin_yaml = re.compile(
+        '(v2_){0,1}plugin(_\\d_\\d){0,1}\\.yaml$')
+    if os.path.exists(WORKSPACE_DIR):
+        for file in os.listdir():
+            if file.endswith('.wgn') or plugin_yaml.search(file):
+                shutil.copyfile(
+                    os.path.join('.', file),
+                    os.path.join('.', WORKSPACE_DIR, file)
+                )

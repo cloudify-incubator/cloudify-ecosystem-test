@@ -263,8 +263,7 @@ def edit_version_in_plugin_yaml(rel_file, file_name, version):
     c = -1
     for line in lines:
         c += 1
-        match = pattern.search(line)
-        if match.group():
+        if pattern.search(line):
             break
 
     lines[c] = re.sub(pattern, replacement, lines[c])

@@ -33,6 +33,7 @@ from ...ecosystem_tests_cli import (
 def verify_plugins_json(name, plugin_version, plugins_yaml_version):
     if not name.endswith('-plugin'):
         logger.logger.info('Not a plugin. Exiting without doing anything.')
+        return
     plugin_version = plugin_version or get_plugin_version()
     plugins_json_content = download_file(plugins_yaml_version)
     if not actions.check_plugins_json(
