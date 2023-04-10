@@ -244,7 +244,18 @@ def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
                  .format(version=version))
     return version
 
+
+def check_version_plugins_and_update(path, plugins, version):
+    path_plugin = os.path.join(os.path.abspath(path))
+    for file_name in plugins:
+        version_in_plugin = get_version_in_plugin(path_plugin, file_name)
+        if version_in_plugin != version:
+            edit_version_in_plugin_yaml(path_plugin, file_name, version)
+
+
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
+    logging.info('Update version in {}'.format(file_name))
+
     with open(os.path.join(rel_file, file_name), 'r') as f:
         file_contents = f.read()
 
@@ -254,17 +265,6 @@ def edit_version_in_plugin_yaml(rel_file, file_name, version):
 
     with open(os.path.join(rel_file, file_name), 'w') as fp:
         fp.write(modified_string)
-
-
-
-
-def check_version_plugins_and_update(path, plugins, version):
-    path_plugin = os.path.join(os.path.abspath(path))
-    for file_name in plugins:
-        version_in_plugin = get_version_in_plugin(path_plugin, file_name)
-        if version_in_plugin != version:
-            logging.info('Update version in {}'.format(file_name))
-            edit_version_in_plugin_yaml(path_plugin, file_name, version)
 
 
 def _validate_documenation_pulls(docs_repo, jira_ids):
