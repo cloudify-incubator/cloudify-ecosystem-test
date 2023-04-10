@@ -184,10 +184,10 @@ def get_version_py(plugin_directory):
             for file in os.listdir(lib):
                 if '__version__.py' == file:
                     line = read_file(os.path.join(lib, file))
-                    version = re.search(r"\d+\.\d+\.\d+", line).group()
-                    return version
+                    # The version line.
+                    return re.search(r"\d+\.\d+\.\d+", line).group()
             raise Exception(
-                'Failed to get version from file __verison__.py')
+                'Failed to get version from file __version__.py')
 
 
 def get_plugins(path):
