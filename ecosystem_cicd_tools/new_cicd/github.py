@@ -154,9 +154,8 @@ def create_release(name, version, message, commit, repository):
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
-                   workspace_files=None,
-                   workspace_path=None,
-                   v2_plugin=False):
+                   *_,
+                   **__):
 
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
