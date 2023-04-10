@@ -19,7 +19,10 @@ import yaml
 
 from ecosystem_cicd_tools.new_cicd import s3
 from ecosystem_cicd_tools.new_cicd import actions
-from ...ecosystem_tests_cli import (logger, ecosystem_tests)
+from ...ecosystem_tests_cli import (
+    logger,
+    ecosystem_tests
+)
 
 
 @ecosystem_tests.command(name='verify-plugins-json',
@@ -29,7 +32,7 @@ from ...ecosystem_tests_cli import (logger, ecosystem_tests)
 @ecosystem_tests.options.plugins_yaml_version
 def verify_plugins_json(name, plugin_version, plugins_yaml_version):
     if not name.endswith('-plugin'):
-        logger.info('Not a plugin. Exiting without doing anything.')
+        logger.logger.info('Not a plugin. Exiting without doing anything.')
     plugin_version = plugin_version or get_plugin_version()
     plugins_json_content = download_file(plugins_yaml_version)
     if not actions.check_plugins_json(
