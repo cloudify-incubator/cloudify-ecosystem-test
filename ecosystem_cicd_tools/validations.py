@@ -256,14 +256,15 @@ def check_version_plugins_and_update(path, plugins, version):
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
     logging.info('Update version in {}'.format(file_name))
     pattern = re.compile("(package_version:\s*)'\d+.\d+.\d+'")
-    replacement = 'package_version: ' + "'{}'".format(version)
+    replacement = "package_version: '{}'".format(version)
 
     with open(os.path.join(rel_file, file_name), 'r') as f:
         lines = f.readlines()
     c = -1
     for line in lines:
         c += 1
-        if pattern.search(line):
+        match = pattern.search(line)
+        if match.group():
             break
 
     lines[c] = re.sub(pattern, replacement, lines[c])
