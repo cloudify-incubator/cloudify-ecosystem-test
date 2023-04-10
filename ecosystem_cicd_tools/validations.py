@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import pathlib
 import logging
 import subprocess
 from re import match, compile
@@ -210,17 +211,6 @@ def get_plugins(path):
     return assets_list
 
 
-def check_version_plugins(path, plugins, version):
-    path_plugin = os.path.join(os.path.abspath(path))
-    for name in plugins:
-        version_in_plugin = get_version_in_plugin(path_plugin, name)
-        if version_in_plugin != version:
-            raise Exception('Version {version} '
-                            'does not match {package_source}.'.format(
-                                version=version_in_plugin,
-                                package_source=path_plugin))
-
-
 def get_version_in_plugin(rel_file, name):
     lines = read_file(os.path.join(rel_file, name))
     for line in lines.splitlines():
@@ -246,11 +236,35 @@ def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
 
     plugins_asset = get_plugins(plugin_directory)
     version = get_version_py(plugin_directory)
-    check_version_plugins(plugin_directory, plugins_asset, version)
+
+    check_version_plugins_and_update(plugin_directory, plugins_asset, version)
+
     check_changelog_version(version, os.path.join(plugin_directory, changelog))
     logging.info('The official version of this plugin is {version}'
                  .format(version=version))
     return version
+
+def edit_version_in_plugin_yaml(rel_file, file_name, version):
+    with open(os.path.join(rel_file, file_name), 'r') as f:
+        file_contents = f.read()
+
+    pattern = r"(package_version:\s*)'\d+.\d+.\d+'"
+    replacement = 'package_version: ' + "'{}'".format(version)
+    modified_string = re.sub(pattern, replacement, file_contents)
+
+    with open(os.path.join(rel_file, file_name), 'w') as fp:
+        fp.write(modified_string)
+
+
+
+
+def check_version_plugins_and_update(path, plugins, version):
+    path_plugin = os.path.join(os.path.abspath(path))
+    for file_name in plugins:
+        version_in_plugin = get_version_in_plugin(path_plugin, file_name)
+        if version_in_plugin != version:
+            logging.info('Update version in {}'.format(file_name))
+            edit_version_in_plugin_yaml(path_plugin, file_name, version)
 
 
 def _validate_documenation_pulls(docs_repo, jira_ids):
