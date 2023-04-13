@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import pathlib
+import yaml
 import logging
 import subprocess
 from re import match, compile
@@ -96,6 +97,24 @@ def read_yaml_file(file_path):
             logging.error('{path} is not in YAML format.'.format(
                 path=file_path))
             raise
+
+
+def update_changelog(plugin_directory, changelog, branch, version):
+
+    new_comments = get_list_of_comments_from_git(branch, version)
+
+    with open(plugin_directory+changelog) as f:
+        changelog_yaml = yaml.load(f, Loader=yaml.FullLoader)
+        commits = changelog_yaml.get(version, [])
+        for commit_message in new_comments:
+            commits.append(commit_message)
+        changelog_yaml[version] = commits
+
+    yaml.dump_all(changelog_yaml, changelog)
+
+
+def get_list_of_comments_from_git(name_branch, version):
+    return []
 
 
 def check_changelog_version(version, file_path):
@@ -221,7 +240,7 @@ def get_version_in_plugin(rel_file, name):
             return line_no_quotes.strip('\n')
 
 
-def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
+def validate_plugin_version(plugin_directory=None, branch=None, changelog='CHANGELOG.txt'):
     """
     Validate plugin version.
 
@@ -239,7 +258,10 @@ def validate_plugin_version(plugin_directory=None, changelog='CHANGELOG.txt'):
 
     check_version_plugins_and_update(plugin_directory, plugins_asset, version)
 
-    check_changelog_version(version, os.path.join(plugin_directory, changelog))
+    if branch:
+        update_changelog(plugin_directory, changelog, version)
+    else:
+        check_changelog_version(version, os.path.join(plugin_directory, changelog))
     logging.info('The official version of this plugin is {version}'
                  .format(version=version))
     return version

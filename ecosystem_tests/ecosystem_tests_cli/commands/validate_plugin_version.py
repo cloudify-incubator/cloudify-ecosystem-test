@@ -12,8 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from ecosystem_cicd_tools.validations import \
-    validate_plugin_version as validate
+
+import re
+from ecosystem_cicd_tools.validations import  (
+    validate_plugin_version,
+    check_version_plugins_and_update
+)
+from .validate_branch import get_branch
 
 from ...ecosystem_tests_cli import ecosystem_tests
 
@@ -22,4 +27,10 @@ from ...ecosystem_tests_cli import ecosystem_tests
                          short_help='Validate plugin version.')
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
-    validate(directory)
+    branch = get_branch()
+    pattern = re.compile("(r*-build)")
+    print(branch)
+    if pattern.search(branch):
+        validate_plugin_version(directory, branch)
+    else:
+        validate_plugin_version(directory)
