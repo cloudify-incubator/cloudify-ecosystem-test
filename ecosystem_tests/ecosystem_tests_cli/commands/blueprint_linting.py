@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-import json
 import tempfile
 import subprocess
 from git import Repo
