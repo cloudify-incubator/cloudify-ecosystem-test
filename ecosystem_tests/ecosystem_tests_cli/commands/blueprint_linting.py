@@ -79,7 +79,7 @@ def blueprint_linting(github_token=None,
     if not status == status_no_change:
         prepare_files_for_pr(repo, github_token)
         create_pr(git_repo, pull_request_title, branch_name, source_branch)
-        
+
 
 def run_command_on_dir(directory, file_type, command):
     i = 0
@@ -94,7 +94,7 @@ def run_command_on_dir(directory, file_type, command):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
-                for line in stderr.decode('utf-8').split('\r\n'):
+                for line in stderr:
                     i += 1
     return i
 
