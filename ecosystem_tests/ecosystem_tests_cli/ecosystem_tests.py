@@ -167,11 +167,6 @@ class Options(object):
                                          type=click.STRING,
                                          help=helptexts.ACCESS_TOKEN)
 
-        self.repo_name = click.option('-RN',
-                                      '--repo-name',
-                                      type=click.STRING,
-                                      help=helptexts.REPO_NAME)
-
         self.pull_request_title = click.option(
             '-PRT',
             '--pull-request-title',

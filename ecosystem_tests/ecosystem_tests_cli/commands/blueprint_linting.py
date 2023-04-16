@@ -29,28 +29,30 @@ from ecosystem_cicd_tools.new_cicd.github import with_github_client
         name='blueprint-linting',
         short_help='validate blueprints in a repo using cfy-lint autofix.')
 @ecosystem_tests.options.github_token
-@ecosystem_tests.options.repo_name
+@ecosystem_tests.options.repo
+@ecosystem_tests.options.org
 @ecosystem_tests.options.pull_request_title
 def blueprint_linting(github_token=None,
-                      repo_name=None,
+                      repo=None,
+                      org=None,
                       pull_request_title=None):
 
+    # prep variables
     branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
     github_token = github_token or os.environ("GITHUB_TOKEN")
-    repo_name = repo_name or \
-        (os.environ("CIRCLE_PROJECT_USERNAME") + "/" +
-         os.environ("CIRCLE_PROJECT_REPONAME"))
+    if org and repo:
+        repo_name = org + "/" + repo
+    else:
+        repo_name = (os.environ("CIRCLE_PROJECT_USERNAME") + "/" +
+                     os.environ("CIRCLE_PROJECT_REPONAME"))
     directory = tempfile.mkdtemp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
 
-    # Define the name of the files of interest
     file_type = ".yaml"
-
     command = "cfy-lint -b {} --format JSON"
 
     # get github objects
     g = Github(github_token)
-    # user = g.get_user()
     git_repo = g.get_repo(repo_name)
 
     # clone repo to dest_folder
@@ -75,21 +77,9 @@ def blueprint_linting(github_token=None,
         "'origin/{}'.\n\nnothing to commit, working tree clean".format(
             branch_name, branch_name)
     if not status == status_no_change:
-        # update files
-        repo.git.add("*")
-        repo.git.commit("-m", "test test test")
-        origin = repo.remote(name="origin")
-        origin_url = origin.url
-        new_url = origin_url.replace("https://", f"https://{github_token}@")
-        origin.set_url(new_url)
-        origin.push()
-
-        # create PR
-        title = pull_request_title
-        body = "this was create using ecosystem-test blueprint linting"
-        pr = git_repo.create_pull(
-            title=title, body=body, head=branch_name, base=source_branch)
-
+        prepare_files_for_pr(repo, github_token)
+        create_pr(git_repo, pull_request_title, branch_name, source_branch)
+        
 
 def run_command_on_dir(directory, file_type, command):
     i = 0
@@ -115,3 +105,19 @@ def create_branch(git_repo, branch_name):
     git_repo.create_git_ref(
         ref='refs/heads/' + branch_name, sha=sb.commit.sha)
     return source_branch
+
+
+def prepare_files_for_pr(repo, github_token):
+    repo.git.add("*")
+    repo.git.commit("-m", "test test test")
+    origin = repo.remote(name="origin")
+    origin_url = origin.url
+    new_url = origin_url.replace("https://", f"https://{github_token}@")
+    origin.set_url(new_url)
+    origin.push()
+
+
+def create_pr(git_repo, title, branch_name, source_branch):
+    body = "this was create using ecosystem-test blueprint linting"
+    pr = git_repo.create_pull(
+        title=title, body=body, head=branch_name, base=source_branch)
