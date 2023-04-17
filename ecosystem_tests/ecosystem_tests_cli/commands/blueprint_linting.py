@@ -23,6 +23,8 @@ from datetime import datetime
 from ...ecosystem_tests_cli import ecosystem_tests
 from ecosystem_cicd_tools.new_cicd.github import with_github_client
 
+FILE_TYPE = ".yaml"
+BLUEPRINT_START = "tosca_definitions_version:"
 
 @ecosystem_tests.command(
         name='blueprint-linting',
@@ -35,40 +37,39 @@ def blueprint_linting(github_token=None,
                       repo=None,
                       org=None,
                       pull_request_title=None):
+    
+    _blueprint_linting(github_token=github_token,
+                       repository_name=repo, 
+                       organization_name=org, 
+                       pull_request_title=pull_request_title)
 
+
+@with_github_client
+def _blueprint_linting(github_token, repository_name, organization_name, pull_request_title, *_, **__):
     # prep variables
-    branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
     github_token = github_token or os.environ("GITHUB_TOKEN")
-    if org and repo:
-        repo_name = org + "/" + repo
-    else:
-        repo_name = (os.environ("CIRCLE_PROJECT_USERNAME") + "/" +
-                     os.environ("CIRCLE_PROJECT_REPONAME"))
+    branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
     directory = tempfile.mkdtemp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
 
-    file_type = ".yaml"
     command = "cfy-lint -b {} --format JSON"
-
-    # get github objects
-    g = Github(github_token)
-    git_repo = g.get_repo(repo_name)
+    repository = __['repository']
 
     # clone repo to dest_folder
-    repo = Repo.clone_from(git_repo.clone_url, os.path.join(
+    repo = Repo.clone_from(repository.clone_url, os.path.join(
         os.getcwd(), directory))
 
     # check if there are issues in the blueprints
-    files_to_fix = run_command_on_dir(directory, file_type, command)
+    files_to_fix = run_command_on_dir(directory, command)
     if not files_to_fix:
         # return 0
         raise StopIteration
 
     command = "cfy-lint -b {} -af"
-    source_branch = create_branch(git_repo, branch_name)
+    source_branch = create_branch(repository, branch_name)
     repo.git.pull()
     repo.git.checkout(branch_name)
-    run_command_on_dir(directory, file_type, command)
+    run_command_on_dir(directory, command)
 
     # check status
     status = repo.git.status()
@@ -77,24 +78,27 @@ def blueprint_linting(github_token=None,
             branch_name, branch_name)
     if not status == status_no_change:
         prepare_files_for_pr(repo, github_token)
-        create_pr(git_repo, pull_request_title, branch_name, source_branch)
+        create_pr(repository, pull_request_title, branch_name, source_branch)
 
 
-def run_command_on_dir(directory, file_type, command):
+def run_command_on_dir(directory, command):
     i = 0
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith(file_type):
+            if file.endswith(FILE_TYPE):
                 # If the file matches the desired name,
                 # execute the command on it
                 full_path = os.path.join(root, file)
-                full_command = command.format(full_path)
-                p = subprocess.Popen(full_command.split(),
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-                stdout, stderr = p.communicate()
-                for line in stderr:
-                    i += 1
+                with open(full_path, "r") as f:
+                    first_line = f.readline().strip()
+                    if BLUEPRINT_START in first_line:
+                        full_command = command.format(full_path)
+                        p = subprocess.Popen(full_command.split(),
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+                        stdout, stderr = p.communicate()
+                        for line in stderr:
+                            i += 1
     return i
 
 

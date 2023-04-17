@@ -86,7 +86,5 @@ BRANCH = 'Provide branch name in Git'
 V2_PLUGIN = 'Add blueprint and deployment labels to the plugin.yaml ' \
             'before distributing.'
 
-ACCESS_TOKEN = 'GitHub access token.'
-REPO_NAME = "Name of user and repo. "\
-            "for example - cloudify-cosmo/cloudify-aws-plugin"
+GITHUB_TOKEN = 'GitHub access token.'
 PULL_REQUEST_TITLE = "The title of the Pull Request of the fixed blueprints."
