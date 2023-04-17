@@ -112,7 +112,7 @@ def create_branch(git_repo, branch_name):
 
 def prepare_files_for_pr(repo, github_token):
     repo.git.add("*")
-    repo.git.commit("-m", "test test test")
+    repo.git.commit("-m", "blueprint fixed using cfy-lint")
     origin = repo.remote(name="origin")
     origin_url = origin.url
     new_url = origin_url.replace("https://", f"https://{github_token}@")
