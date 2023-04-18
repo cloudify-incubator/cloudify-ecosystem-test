@@ -1,3 +1,4 @@
+2.8.43: automatically update changelog.txt when version.py is updated only in *-build branch
 2.8.42: Exit Plugins JSON job if not a plugin.
 2.8.41: update version in plugin*.yaml from __version__.py'.
 2.8.40: Improve Logging.

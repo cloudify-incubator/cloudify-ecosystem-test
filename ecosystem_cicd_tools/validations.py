@@ -1,14 +1,12 @@
 import os
 import re
 import sys
-import pathlib
 import yaml
 import logging
 import subprocess
 from re import match, compile
 from yaml import safe_load
 from yaml.parser import ParserError
-from ecosystem_cicd_tools.github_stuff import get_client, get_commit
 
 try:
     from packaging.version import parse as parse_version
@@ -100,24 +98,34 @@ def read_yaml_file(file_path):
             raise
 
 
-def update_changelog(plugin_directory, changelog, branch, version):
+def update_changelog(plugin_directory, branch_name, version):
 
-    new_commits = get_list_of_comments_from_github(branch, version)
+    commits_from_branch = get_list_of_commits_from_branch(branch_name, version)
 
-    with open(os.path.join(plugin_directory, changelog)) as f:
+    with open(os.path.join(plugin_directory, CHANGELOG), 'r') as f:
         changelog_yaml = yaml.load(f, Loader=yaml.FullLoader)
-        commits = changelog_yaml.get(version, [])
-        for commit_message in new_commits:
-            if commit_message not in commits:
-                commits.append(commit_message)
-        changelog_yaml[version] = commits
+    commits_from_changelog = changelog_yaml.get(version, [])
 
-    yaml.dump_all(changelog_yaml, changelog)
+    # need to be list type
+    if isinstance(commits_from_changelog, str):
+        commits_from_changelog = [commits_from_changelog]
+
+    # Go through the list of commit_message in *-Build
+    for commit_message in commits_from_branch:
+        # If the message is not already in the changelog Add it
+        if commit_message.commit.message not in commits_from_changelog:
+            commits_from_changelog.append(commit_message)
+
+    # Overwrite the list with the updated list
+    changelog_yaml[version] = commits_from_changelog
+    with open(os.path.join(plugin_directory, CHANGELOG),'w') as f:
+        yaml.dump_all(changelog_yaml, f)
 
 
 @with_github_client
-def get_list_of_comments_from_github(name_branch, version ,repository ,**kwargs):
-    commits = repository.get_commit(name_branch, version)
+def get_list_of_commits_from_branch(name_branch, repository, **kwargs):
+    branch = repository.get_branch(name_branch)
+    commits = repository.get_commit(sha=branch.commit.sha)
     return commits
 
 
@@ -244,14 +252,12 @@ def get_version_in_plugin(rel_file, name):
             return line_no_quotes.strip('\n')
 
 
-def validate_plugin_version(plugin_directory=None, branch=None):
+def validate_plugin_version(plugin_directory=None, branch_name=None):
     """
     Validate plugin version.
-
     :param plugin_directory: The script should send the absolute path.
-    :param plugin_yaml: The name of the plugin YAML file.
-    :param changelog: The name of the CHANGELOG.txt.
-    :return:
+    :param branch_name: The name of the branch if its *-build.
+    :return: official version
     """
 
     plugin_directory = plugin_directory or os.path.join(
@@ -260,10 +266,12 @@ def validate_plugin_version(plugin_directory=None, branch=None):
     plugins_asset = get_plugins(plugin_directory)
     version = get_version_py(plugin_directory)
 
+    # check and update all plugins yaml
     check_version_plugins_and_update(plugin_directory, plugins_asset, version)
 
-    if branch:
-        update_changelog(plugin_directory, CHANGELOG, version)
+    # check or update (CHANGELOG if "*-build" branch name)
+    if branch_name:
+        update_changelog(plugin_directory, branch_name, version)
     else:
         check_changelog_version(version, os.path.join(plugin_directory, CHANGELOG))
     logging.info('The official version of this plugin is {version}'

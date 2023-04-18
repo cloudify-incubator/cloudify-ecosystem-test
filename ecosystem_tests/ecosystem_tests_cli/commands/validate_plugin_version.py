@@ -27,9 +27,9 @@ from ...ecosystem_tests_cli import ecosystem_tests
                          short_help='Validate plugin version.')
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
-    branch = get_branch()
+    branch_name = get_branch()
     pattern = re.compile("(r*-build)")
-    if pattern.search(branch):
-        validate_plugin_version(directory, branch)
+    if pattern.search(branch_name):
+        validate_plugin_version(directory, branch_name)
     else:
         validate_plugin_version(directory)
