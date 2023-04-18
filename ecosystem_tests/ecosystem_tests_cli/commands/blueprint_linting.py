@@ -26,6 +26,7 @@ from ecosystem_cicd_tools.new_cicd.github import with_github_client
 FILE_TYPE = ".yaml"
 BLUEPRINT_START = "tosca_definitions_version:"
 
+
 @ecosystem_tests.command(
         name='blueprint-linting',
         short_help='validate blueprints in a repo using cfy-lint autofix.')
@@ -37,15 +38,20 @@ def blueprint_linting(github_token=None,
                       repo=None,
                       org=None,
                       pull_request_title=None):
-    
+
     _blueprint_linting(github_token=github_token,
-                       repository_name=repo, 
-                       organization_name=org, 
+                       repository_name=repo,
+                       organization_name=org,
                        pull_request_title=pull_request_title)
 
 
 @with_github_client
-def _blueprint_linting(github_token, repository_name, organization_name, pull_request_title, *_, **__):
+def _blueprint_linting(github_token,
+                       repository_name,
+                       organization_name,
+                       pull_request_title,
+                       *_,
+                       **__):
     # prep variables
     github_token = github_token or os.environ("GITHUB_TOKEN")
     branch_name = time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
@@ -94,8 +100,8 @@ def run_command_on_dir(directory, command):
                     if BLUEPRINT_START in first_line:
                         full_command = command.format(full_path)
                         p = subprocess.Popen(full_command.split(),
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE)
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE)
                         stdout, stderr = p.communicate()
                         for line in stderr:
                             i += 1
