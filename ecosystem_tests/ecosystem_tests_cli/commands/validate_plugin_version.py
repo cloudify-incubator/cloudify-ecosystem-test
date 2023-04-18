@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import re
-from ecosystem_cicd_tools.validations import  (
+from ecosystem_cicd_tools.validations import (
     validate_plugin_version,
     check_version_plugins_and_update
 )

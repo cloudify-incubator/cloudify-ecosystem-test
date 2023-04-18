@@ -273,7 +273,8 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     if branch_name:
         update_changelog(plugin_directory, branch_name, version)
     else:
-        check_changelog_version(version, os.path.join(plugin_directory, CHANGELOG))
+        check_changelog_version(version,
+                                os.path.join(plugin_directory, CHANGELOG))
     logging.info('The official version of this plugin is {version}'
                  .format(version=version))
     return version

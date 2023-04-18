@@ -20,7 +20,7 @@ class ValidatePluginVersionTest(BaseCliCommandTest):
 
     @patch('ecosystem_tests.ecosystem_tests_cli.utilities.id_generator')
     @patch('ecosystem_tests.ecosystem_tests_cli.commands'
-           '.validate_plugin_version.validate')
+           '.validate_plugin_version')
     def test_validate_default_values(self,
                                      mock_validate_plugin_version,
                                      mock_id_generator):
