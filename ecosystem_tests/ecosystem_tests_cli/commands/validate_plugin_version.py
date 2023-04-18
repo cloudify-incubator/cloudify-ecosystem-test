@@ -14,10 +14,9 @@
 # limitations under the License.
 
 import re
-from ecosystem_cicd_tools.validations import (
-    validate_plugin_version,
-    check_version_plugins_and_update
-)
+from ecosystem_cicd_tools.validations import \
+    validate_plugin_version as validate
+
 from .validate_branch import get_branch
 
 from ...ecosystem_tests_cli import ecosystem_tests
@@ -30,6 +29,6 @@ def validate_plugin_version(directory):
     branch_name = get_branch()
     pattern = re.compile("(r*-build)")
     if pattern.search(branch_name):
-        validate_plugin_version(directory, branch_name)
+        validate(directory, branch_name)
     else:
-        validate_plugin_version(directory)
+        validate(directory)
