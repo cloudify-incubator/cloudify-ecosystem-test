@@ -8,7 +8,7 @@ import subprocess
 from re import match, compile
 from yaml import safe_load
 from yaml.parser import ParserError
-from ecosystem_cicd_tools.github_stuff import get_client
+from ecosystem_cicd_tools.github_stuff import get_client, get_commit
 
 try:
     from packaging.version import parse as parse_version
@@ -28,6 +28,7 @@ VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
 version = version_file.read().strip()"""
 
+CHANGELOG = 'CHANGELOG.txt'
 INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
 
 logger = logging.getLogger()
@@ -101,20 +102,23 @@ def read_yaml_file(file_path):
 
 def update_changelog(plugin_directory, changelog, branch, version):
 
-    new_comments = get_list_of_comments_from_git(branch, version)
+    new_commits = get_list_of_comments_from_github(branch, version)
 
-    with open(plugin_directory+changelog) as f:
+    with open(os.path.join(plugin_directory, changelog)) as f:
         changelog_yaml = yaml.load(f, Loader=yaml.FullLoader)
         commits = changelog_yaml.get(version, [])
-        for commit_message in new_comments:
-            commits.append(commit_message)
+        for commit_message in new_commits:
+            if commit_message not in commits:
+                commits.append(commit_message)
         changelog_yaml[version] = commits
 
     yaml.dump_all(changelog_yaml, changelog)
 
 
-def get_list_of_comments_from_git(name_branch, version):
-    return []
+@with_github_client
+def get_list_of_comments_from_github(name_branch, version ,repository ,**kwargs):
+    commits = repository.get_commit(name_branch, version)
+    return commits
 
 
 def check_changelog_version(version, file_path):
@@ -240,7 +244,7 @@ def get_version_in_plugin(rel_file, name):
             return line_no_quotes.strip('\n')
 
 
-def validate_plugin_version(plugin_directory=None, branch=None, changelog='CHANGELOG.txt'):
+def validate_plugin_version(plugin_directory=None, branch=None):
     """
     Validate plugin version.
 
@@ -259,9 +263,9 @@ def validate_plugin_version(plugin_directory=None, branch=None, changelog='CHANG
     check_version_plugins_and_update(plugin_directory, plugins_asset, version)
 
     if branch:
-        update_changelog(plugin_directory, changelog, version)
+        update_changelog(plugin_directory, CHANGELOG, version)
     else:
-        check_changelog_version(version, os.path.join(plugin_directory, changelog))
+        check_changelog_version(version, os.path.join(plugin_directory, CHANGELOG))
     logging.info('The official version of this plugin is {version}'
                  .format(version=version))
     return version

@@ -29,7 +29,6 @@ from ...ecosystem_tests_cli import ecosystem_tests
 def validate_plugin_version(directory):
     branch = get_branch()
     pattern = re.compile("(r*-build)")
-    print(branch)
     if pattern.search(branch):
         validate_plugin_version(directory, branch)
     else:
