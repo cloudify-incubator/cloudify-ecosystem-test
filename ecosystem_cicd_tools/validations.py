@@ -20,7 +20,10 @@ from .github_stuff import (
     get_pull_requests,
     find_pull_request_numbers,
     check_if_label_in_pr_labels)
-from .new_cicd.github import with_github_client
+from .new_cicd.github import (
+    with_github_client,
+    get_list_of_commits_from_branch
+)
 
 VERSION_EXAMPLE = """
 version_file = open(os.path.join(package_root_dir, 'VERSION'))
@@ -120,13 +123,6 @@ def update_changelog(plugin_directory, branch_name, version):
     changelog_yaml[version] = commits_from_changelog
     with open(os.path.join(plugin_directory, CHANGELOG),'w') as f:
         yaml.dump_all(changelog_yaml, f)
-
-
-@with_github_client
-def get_list_of_commits_from_branch(name_branch, repository, **kwargs):
-    branch = repository.get_branch(name_branch)
-    commits = repository.get_commit(sha=branch.commit.sha)
-    return commits
 
 
 def check_changelog_version(version, file_path):

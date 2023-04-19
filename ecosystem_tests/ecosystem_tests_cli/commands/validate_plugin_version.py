@@ -21,13 +21,17 @@ from .validate_branch import get_branch
 
 from ...ecosystem_tests_cli import ecosystem_tests
 
+# Semantic versioning pattern
+SEMVER_PATTERN = '^([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\\.' \
+                 '[0-9A-Za-z-]+)*))?(?:\\+[0-9A-Za-z-]+)?\\-build$'
+
 
 @ecosystem_tests.command(name='validate-plugin-version',
                          short_help='Validate plugin version.')
 @ecosystem_tests.options.directory
 def validate_plugin_version(directory):
     branch_name = get_branch()
-    pattern = re.compile("(r*-build)")
+    pattern = re.compile(SEMVER_PATTERN)
     if pattern.search(branch_name):
         validate(directory, branch_name)
     else:

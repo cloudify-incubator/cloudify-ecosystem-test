@@ -165,3 +165,10 @@ def plugin_release(plugin_name,
         version_release = create_release(
             version, version, plugin_release_name, commit)
     return version_release
+
+
+@with_github_client
+def get_list_of_commits_from_branch(name_branch, repository, **kwargs):
+    branch = repository.get_branch(name_branch)
+    commits = repository.get_commit(sha=branch.commit.sha)
+    return commits
