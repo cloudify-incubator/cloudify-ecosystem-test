@@ -166,3 +166,23 @@ def plugin_release(plugin_name,
         version_release = create_release(
             version, version, plugin_release_name, commit)
     return version_release
+
+
+def prepare_files_for_pr(cloned_repo, github_token, commit_message):
+    # the cloned repo is create using the Repo.clone_from(....) 
+    # you should use from git import Repo to import it
+    cloned_repo.git.add("*")
+    cloned_repo.git.commit("-m", commit_message)
+    origin = cloned_repo.remote(name="origin")
+    origin_url = origin.url
+    new_url = origin_url.replace("https://", f"https://{github_token}@")
+    origin.set_url(new_url)
+    origin.push()
+
+
+def create_branch(git_repo, branch_name):
+    source_branch = git_repo.default_branch
+    sb = git_repo.get_branch(source_branch)
+    git_repo.create_git_ref(
+        ref='refs/heads/' + branch_name, sha=sb.commit.sha)
+    return source_branch
