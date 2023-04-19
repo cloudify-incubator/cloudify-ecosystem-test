@@ -21,7 +21,9 @@ from github import Github
 from ..logger import logger
 from datetime import datetime
 from ...ecosystem_tests_cli import ecosystem_tests
-from ecosystem_cicd_tools.new_cicd.github import with_github_client, prepare_files_for_pr, create_branch
+from ecosystem_cicd_tools.new_cicd.github import (with_github_client, 
+                                                  prepare_files_for_pr, 
+                                                  create_branch)
 
 FILE_TYPE = ".yaml"
 AF_CMD = "cfy-lint -b {} -af"
