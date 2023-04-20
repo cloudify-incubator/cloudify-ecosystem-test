@@ -92,6 +92,7 @@ def get_plugin_version(file_path=None):
 
 
 def read_yaml_file(file_path):
+    logging.info('OPENING: {}'.format(file_path))
     with open(file_path, 'r') as stream:
         try:
             return safe_load(stream)
@@ -103,10 +104,10 @@ def read_yaml_file(file_path):
 
 def update_changelog(plugin_directory, branch_name, version):
 
-    commits_from_branch = get_list_of_commits_from_branch(branch_name, version)
+    commits_from_branch = get_list_of_commits_from_branch(branch_name)
 
-    with open(os.path.join(plugin_directory, CHANGELOG), 'r') as f:
-        changelog_yaml = yaml.load(f, Loader=yaml.FullLoader)
+    changelog_yaml = read_yaml_file(
+        os.path.join(plugin_directory, CHANGELOG)) or {}
     commits_from_changelog = changelog_yaml.get(version, [])
 
     # need to be list type
@@ -117,12 +118,15 @@ def update_changelog(plugin_directory, branch_name, version):
     for commit_message in commits_from_branch:
         # If the message is not already in the changelog Add it
         if commit_message.commit.message not in commits_from_changelog:
-            commits_from_changelog.append(commit_message)
+            commits_from_changelog.append(commit_message.commit.message)
 
     # Overwrite the list with the updated list
     changelog_yaml[version] = commits_from_changelog
-    with open(os.path.join(plugin_directory, CHANGELOG),'w') as f:
-        yaml.dump_all(changelog_yaml, f)
+    logging.info('CHANGER: {}'.format(changelog_yaml))
+    with open(os.path.join(plugin_directory, CHANGELOG), 'w') as f:
+        yaml.dump(changelog_yaml,
+                  f,
+                  default_flow_style=False)
 
 
 def check_changelog_version(version, file_path):

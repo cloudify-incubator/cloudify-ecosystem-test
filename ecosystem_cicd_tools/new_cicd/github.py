@@ -188,7 +188,9 @@ def create_branch(git_repo, branch_name):
 
 
 @with_github_client
-def get_list_of_commits_from_branch(name_branch, repository, **kwargs):
-    branch = repository.get_branch(name_branch)
-    commits = repository.get_commit(sha=branch.commit.sha)
-    return commits
+def get_list_of_commits_from_branch(name_branch, repository=None, **_):
+    pulls = repository.get_pulls(state='open')
+    for pull in pulls:
+        if pull.head.ref == name_branch:
+            return list(pull.get_commits())
+    return []
