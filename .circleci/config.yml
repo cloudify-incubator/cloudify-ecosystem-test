@@ -43,7 +43,7 @@ commands:
           name: Install tox
           command: pip install tox
       - run:
-          name: Runt flake8 test
+          name: Run flake8 test
           command: tox -e pep8
       - run:
           name: Run py36 test

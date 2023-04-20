@@ -21,7 +21,7 @@ def get_branch():
     if 'CIRCLE_BRANCH' in os.environ:
         return os.environ['CIRCLE_BRANCH']
     command = 'git rev-parse --abbrev-ref HEAD'
-    return get_git_data(command)
+    return get_git_data(command).rstrip()
 
 
 def get_repo():
