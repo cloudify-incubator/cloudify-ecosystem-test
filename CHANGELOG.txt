@@ -1,3 +1,4 @@
+2.8.44: automatically update changelog.txt when version.py is updated only in *-build branch
 2.8.43:
   - Recursive cfy-lint auto fix and open PR.
   - Auto-update changelog.
