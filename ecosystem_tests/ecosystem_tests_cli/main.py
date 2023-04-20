@@ -29,7 +29,8 @@ from .commands import (merge_docs,
                        generate_plugins_json,
                        validate_plugin_yamls,
                        validate_plugin_version,
-                       validate_branch)
+                       validate_branch,
+                       blueprint_linting)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -57,6 +58,7 @@ def _register_commands():
     _ecosystem_test.add_command(
         validate_plugin_version.validate_plugin_version)
     _ecosystem_test.add_command(validate_branch.validate_pull_request)
+    _ecosystem_test.add_command(blueprint_linting.blueprint_linting)
 
 
 _register_commands()

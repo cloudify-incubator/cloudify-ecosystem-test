@@ -162,6 +162,17 @@ class Options(object):
                                            type=click.STRING,
                                            help=helptexts.VERSION)
 
+        self.github_token = click.option('-GT',
+                                         '--github-token',
+                                         type=click.STRING,
+                                         help=helptexts.GITHUB_TOKEN)
+
+        self.pull_request_title = click.option(
+            '-PRT',
+            '--pull-request-title',
+            type=click.STRING,
+            help=helptexts.PULL_REQUEST_TITLE)
+
         self.package = click.option('-P',
                                     '--package',
                                     multiple=True,
