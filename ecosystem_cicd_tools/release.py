@@ -34,12 +34,12 @@ from .packaging import (
 from .validations import get_plugin_version
 
 logging.basicConfig(level=logging.INFO)
-VERSION_STRING_RE = \
-    r"version=\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'"
+VERSION_STRING_RE = r"version\s{0,1}=\s{0,1}\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'" # noqa
 
 
-def find_version(setup_py):
-    with open(setup_py, 'r') as infile:
+def find_version(__version__py):
+    version_string = None
+    with open(__version__py, 'r') as infile:
         version_string = re.findall(VERSION_STRING_RE, infile.read())
     if version_string:
         version = version_string[0].split('=')[1]
@@ -48,6 +48,8 @@ def find_version(setup_py):
             version = version.split(',')[0]
         if version.startswith("'") and version.endswith("'"):
             version = version[1:-1]
+        version = version.strip()
+        version = version.replace('"', '').replace("'", '')
         return version
     raise RuntimeError("Unable to find version string.")
 

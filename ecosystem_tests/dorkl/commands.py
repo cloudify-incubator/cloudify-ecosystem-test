@@ -67,15 +67,17 @@ def handle_process(command,
     def dump_command_output():
         if log:
             stdout_file.flush()
-            for stdout_line in stdout_file_read.readlines():
-                logger.info(stdout_color +
-                            'Execution output: {0}'.format(stdout_line) +
-                            RESET)
+            stdout_lines = stdout_file_read.readlines()
+            if stdout_lines:
+                logger.info(stdout_color + 'Execution output: ' + RESET)
+                for stdout_line in stdout_lines:
+                    logger.info(stdout_color + stdout_line.strip() + RESET)
             stderr_file.flush()
-            for stderr_line in stderr_file_read.readlines():
-                logger.error(RED +
-                             'Execution error: {0}'.format(stderr_line) +
-                             RESET)
+            error_lines = stderr_file_read.readlines()
+            if error_lines:
+                logger.info(RED + 'Execution error: ' + RESET)
+                for stderr_line in error_lines:
+                    logger.error(RED + stderr_line.strip() + RESET)
 
     def return_parsable_output():
         stdout_file.flush()
@@ -83,7 +85,7 @@ def handle_process(command,
             return '\n'.join(fout.readlines())
 
     if log:
-        logger.info('Executing command {0}...'.format(command))
+        logger.info('Executing command [{0}]...'.format(command))
     time_started = datetime.now()
     p = subprocess.Popen(**popen_args)
 
@@ -91,7 +93,7 @@ def handle_process(command,
         return p
 
     n = 2000.0
-    with tqdm(desc='Command {0}'.format(command), total=n) as pbar:
+    with tqdm(desc='Command [{0}]'.format(command), total=n) as pbar:
         while p.poll() is None:
             if log:
                 pbar.update((datetime.now() - time_started).total_seconds())
@@ -107,14 +109,14 @@ def handle_process(command,
         dump_command_output()
 
     if log:
-        logger.info('Command finished {0}...'.format(command))
+        logger.info('Command finished [{0}]...'.format(command))
 
     if p.returncode:
         dump_command_output()
         raise EcosystemTestException('Command failed.'.format(p.returncode))
 
     if log:
-        logger.info('Command succeeded {0}...'.format(command))
+        logger.info('Command succeeded [{0}]...'.format(command))
 
     return return_parsable_output()
 

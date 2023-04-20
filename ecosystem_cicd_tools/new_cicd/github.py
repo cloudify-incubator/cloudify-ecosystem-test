@@ -154,9 +154,8 @@ def create_release(name, version, message, commit, repository):
 def plugin_release(plugin_name,
                    version=None,
                    plugin_release_name=None,
-                   workspace_files=None,
-                   workspace_path=None,
-                   v2_plugin=False):
+                   *_,
+                   **__):
 
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
@@ -186,3 +185,10 @@ def create_branch(git_repo, branch_name):
     git_repo.create_git_ref(
         ref='refs/heads/' + branch_name, sha=sb.commit.sha)
     return source_branch
+
+
+@with_github_client
+def get_list_of_commits_from_branch(name_branch, repository, **kwargs):
+    branch = repository.get_branch(name_branch)
+    commits = repository.get_commit(sha=branch.commit.sha)
+    return commits
