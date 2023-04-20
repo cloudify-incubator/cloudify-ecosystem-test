@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2014-2022 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2014-2023 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ from github import Github
 from ..logger import logger
 from datetime import datetime
 from ...ecosystem_tests_cli import ecosystem_tests
-from ecosystem_cicd_tools.new_cicd.github import (with_github_client, 
-                                                  prepare_files_for_pr, 
-                                                  create_branch)
+from ecosystem_cicd_tools.new_cicd.github import (
+    with_github_client, prepare_files_for_pr, create_branch)
 
 FILE_TYPE = ".yaml"
 AF_CMD = "cfy-lint -b {} -af"
@@ -44,6 +43,7 @@ def blueprint_linting(github_token=None,
                       org=None,
                       pull_request_title=None):
 
+    github_token = github_token or os.environ("GITHUB_TOKEN")
     _blueprint_linting(github_token=github_token,
                        repository_name=repo,
                        organization_name=org,
@@ -59,7 +59,6 @@ def _blueprint_linting(repository,
                        *_,
                        **__):
     # prep variables
-    github_token = github_token or os.environ("GITHUB_TOKEN")
     branch_name = time = datetime.now().strftime(DATE_FORMAT)
     directory = tempfile.mkdtemp(prefix=time)
     pull_request_title = pull_request_title or "cfy-lint autofix " + time
