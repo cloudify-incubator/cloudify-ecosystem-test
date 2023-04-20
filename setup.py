@@ -36,6 +36,7 @@ setup(
         'testtools',
         'nose>=1.3',
         'PyGithub',
+        'gitpython',
         'requests',
         'pyyaml',
         'boto3',
