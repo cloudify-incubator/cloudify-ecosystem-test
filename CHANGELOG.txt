@@ -1,3 +1,4 @@
+2.8.48: Throws an error if The version in plugin.yaml is greater than __verison__.py
 2.8.45: Fix issue in PR management.
 2.8.44: automatically update changelog.txt when version.py is updated only in *-build branch
 2.8.43:
