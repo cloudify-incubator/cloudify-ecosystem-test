@@ -46,6 +46,16 @@ from ecosystem_cicd_tools.validations import validate_plugin_version
 DEFAULT_COLOR = os.environ.get('DEFAULT_WORKFLOW_COLOR', BOLD)
 
 
+def check_if_json_is_junk(stdout_line):
+    try:
+        stdout_line = json.loads(stdout_line.strip())
+        if not stdout_line['context']['task_error_causes']:
+            return ''
+    except (KeyError, json.JSONDecodeError):
+        pass
+    return stdout_line
+
+
 def handle_process(command,
                    timeout=TIMEOUT,
                    log=True,
@@ -69,9 +79,15 @@ def handle_process(command,
             stdout_file.flush()
             stdout_lines = stdout_file_read.readlines()
             if stdout_lines:
-                logger.info(stdout_color + 'Execution output: ' + RESET)
+                logger.info(
+                    stdout_color + 'Execution output: ' + RESET)
                 for stdout_line in stdout_lines:
-                    logger.info(stdout_color + stdout_line.strip() + RESET)
+                    stdout_line = check_if_json_is_junk(stdout_line)
+                    if stdout_line:
+                        if not isinstance(stdout_line, str):
+                            stdout_line = str(stdout_line)
+                        logger.info(
+                            stdout_color + stdout_line + RESET)
             stderr_file.flush()
             error_lines = stderr_file_read.readlines()
             if error_lines:
