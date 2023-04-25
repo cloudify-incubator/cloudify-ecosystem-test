@@ -37,6 +37,7 @@ setup(
         'nose>=1.3',
         'PyGithub',
         'gitpython',
+        'networkx',
         'requests',
         'pyyaml',
         'boto3',
