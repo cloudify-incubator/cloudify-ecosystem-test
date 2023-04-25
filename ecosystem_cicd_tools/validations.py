@@ -122,7 +122,6 @@ def update_changelog(plugin_directory, branch_name, version):
 
     # Overwrite the list with the updated list
     changelog_yaml[version] = commits_from_changelog
-    logging.info('CHANGER: {}'.format(changelog_yaml))
     with open(os.path.join(plugin_directory, CHANGELOG), 'w') as f:
         yaml.dump(changelog_yaml,
                   f,
@@ -284,6 +283,13 @@ def check_version_plugins_and_update(path, plugins, version):
     path_plugin = os.path.join(os.path.abspath(path))
     for file_name in plugins:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
+        if version_in_plugin > version:
+            raise Exception('Version mismatch, please check manually.'
+                            ' The version in {file_name} is greater than '
+                            '__verison__.py'
+                            .format(file_name=file_name,
+                                    version_in_plugin=version_in_plugin,
+                                    version=version ))
         if version_in_plugin != version:
             edit_version_in_plugin_yaml(path_plugin, file_name, version)
 
