@@ -210,11 +210,7 @@ def get_version_py(plugin_directory):
     for f in os.listdir(plugin_directory):
         """ The folders we are looking for 'cloudify_{name}' This is the template.
         But fabric_plugin is an exception."""
-        if not (f.startswith('.') or
-                'egg-info' in f or
-                f == 'cover' or
-                f == 'examples') and (f == 'fabric_plugin' or
-                                      ('cloudify' in f and 'plugin' not in f)):
+        if is_it_a_plugin_package(f):
             lib = os.path.join(plugin_directory, f)
             if not os.path.isdir(lib):
                 continue
@@ -225,6 +221,14 @@ def get_version_py(plugin_directory):
                     return re.search(r"\d+\.\d+\.\d+", line).group()
             raise Exception(
                 'Failed to get version from file __version__.py')
+
+
+def is_it_a_plugin_package(f):
+    if f.startswith('.') or 'egg-info' in f or f == 'cover' or f == 'examples':
+        return False
+    elif f.startswith('cloudify_') or f == 'fabric_plugin' and \
+            'plugin' not in f and 'sdk' not in f:
+        return True
 
 
 def get_plugins(path):
