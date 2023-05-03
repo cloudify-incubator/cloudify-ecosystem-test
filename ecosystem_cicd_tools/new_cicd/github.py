@@ -64,6 +64,7 @@ def get_repository_object(kwargs):
     repository = kwargs['github_client'].get_repo(
         '{org}/{repo}'.format(org=kwargs['organization_name'],
                               repo=kwargs['repository_name']))
+    logger.info('The repo object: {}'.format(repository))
     return repository
 
 

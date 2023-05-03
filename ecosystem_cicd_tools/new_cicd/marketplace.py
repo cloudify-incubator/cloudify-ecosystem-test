@@ -85,7 +85,7 @@ def list_versions(plugin_id):
     logger.info('Getting plugin versions for {}'.format(
         plugin_id))
     url = f'{URL_MARKETPLACE}/plugins/{plugin_id}/versions'
-    json_resp = get_json_from_marketplace(url)
+    json_resp = get_json_from_marketplace(url, True)
     if 'items' in json_resp:
         versions = [item['version'] for item in json_resp['items']]
         return sorted(versions, key=lambda x: version_parse(x))
@@ -99,9 +99,9 @@ def get_json_from_marketplace(url, log_response=False):
     except urllib.error.HTTPError:
         return {}
     body = resp.read()
-    result = json.loads(body)
     if log_response:
-        logger.info('get_json_from_marketplace response {}.'.format(result))
+        logger.info('get_json_from_marketplace response {}.'.format(body))
+    result = json.loads(body)
     return result
 
 
