@@ -14,23 +14,26 @@
 # limitations under the License.
 
 from ..ecosystem_tests_cli import ecosystem_tests
-from .commands import (merge_docs,
-                       validate_docs,
-                       upload_assets,
-                       create_bundle,
-                       upload_plugin,
-                       create_manager,
-                       package_release,
-                       swap_plugin_code,
-                       validate_blueprint,
-                       verify_plugins_json,
-                       prepare_test_manager,
-                       local_blueprint_test,
-                       generate_plugins_json,
-                       validate_plugin_yamls,
-                       validate_plugin_version,
-                       validate_branch,
-                       blueprint_linting)
+from .commands import (
+    yank,
+    merge_docs,
+    validate_docs,
+    upload_assets,
+    create_bundle,
+    upload_plugin,
+    create_manager,
+    package_release,
+    swap_plugin_code,
+    validate_blueprint,
+    verify_plugins_json,
+    prepare_test_manager,
+    local_blueprint_test,
+    generate_plugins_json,
+    validate_plugin_yamls,
+    validate_plugin_version,
+    validate_branch,
+    blueprint_linting
+)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -40,6 +43,7 @@ def _ecosystem_test():
 
 
 def _register_commands():
+    _ecosystem_test.add_command(yank.yank)
     _ecosystem_test.add_command(merge_docs.merge_docs)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)

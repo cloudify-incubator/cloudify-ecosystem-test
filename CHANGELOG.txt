@@ -1,3 +1,5 @@
+2.9.0:
+  - RND-268 Add Yank Command for reverting releases.
 2.8.49: Stop logging executions with no errors.
 2.8.48: Fix bug in plugin version validation.
 2.8.47:
