@@ -31,7 +31,9 @@ version = version_file.read().strip()"""
 
 CHANGELOG = 'CHANGELOG.txt'
 INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
-PLUGIN_PACKAGES = ['fabric_plugin' ,'serverless_plugin', 'managed_nagios_plugin']
+PLUGIN_PACKAGES = ['fabric_plugin' ,
+                   'serverless_plugin', 
+                   'managed_nagios_plugin']
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -225,7 +227,8 @@ def get_version_py(plugin_directory):
 
 
 def is_valid_plugin_package_name(f):
-    return (f in PLUGIN_PACKAGES ) or (f.startswith('cloudify_') and 'plugin' not in f and 'sdk' not in f) 
+    return (f in PLUGIN_PACKAGES ) or (f.startswith('cloudify_') and 
+                                       'sdk' not in f) 
 
 
 def get_plugins(path):
