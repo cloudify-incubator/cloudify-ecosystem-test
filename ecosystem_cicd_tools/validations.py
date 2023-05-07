@@ -227,8 +227,15 @@ def get_version_py(plugin_directory):
 
 
 def is_valid_plugin_package_name(f):
-    return (f in PLUGIN_PACKAGES ) or (f.startswith('cloudify_') and 
-                                       'sdk' not in f) 
+    is_package_special_name = f in PLUGIN_PACKAGES
+    is_bad_details = (f.startswith('.') or 
+                      'egg-info' in f or 
+                      f == 'cover' or
+                      f == 'examples' or 
+                      'sdk' in f)
+    is_correct_name = f.startswith('cloudify_')
+
+    return (is_package_special_name or is_correct_name) and not is_bad_details
 
 
 def get_plugins(path):
