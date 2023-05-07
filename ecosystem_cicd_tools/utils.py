@@ -236,9 +236,16 @@ def create_archive(source_directory, destination):
     logging.info('Finished writing archive {0}'.format(destination))
 
 
-def get_json(url):
+def get_json(url, method=None):
+    if method:
+        kwargs = {'url': url, 'method': method}
+    else:
+        kwargs = {'url': url}
+    logging.info('Getting JSON for request: {}'.format(kwargs))
     try:
-        resp = urllib.request.urlopen(url)
+        resp = urllib.request.urlopen(**kwargs)
+        logging.info(
+            'Received JSON for request: {}'.format(resp))
     except urllib.error.HTTPError:
         return {}
     body = resp.read()
