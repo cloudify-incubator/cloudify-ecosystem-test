@@ -157,7 +157,12 @@ class Options(object):
                                         type=click.STRING,
                                         help=helptexts.NAME)
 
-        self.plugin_version = click.option('-PV',
+        self.plugin_version = click.option('-PY',
+                                           '--python-version',
+                                           type=click.STRING,
+                                           help=helptexts.VERSION)
+
+        self.python_version = click.option('-PV',
                                            '--plugin-version',
                                            type=click.STRING,
                                            help=helptexts.VERSION)
