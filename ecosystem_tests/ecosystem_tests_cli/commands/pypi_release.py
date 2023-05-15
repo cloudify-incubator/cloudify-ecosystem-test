@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import pathlib
 from time import sleep
@@ -36,7 +37,7 @@ template = 'https://pypi.org/project/{}/{}/'
 @ecosystem_tests.options.name
 @ecosystem_tests.options.timeout
 def pypi_release(directory, name, timeout):
-    name = name or pathlib.Path(directory).name
+    name = name or get_name(directory)
     version = find_version_in_files(directory)
     endpoint = template.format(name, version)
     start = datetime.now()
@@ -53,3 +54,10 @@ def pypi_release(directory, name, timeout):
         logger.info('Still checking if project {} has version {}'.format(
             name, version))
         sleep(10)
+
+
+def get_name(directory):
+    if 'CIRCLE_PROJECT_REPONAME' in os.environ:
+        return os.environ['CIRCLE_PROJECT_REPONAME']
+    else:
+        return pathlib.Path(directory).name
