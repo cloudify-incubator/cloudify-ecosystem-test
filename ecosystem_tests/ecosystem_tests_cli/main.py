@@ -17,13 +17,16 @@ from ..ecosystem_tests_cli import ecosystem_tests
 from .commands import (
     yank,
     merge_docs,
+    pypi_release,
     validate_docs,
     upload_assets,
     create_bundle,
     upload_plugin,
     create_manager,
     package_release,
+    validate_branch,
     swap_plugin_code,
+    blueprint_linting,
     validate_blueprint,
     verify_plugins_json,
     prepare_test_manager,
@@ -31,8 +34,6 @@ from .commands import (
     generate_plugins_json,
     validate_plugin_yamls,
     validate_plugin_version,
-    validate_branch,
-    blueprint_linting
 )
 
 
@@ -45,6 +46,7 @@ def _ecosystem_test():
 def _register_commands():
     _ecosystem_test.add_command(yank.yank)
     _ecosystem_test.add_command(merge_docs.merge_docs)
+    _ecosystem_test.add_command(pypi_release.pypi_release)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)
     _ecosystem_test.add_command(create_bundle.create_bundle)
