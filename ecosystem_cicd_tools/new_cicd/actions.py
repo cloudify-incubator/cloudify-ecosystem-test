@@ -26,7 +26,7 @@ from . import marketplace
 
 
 @github.with_github_client
-def upload_assets_to_release(assets, release_name, repository, **_):
+def upload_assets_to_release(assets, release_name, repository=None, **_):
     """ Upload a bunch of assets to release.
     Example assets:
     {
