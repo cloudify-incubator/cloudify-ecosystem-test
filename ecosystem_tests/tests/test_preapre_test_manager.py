@@ -16,10 +16,9 @@
 import base64
 from mock import patch
 
-from . import ERROR_EXIT_CODE
-from ...exceptions import EcosystemTestCliException
-from ..commands import BaseCliCommandTest
-from ...commands.prepare_test_manager import prepare_test_manager
+from .commands import ERROR_EXIT_CODE
+from .commands import BaseCliCommandTest
+from ..ecosystem_tests_cli.commands.prepare_test_manager import prepare_test_manager  # noqa
 
 DEMO_LICENCE = 'ZGVtbyBsaWNlbnNlCg=='
 

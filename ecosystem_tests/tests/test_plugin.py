@@ -17,8 +17,8 @@ import os
 
 from testtools import TestCase
 
-from ...ecosystem_tests_cli import plugins
-from ..exceptions import EcosystemTestCliException
+from ..ecosystem_tests_cli import plugins
+from ..ecosystem_tests_cli.exceptions import EcosystemTestCliException  # noqa
 
 TEST_PLUGIN_WAGON_URL = 'https://github.com/cloudify-cosmo/cloudify-aws' \
                         '-plugin/releases/download/2.5.11/cloudify_aws_' \
