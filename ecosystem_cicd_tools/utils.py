@@ -242,11 +242,16 @@ def get_json(url, method=None):
     else:
         kwargs = {'url': url}
     logging.info('Getting JSON for request: {}'.format(kwargs))
+    resp = get_resp(**kwargs)
+    body = resp.read()
+    return json.loads(body)
+
+
+def get_resp(**kwargs):
     try:
         resp = urllib.request.urlopen(**kwargs)
         logging.info(
             'Received JSON for request: {}'.format(resp))
     except urllib.error.HTTPError:
         return {}
-    body = resp.read()
-    return json.loads(body)
+    return resp
