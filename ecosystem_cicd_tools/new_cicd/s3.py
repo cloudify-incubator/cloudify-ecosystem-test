@@ -193,3 +193,29 @@ def get_objects_in_key(plugin_name=None,
         key=lambda v: v.key)
     objects = [o.key for o in sorted_objects]
     return objects
+
+
+@with_s3_client
+def delete_object_from_s3(remote_path,
+                          bucket_name=None,
+                          s3=None):
+    """
+    Delete a file from s3.
+    :param remote_path: The s3 key.
+    :param bucket_name: The s3 bucket.
+    :param s3: s3 client boto3
+    :return:
+    """
+    bucket_name = bucket_name or BUCKET_NAME
+    bucket = s3.Bucket(bucket_name)
+    logger.info('Deleting key from S3: {}'.format(remote_path))
+    kwargs = {
+        'Delete': {
+            'Objects': [
+                {
+                    'Key': remote_path
+                }
+            ]
+        }
+    }
+    bucket.delete_objects(**kwargs)

@@ -66,3 +66,6 @@ boto3_resources_collection.setLevel(logging.ERROR)
 
 github_requester = logging.getLogger('github.Requester')
 github_requester.setLevel(logging.ERROR)
+
+git_cmd = logging.getLogger('git.cmd')
+git_cmd.setLevel(logging.ERROR)

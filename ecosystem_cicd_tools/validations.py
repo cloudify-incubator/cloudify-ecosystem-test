@@ -31,6 +31,9 @@ version = version_file.read().strip()"""
 
 CHANGELOG = 'CHANGELOG.txt'
 INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
+PLUGIN_PACKAGES = ['fabric_plugin' ,
+                   'serverless_plugin', 
+                   'managed_nagios_plugin']
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -210,10 +213,7 @@ def get_version_py(plugin_directory):
     for f in os.listdir(plugin_directory):
         """ The folders we are looking for 'cloudify_{name}' This is the template.
         But fabric_plugin is an exception."""
-        if not (f.startswith('.') or 
-                'egg-info' in f or 
-                f == 'cover' or 
-                f == 'examples'):
+        if os.path.isdir(f) and is_valid_plugin_package_name(f):
             lib = os.path.join(plugin_directory, f)
             if not os.path.isdir(lib):
                 continue
@@ -224,6 +224,18 @@ def get_version_py(plugin_directory):
                     return re.search(r"\d+\.\d+\.\d+", line).group()
             raise Exception(
                 'Failed to get version from file __version__.py')
+
+
+def is_valid_plugin_package_name(f):
+    is_package_special_name = f in PLUGIN_PACKAGES
+    is_bad_details = (f.startswith('.') or 
+                      'egg-info' in f or 
+                      f == 'cover' or
+                      f == 'examples' or 
+                      'sdk' in f)
+    is_correct_name = f.startswith('cloudify_')
+
+    return (is_package_special_name or is_correct_name) and not is_bad_details
 
 
 def get_plugins(path):

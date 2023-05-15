@@ -3,10 +3,10 @@ from functools import wraps
 from pkg_resources import parse_version
 
 import re
-import github
-import requests
-import urllib3
 import http
+import github
+import urllib3
+import requests
 
 from .logging import logger
 
@@ -64,6 +64,7 @@ def get_repository_object(kwargs):
     repository = kwargs['github_client'].get_repo(
         '{org}/{repo}'.format(org=kwargs['organization_name'],
                               repo=kwargs['repository_name']))
+    logger.info('The repo object: {}'.format(repository))
     return repository
 
 
@@ -138,7 +139,8 @@ def upload_asset(release, asset_path, asset_label):
             raise
 
 
-def create_release(name, version, message, commit, repository):
+@with_github_client
+def create_release(name, version, message, commit, repository=None, *_, **__):
     if isinstance(commit, github.Commit.Commit):
         commit = commit.commit
     logger.info('Create release params {}, {}, {}, {}'.format(
@@ -194,3 +196,24 @@ def get_list_of_commits_from_branch(name_branch, repository=None, **_):
         if pull.head.ref == name_branch:
             return list(pull.get_commits())
     return []
+
+
+@with_github_client
+def delete_release(release_name, repository=None, **_):
+    for resp in repository.get_releases():
+        if resp['name'] == release_name:
+            obj = repository.get_release(resp['id'])
+            obj.delete_release()
+            try:
+                ref = repository.get_git_ref(f"tags/{resp['name']}")
+                ref.delete()
+            except github.GithubException.UnknownObjectException:
+                pass
+
+
+@with_github_client
+def get_release(release_name, repository=None, **_):
+    try:
+        return repository.get_release(release_name)
+    except github.GithubException.UnknownObjectException:
+        pass

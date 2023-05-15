@@ -14,23 +14,29 @@
 # limitations under the License.
 
 from ..ecosystem_tests_cli import ecosystem_tests
-from .commands import (merge_docs,
-                       validate_docs,
-                       upload_assets,
-                       create_bundle,
-                       upload_plugin,
-                       create_manager,
-                       package_release,
-                       swap_plugin_code,
-                       validate_blueprint,
-                       verify_plugins_json,
-                       prepare_test_manager,
-                       local_blueprint_test,
-                       generate_plugins_json,
-                       validate_plugin_yamls,
-                       validate_plugin_version,
-                       validate_branch,
-                       blueprint_linting)
+from .commands import (
+    yank,
+    merge_docs,
+    pypi_release,
+    validate_docs,
+    upload_assets,
+    create_bundle,
+    upload_plugin,
+    create_manager,
+    validate_branch,
+    package_release,
+    validate_branch,
+    swap_plugin_code,
+    blueprint_linting,
+    validate_blueprint,
+    verify_plugins_json,
+    prepare_test_manager,
+    local_blueprint_test,
+    generate_plugins_json,
+    downgrade_plugin_yaml,
+    validate_plugin_yamls,
+    validate_plugin_version,
+)
 
 
 @ecosystem_tests.group(name='ecosystem-test')
@@ -40,7 +46,9 @@ def _ecosystem_test():
 
 
 def _register_commands():
+    _ecosystem_test.add_command(yank.yank)
     _ecosystem_test.add_command(merge_docs.merge_docs)
+    _ecosystem_test.add_command(pypi_release.pypi_release)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)
     _ecosystem_test.add_command(create_bundle.create_bundle)
@@ -48,7 +56,10 @@ def _register_commands():
     _ecosystem_test.add_command(create_manager.create_manager)
     _ecosystem_test.add_command(package_release.package_release)
     _ecosystem_test.add_command(package_release.package_release)
+    _ecosystem_test.add_command(downgrade_plugin_yaml.downgrade)
     _ecosystem_test.add_command(swap_plugin_code.swap_plugin_code)
+    _ecosystem_test.add_command(blueprint_linting.blueprint_linting)
+    _ecosystem_test.add_command(validate_branch.validate_pull_request)
     _ecosystem_test.add_command(validate_blueprint.validate_blueprint)
     _ecosystem_test.add_command(verify_plugins_json.verify_plugins_json)
     _ecosystem_test.add_command(local_blueprint_test.local_blueprint_test)
@@ -57,8 +68,6 @@ def _register_commands():
     _ecosystem_test.add_command(validate_plugin_yamls.validate_plugin_yamls)
     _ecosystem_test.add_command(
         validate_plugin_version.validate_plugin_version)
-    _ecosystem_test.add_command(validate_branch.validate_pull_request)
-    _ecosystem_test.add_command(blueprint_linting.blueprint_linting)
 
 
 _register_commands()

@@ -236,10 +236,22 @@ def create_archive(source_directory, destination):
     logging.info('Finished writing archive {0}'.format(destination))
 
 
-def get_json(url):
-    try:
-        resp = urllib.request.urlopen(url)
-    except urllib.error.HTTPError:
-        return {}
+def get_json(url, method=None):
+    if method:
+        kwargs = {'url': url, 'method': method}
+    else:
+        kwargs = {'url': url}
+    logging.info('Getting JSON for request: {}'.format(kwargs))
+    resp = get_resp(**kwargs)
     body = resp.read()
     return json.loads(body)
+
+
+def get_resp(**kwargs):
+    try:
+        resp = urllib.request.urlopen(**kwargs)
+        logging.info(
+            'Received JSON for request: {}'.format(resp))
+    except urllib.error.HTTPError:
+        return {}
+    return resp

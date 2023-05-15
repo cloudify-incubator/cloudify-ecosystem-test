@@ -1,8 +1,8 @@
 from mock import patch
 
-from ..commands import BaseCliCommandTest
-from ...commands.validate_blueprint import validate_blueprint
-from ...constants import DEFAULT_BLUEPRINT_PATH
+from .commands import BaseCliCommandTest
+from ..ecosystem_tests_cli.commands.validate_blueprint import validate_blueprint  # noqa
+from ..ecosystem_tests_cli.constants import DEFAULT_BLUEPRINT_PATH
 
 
 class ValidateBlueprintTest(BaseCliCommandTest):
