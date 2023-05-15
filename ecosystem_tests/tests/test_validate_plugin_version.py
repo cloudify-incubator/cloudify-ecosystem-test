@@ -1,8 +1,7 @@
 from mock import patch
 
-from ..commands import BaseCliCommandTest
-from ...commands.validate_plugin_version import validate_plugin_version
-from ...constants import DEFAULT_DIRECTORY_PATH
+from .commands import BaseCliCommandTest
+from ..ecosystem_tests_cli.commands.validate_plugin_version import validate_plugin_version  # noqa
 
 from os import path, pardir, environ
 

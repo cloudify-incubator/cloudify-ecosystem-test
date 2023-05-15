@@ -22,8 +22,13 @@ from ecosystem_tests.dorkl.commands import replace_plugin_package_on_manager
 @ecosystem_tests.options.directory
 @ecosystem_tests.options.package
 @ecosystem_tests.options.plugin_version
-def swap_plugin_code(directory, package, plugin_version):
+@ecosystem_tests.options.python_version
+def swap_plugin_code(directory, package, plugin_version, python_version):
 
     for packages in [package]:
         replace_plugin_package_on_manager(
-            packages[0], plugin_version, directory, )
+            packages[0],
+            plugin_version,
+            directory,
+            python_version
+        )

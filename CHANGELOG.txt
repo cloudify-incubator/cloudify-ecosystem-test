@@ -1,6 +1,8 @@
 2.9.0:
   - Fix bug in get_version_py.
   - RND-268 Add Yank Command for reverting releases.
+  - Support Python Version Parameter in plugin swap command.
+  - Downgrade Plugin YAML
 2.8.49: Stop logging executions with no errors.
 2.8.48: Fix bug in plugin version validation.
 2.8.47:

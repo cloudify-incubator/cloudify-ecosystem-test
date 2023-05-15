@@ -18,8 +18,8 @@ import base64
 
 from testtools import TestCase
 
-from ...ecosystem_tests_cli import secrets
-from ..exceptions import EcosystemTestCliException
+from ..ecosystem_tests_cli import secrets
+from ..ecosystem_tests_cli.exceptions import EcosystemTestCliException  # noqa
 
 
 class SecretsTest(TestCase):

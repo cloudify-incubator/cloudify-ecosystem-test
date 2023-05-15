@@ -17,9 +17,9 @@ import time
 from mock import patch
 from testtools import TestCase
 
-from ...ecosystem_tests_cli import utilities
-from ..exceptions import EcosystemTestCliException
-from ..commands import create_manager
+from ..ecosystem_tests_cli import utilities
+from ..ecosystem_tests_cli.exceptions import EcosystemTestCliException  # noqa
+from ..ecosystem_tests_cli.commands import create_manager  # noqa
 
 docker_module_path = 'ecosystem_tests.ecosystem_tests_cli.' \
                      'commands.create_manager.docker.docker'
