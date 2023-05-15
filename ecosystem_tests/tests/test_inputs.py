@@ -17,8 +17,8 @@ import os
 
 from testtools import TestCase
 
-from ...ecosystem_tests_cli import inputs
-from ..exceptions import EcosystemTestCliException
+from ..ecosystem_tests_cli import inputs
+from ..ecosystem_tests_cli.exceptions import EcosystemTestCliException   # noqa
 
 
 class InputsToDictTest(TestCase):

@@ -16,15 +16,17 @@
 from mock import patch
 from tempfile import NamedTemporaryFile
 
-from . import ERROR_EXIT_CODE
-from ...exceptions import EcosystemTestCliException
-from ..commands import BaseCliCommandTest
-from ...commands.local_blueprint_test import local_blueprint_test
-from ...constants import (RERUN,
-                          TIMEOUT,
-                          ROLLBACK_PARTIAL,
-                          DEFAULT_BLUEPRINT_PATH,
-                          DEFAULT_UNINSTALL_ON_SUCCESS)
+from .commands import ERROR_EXIT_CODE
+from ..ecosystem_tests_cli.ecosystem_tests import EcosystemTestCliException  # noqa
+from .commands import BaseCliCommandTest
+from ..ecosystem_tests_cli.commands.local_blueprint_test import local_blueprint_test  # noqa
+from ..ecosystem_tests_cli.constants import (
+    RERUN,
+    TIMEOUT,
+    ROLLBACK_PARTIAL,
+    DEFAULT_BLUEPRINT_PATH,
+    DEFAULT_UNINSTALL_ON_SUCCESS
+)
 
 
 class LocalBlueprintTest(BaseCliCommandTest):
