@@ -98,7 +98,7 @@ def checking_the_upload_of_the_plugin(repository,
         return False
 
     # github
-    latest_release = github.get_release(release_name, repository)
+    latest_release = repository.get_release(release_name)
     assets_list_github = []
     for asset in latest_release.get_assets():
         logging.logger.info('Asset in release: {}'.format(asset.name))

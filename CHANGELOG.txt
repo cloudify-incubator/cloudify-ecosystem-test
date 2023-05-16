@@ -1,3 +1,4 @@
+2.9.5: Fix issue in upload assets.
 2.9.4: Fix issue in upload assets.
 2.9.3: Fix issue in upload assets.
 2.9.2: Improvement in pypi release command to handle name based on env var.
