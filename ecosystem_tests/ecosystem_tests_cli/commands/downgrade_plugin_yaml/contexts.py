@@ -151,6 +151,18 @@ class Context(object):
         logger.info('Wrote new plugin yaml at {}'.format(
             self.absolute_target_path))
 
+    def downgrade_plugin_properties(self):
+        if not (self.source == '1.5' and self.target == '1.4'):
+            return
+        plugins = self._data.get('plugins', {})
+        for plugin_name, plugin_def in plugins.items():
+            properties_description = plugin_def.get('properties_description')
+            plugin_properties = plugin_def.get('properties')
+            if properties_description:
+                del self._data['plugins'][plugin_name]['properties_description']  # noqa
+            if plugin_properties:
+                del self._data['plugins'][plugin_name]['properties']
+
     def downgrade_labels(self):
         labels = self._data.get('labels')
         if not (self.source == '1.4' and self.target == '1.3'):
@@ -165,6 +177,13 @@ class Context(object):
         elif blueprint_labels:
             del self._data['blueprint_labels']
 
+    def downgrade_resource_tags(self):
+        resource_tags = self._data.get('resource_tags')
+        if not (self.source == '1.4' and self.target == '1.3'):
+            return
+        elif resource_tags:
+            del self._data['resource_tags']
+
     def downgrade_nested(self, nested_dict, new_nested_dict=None):
         new_nested_dict = new_nested_dict or {}
         if not (self.source == '1.4' and self.target == '1.3') \
@@ -174,7 +193,7 @@ class Context(object):
             for name, value in list(nested_dict.items()):
                 if self.source == '1.4' and self.target == '1.3':
                     value = self.convert_to_dsl_1_3_types(value)
-                elif self.source == '1.5' and self.target == '1.3':
+                elif self.source == '1.5' and self.target == '1.4':
                     value = self.convert_to_dsl_1_4_types(value)
                 if value:
                     new_nested_dict[name] = value
@@ -229,7 +248,7 @@ class Context(object):
                     if self.source == '1.4' and self.target == '1.3':
                         properties[prop_name] = \
                             self.convert_to_dsl_1_3_types(prop_def)
-                    elif self.source == '1.5' and self.target == '1.3':
+                    elif self.source == '1.5' and self.target == '1.4':
                         properties[prop_name] = \
                             self.convert_to_dsl_1_4_types(prop_def)
                 type_def[internal] = properties
@@ -272,9 +291,11 @@ class Context(object):
         return prop_def
 
     def full_downgrade(self):
-        self.downgrade_labels()
-        self.downgrade_blueprint_labels()
+        self.downgrade_plugin_properties()
         self.downgrade_data_types()
         self.downgrade_node_types()
-        self.downgrade_workflow_params_types()
         self.downgrade_relationship_interfaces()
+        self.downgrade_workflow_params_types()
+        self.downgrade_labels()
+        self.downgrade_blueprint_labels()
+        self.downgrade_resource_tags()
