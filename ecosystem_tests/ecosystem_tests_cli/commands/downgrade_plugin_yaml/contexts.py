@@ -144,10 +144,10 @@ class Context(object):
     def load_data(self):
         self._data = load_yaml(self.absolute_source_path)
 
-    def create_new_plugin_yaml(self):
+    def create_new_plugin_yaml(self, clean_fns=False):
         if not self.file.target_path_object.exists():
             self.file.target_path_object.touch()
-        dump_yaml(self.data, self.absolute_target_path)
+        dump_yaml(self.data, self.absolute_target_path, clean_fns)
         logger.info('Wrote new plugin yaml at {}'.format(
             self.absolute_target_path))
 
@@ -186,6 +186,8 @@ class Context(object):
             interfaces = type_value.get('interfaces', {})
             for interface_name, interface_value in list(interfaces.items()):
                 for op_name, op_value in list(interface_value.items()):
+                    if isinstance(op_value, str):
+                        continue
                     op_inputs = op_value.get('inputs', {})
                     if op_inputs:
                         op_value['inputs'] = self.downgrade_nested(op_inputs)
@@ -200,16 +202,17 @@ class Context(object):
             for direction in ['source_interfaces', 'target_interfaces']:
                 ifaces = type_value.get(direction, {})
                 if ifaces:
-                    for interface_name, interface_value in list(
+                    for interface_name, iface_value in list(
                             ifaces.items()):
-                        for op_name, op_value in list(
-                                interface_value.items()):
+                        for op_name, op_value in list(iface_value.items()):
+                            if isinstance(op_value, str):
+                                continue
                             op_inputs = op_value.get('inputs', {})
                             if op_inputs:
                                 op_value['inputs'] = self.downgrade_nested(
                                     op_inputs)
-                                interface_value[op_name] = op_value
-                        ifaces[interface_name] = interface_value
+                                iface_value[op_name] = op_value
+                        ifaces[interface_name] = iface_value
                     type_value[direction] = ifaces
             self._data['relationships'][type_name] = type_value
 

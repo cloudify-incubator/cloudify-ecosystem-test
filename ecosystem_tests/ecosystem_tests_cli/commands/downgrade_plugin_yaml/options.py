@@ -44,3 +44,10 @@ overwrite = option(
     help='To overwrite target '
     '(e.g., 1.3 is plugin.yaml 1.4 is plugin_1_4.yaml).'
 )
+clean_fns = option(
+    '-xfn',
+    '--clean-fns',
+    type=BOOL,
+    is_flag=True,
+    help='Remove single quotes in intrinsic fns.'
+)
