@@ -23,7 +23,7 @@ from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 
 exit_codes = []
-plugin_yamls = ['plugin.yaml', 'v2_plugin.yaml']
+plugin_yamls = ['plugin.yaml', 'plugin_1_4.yaml']
 content = {
     'plugin.yaml': {},
     'v2_plugin.yaml': {}
