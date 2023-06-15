@@ -600,13 +600,19 @@ def prepare_test_dev(plugins=None,
 def setup_root_bash():
     docker_exec('yum install -y epel-release')
     docker_exec('yum install -y jq')
+
     bashrc = copy_file_from_docker('/root/.bashrc')
+    
     with NamedTemporaryFile() as tmp:
         tmp.write(DOCKER_MGMT_COMMANDS)
+        tmp.seek(0)
         cloudify_sh_temp = copy_file_to_docker(tmp.name)
+
     docker_exec('mv {} /root/.rc-cloudify.sh\n'.format(cloudify_sh_temp))
+
     with open(bashrc, 'a') as infile:
         infile.write('. /root/.rc-cloudify.sh')
+
     bashrc_temp = copy_file_to_docker(bashrc)
     docker_exec('mv {} /root/.bashrc'.format(bashrc_temp))
 

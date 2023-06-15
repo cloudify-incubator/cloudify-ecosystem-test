@@ -243,7 +243,7 @@ def copy_file_to_docker(local_file_path):
 
 
 def copy_file_from_docker(docker_file_path):
-    local_file = NamedTemporaryFile()
+    local_file = NamedTemporaryFile(delete=False)
     pure_windows = PureWindowsPath(local_file.name)
     if pure_windows.drive:
         local_file_path = pure_windows.as_posix().replace('C:', '')
