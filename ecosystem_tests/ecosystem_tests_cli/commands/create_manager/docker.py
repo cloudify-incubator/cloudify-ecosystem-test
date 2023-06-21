@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import json
 import shutil
 
@@ -79,8 +80,8 @@ def docker_images():
 def docker_load(filename):
     with tqdm(desc='docker load -i {filename}'.format(filename=filename),
               total=100) as pbar:
-        result = docker('load -i {filename}'.format(filename=filename),
-                        json_format=False)
+        result = docker('load -i {filename}'.format(
+            filename=filename), json_format=False)
         pbar.update(80)
         if 'Loaded image' in result:
             pbar.update(20)
@@ -132,7 +133,7 @@ def download_and_load_docker_image(url, image_name=None):
     up = urlparse(url)
     if not up.path:
         logger.error('Unable to resolve download url: {}'.format(url))
-    with NamedTemporaryFile() as f:
+    with NamedTemporaryFile(dir=os.path.expanduser('~')) as f:
         logger.info('Downloading this object: {}'.format(url))
         if up.scheme in ['http', 'https']:
             download_file(url, f.name)
