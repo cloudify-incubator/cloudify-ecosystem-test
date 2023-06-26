@@ -1,3 +1,7 @@
+2.9.9:
+  - Docker security issues on Windows.
+  - Improve executions_start cloudify API for docker.
+  - Improve logging.
 2.9.8: Change download location of big file.
 2.9.7: Fix bug in setup_root_bash
 2.9.6: Handle intrinsic fns in plugin yaml.

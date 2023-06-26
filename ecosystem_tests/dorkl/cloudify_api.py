@@ -92,7 +92,7 @@ def license_upload():
         license = base64.b64decode(os.environ[LICENSE_ENVAR_NAME])
     except KeyError:
         raise EcosystemTestException('License env var not set {0}.')
-    file_temp = NamedTemporaryFile(delete=False)
+    file_temp = NamedTemporaryFile(dir=os.path.expanduser('~'), delete=False)
     with open(file_temp.name, 'wb') as outfile:
         outfile.write(license)
     return cloudify_exec('cfy license upload {0}'.format(
@@ -230,7 +230,8 @@ def secrets_create(name, is_file=False):
             'Secret env var not set {0}.'.format(name))
     if is_file:
         try:
-            outfile = NamedTemporaryFile(mode='w+', delete=False)
+            outfile = NamedTemporaryFile(
+                mode='w+', dir=os.path.expanduser('~'), delete=False)
             outfile.write(value)
             outfile.flush()
             outfile.close()
@@ -361,6 +362,9 @@ def executions_start(workflow_id,
         cmd = cmd + pstr
     elif isinstance(params, list) and len(params) > 0:
         cmd = cmd + ' -p ' + ' -p '.join(params)
+    elif hasattr(params, 'name'):
+        docker_path = copy_file_to_docker(params.name)
+        cmd = cmd + ' -p ' + docker_path
     return cloudify_exec(
         cmd.format(timeout, deployment_id, workflow_id),
         get_json=False, timeout=timeout, stdout_color=stdout_color)
@@ -424,7 +428,7 @@ def log_events(execution_id):
     :return:
     """
     for event in events_list(execution_id):
-        if 'null' not in event['context']['task_error_causes']:
+        if event['context']['task_error_causes']:
             logger.info(event['context']['task_error_causes'])
 
 
@@ -528,7 +532,10 @@ def prepare_inputs(inputs):
         yield
     elif isinstance(inputs, dict):
         try:
-            outfile = NamedTemporaryFile('w+', delete=False)
+            outfile = NamedTemporaryFile(
+                'w+',
+                dir=os.path.expanduser('~'),
+                delete=False)
             yaml.dump(inputs, outfile, allow_unicode=False)
             outfile.flush()
             outfile.close()

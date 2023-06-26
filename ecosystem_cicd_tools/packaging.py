@@ -574,7 +574,9 @@ def get_bundle_from_workspace(workspace_path=None):
 
 
 def package_blueprint(name, source_directory):
-    archive_temp = NamedTemporaryFile(delete=False)
+    archive_temp = NamedTemporaryFile(
+        dir=os.path.expanduser('~'),
+        delete=False)
     if '/' in name:
         name = name.replace('/', '-')
         name = name.strip('-')
