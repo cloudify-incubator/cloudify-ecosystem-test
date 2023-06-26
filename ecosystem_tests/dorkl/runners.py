@@ -114,7 +114,8 @@ def prepare_test(plugins=None,
     docker_exec(pip_command)
     if use_vpn:
         value = base64.b64decode(os.environ['vpn_config'])
-        file_temp = NamedTemporaryFile(delete=False)
+        file_temp = NamedTemporaryFile(
+            dir=os.path.expanduser('~'), delete=False)
         with open(file_temp.name, 'w') as outfile:
             outfile.write(value)
         docker_path = copy_file_to_docker(file_temp.name)
@@ -601,7 +602,7 @@ def setup_root_bash():
     docker_exec('yum install -y epel-release')
     docker_exec('yum install -y jq')
     bashrc = copy_file_from_docker('/root/.bashrc')
-    with NamedTemporaryFile() as tmp:
+    with NamedTemporaryFile(dir=os.path.expanduser('~'),) as tmp:
         tmp.write(DOCKER_MGMT_COMMANDS)
         tmp.seek(0)
         cloudify_sh_temp = copy_file_to_docker(tmp.name)

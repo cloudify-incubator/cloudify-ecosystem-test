@@ -160,7 +160,8 @@ def write_json_and_upload_to_s3(content, remote_path, bucket_name):
     logging.info('Writing new content to s3://{remote_path}.'.format(
         remote_path=remote_path))
     logging.info('The new data is {content}'.format(content=content))
-    json_temp = NamedTemporaryFile(suffix='.json', delete=False)
+    json_temp = NamedTemporaryFile(
+        suffix='.json', dir=os.path.expanduser('~'), delete=False)
     with open(json_temp.name, 'w') as outfile:
         json.dump(content, outfile, ensure_ascii=False, indent=4)
     mt, _ = mimetypes.guess_type(json_temp.name)
@@ -169,7 +170,8 @@ def write_json_and_upload_to_s3(content, remote_path, bucket_name):
 
 def write_json(content):
     logging.info('The new data is {content}'.format(content=content))
-    archive_temp = NamedTemporaryFile(delete=False)
+    archive_temp = NamedTemporaryFile(
+        dir=os.path.expanduser('~'), delete=False)
     with open(archive_temp.name, 'w') as outfile:
         json.dump(content, outfile, ensure_ascii=False, indent=4)
     return archive_temp.name

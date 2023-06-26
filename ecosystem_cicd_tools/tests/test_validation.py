@@ -20,7 +20,8 @@ class CheckIsMaxVersion(unittest.TestCase):
                         '2.12.1', '2.12.2', '2.12.4', '2.12.3']
 
         version_to_check = '2.12.2'
-        f = tempfile.NamedTemporaryFile(delete=False)
+        f = tempfile.NamedTemporaryFile(
+            dir=os.path.expanduser('~'), delete=False)
         f.close()
 
         for version_number in dict_version:

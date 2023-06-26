@@ -61,8 +61,10 @@ def handle_process(command,
                    log=True,
                    detach=False,
                    stdout_color=DEFAULT_COLOR):
-    file_obj_stdout = NamedTemporaryFile(delete=False)
-    file_obj_stderr = NamedTemporaryFile(delete=False)
+    file_obj_stdout = NamedTemporaryFile(
+        dir=os.path.expanduser('~'), delete=False)
+    file_obj_stderr = NamedTemporaryFile(
+        dir=os.path.expanduser('~'), delete=False)
     stdout_file = open(file_obj_stdout.name, 'w')
     stdout_file_read = open(file_obj_stdout.name, 'r')
     stderr_file = open(file_obj_stderr.name, 'w')
@@ -243,7 +245,8 @@ def copy_file_to_docker(local_file_path):
 
 
 def copy_file_from_docker(docker_file_path):
-    local_file = NamedTemporaryFile(delete=False)
+    local_file = NamedTemporaryFile(
+        dir=os.path.expanduser('~'), delete=False)
     pure_windows = PureWindowsPath(local_file.name)
     if pure_windows.drive:
         local_file_path = pure_windows.as_posix().replace('C:', '')

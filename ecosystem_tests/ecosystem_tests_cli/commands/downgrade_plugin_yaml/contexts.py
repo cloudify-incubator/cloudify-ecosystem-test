@@ -193,7 +193,8 @@ class Context(object):
                         op_value['inputs'] = self.downgrade_nested(op_inputs)
                     interface_value[op_name] = op_value
                 interfaces[interface_name] = interface_value
-            type_value['interfaces'] = interfaces
+            if interfaces:
+                type_value['interfaces'] = interfaces
             self._data['node_types'][type_name] = type_value
 
     def downgrade_relationship_interfaces(self):
@@ -213,7 +214,8 @@ class Context(object):
                                     op_inputs)
                                 iface_value[op_name] = op_value
                         ifaces[interface_name] = iface_value
-                    type_value[direction] = ifaces
+                    if ifaces:
+                        type_value[direction] = ifaces
             self._data['relationships'][type_name] = type_value
 
     def downgrade_types(self, types_key, internal=None):
@@ -232,7 +234,8 @@ class Context(object):
                     elif self.source == '1.5' and self.target == '1.3':
                         properties[prop_name] = \
                             self.convert_to_dsl_1_4_types(prop_def)
-                type_def[internal] = properties
+                if properties:
+                    type_def[internal] = properties
                 types[type_name] = type_def
             self._data[types_key] = types
 
