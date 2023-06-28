@@ -286,24 +286,22 @@ class Context(object):
 
     def create_v2_plugin_yaml(self, clean_fns):
         dictionary = self._data.get('plugins', {})
-        for key, value in dictionary.items():   
-                     
+        for key, value in dictionary.items():
             blueprint_labels = {
                 'obj-type': {
-                    'values': [ key ]
+                    'values': [key]
                 }
             }
             labels = {
-                'labels': {
-                    'obj-type': {
-                        'values': [ key ]
-                    }
+                'obj-type': {
+                    'values': [key]
                 }
             }
             break
 
         if not self.file.target_path_object.exists():
             self.file.target_path_object.touch()
+
         self._data = load_yaml('plugin.yaml')
         self._data['blueprint_labels'] = blueprint_labels
         self._data['labels'] = labels
