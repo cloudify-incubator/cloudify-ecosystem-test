@@ -20,6 +20,7 @@ from .options import (
     overwrite,
     yaml_path,
     clean_fns,
+    v2,
 )
 from ....ecosystem_tests_cli import ecosystem_tests
 
@@ -37,14 +38,19 @@ downgrade a 1.5 YAML to 1.4.
 @target
 @overwrite
 @clean_fns
+@v2
 def downgrade(yaml_path=None,
               source=None,
               target=None,
               overwrite=False,
-              clean_fns=False):
+              clean_fns=False,
+              v2=False):
     yaml_path = yaml_path or 'plugin_1_4.yaml'
     source = source or '1.4'
     target = target or '1.3'
     ctx = Context(yaml_path, source, target, overwrite)
     ctx.full_downgrade()
     ctx.create_new_plugin_yaml(clean_fns)
+    if source == '1.4' and target == '1.3' and v2:
+        ctx_v2 = Context(yaml_path, target, 'v2', False)
+        ctx_v2.create_v2_plugin_yaml(clean_fns)
