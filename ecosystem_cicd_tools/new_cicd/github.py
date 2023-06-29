@@ -16,9 +16,14 @@ def with_github_client(func):
     def wrapper_func(*args, **kwargs):
 
         kwargs['github_client'] = get_client(kwargs)
-        kwargs['repository_name'] = get_repository_name(kwargs)
-        kwargs['organization_name'] = get_organization_name(kwargs)
-        repository = get_repository_object(kwargs)
+        if 'repository' not in kwargs or not kwargs['repository']:
+            kwargs['repository_name'] = get_repository_name(kwargs)
+            kwargs['organization_name'] = get_organization_name(kwargs)
+            repository = get_repository_object(kwargs)
+        else:
+            repository = kwargs['repository']
+            kwargs['repository_name'] = repository.name
+            kwargs['organization_name'] = repository.organization.name
         kwargs['repository'] = repository
         kwargs['commit'] = get_commit(kwargs)
         return func(*args, **kwargs)
@@ -83,23 +88,11 @@ def get_commit(kwargs):
         return
 
 
-def get_release(name, repository):
-    logger.info('Attempting to get release {name} from repo {repo}.'.format(
-        name=name, repo=repository.name))
-    try:
-        return repository.get_release(name)
-    except github.UnknownObjectException:
-        logger.error(
-            'Failed to get release {name} from repo {repo}.'.format(
-                name=name, repo=repository.name))
-        return
-
-
 def get_latest_release(repository):
     return get_release('latest', repository)
 
 
-def get_most_recent_release(repository):
+def get_most_recent_release(repository=None, **_):
     logger.info('Attempting to get most recent release from repo {repo}.'
                 .format(repo=repository.name))
     releases = sorted(
@@ -140,7 +133,13 @@ def upload_asset(release, asset_path, asset_label):
 
 
 @with_github_client
-def create_release(name, version, message, commit, repository=None, *_, **__):
+def create_release(name,
+                   version,
+                   message,
+                   commit=None,
+                   repository=None,
+                   *_,
+                   **__):
     if isinstance(commit, github.Commit.Commit):
         commit = commit.commit
     logger.info('Create release params {}, {}, {}, {}'.format(
@@ -162,12 +161,10 @@ def plugin_release(plugin_name,
     plugin_release_name = plugin_release_name or "{0}-v{1}".format(
         plugin_name, version)
     version_release = get_release(version)
-    commit = get_commit()
     if not version_release:
         version_release = create_release(
             version, version, plugin_release_name, commit)
     return version_release
-
 
 def prepare_files_for_pr(cloned_repo, github_token, commit_message):
     # the cloned repo is create using the Repo.clone_from(....) 
@@ -201,11 +198,11 @@ def get_list_of_commits_from_branch(name_branch, repository=None, **_):
 @with_github_client
 def delete_release(release_name, repository=None, **_):
     for resp in repository.get_releases():
-        if resp['name'] == release_name:
-            obj = repository.get_release(resp['id'])
+        if resp.title == release_name:
+            obj = repository.get_release(resp.id)
             obj.delete_release()
             try:
-                ref = repository.get_git_ref(f"tags/{resp['name']}")
+                ref = repository.get_git_ref(f"tags/{resp.tag_name}")
                 ref.delete()
             except github.GithubException.UnknownObjectException:
                 pass

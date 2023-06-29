@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import io
+import os
 import json
 import mock
 import unittest
@@ -28,23 +29,19 @@ class TestNewMarketplace(unittest.TestCase):
     def get_resp(json_resp):
         return io.StringIO(json.dumps(json_resp))
 
-    def test_delete_node_type(self, m):
-        m.return_value = self.get_resp({'status': 200})
+    @mock.patch('ecosystem_cicd_tools.utils.requests')
+    def test_delete_node_type(self, m, *_):
+        m.delete = mock.Mock()
         mod.delete_node_type('foo')
-        expected = {
-            'url': 'https://marketplace.cloudify.co/node-types/foo',
-            'method': 'DELETE'
-            }
-        m.assert_called_with(**expected)
+        m.delete.assert_called_with(
+            'https://marketplace.cloudify.co/node-types/foo')
 
-    def test_delete_plugin_version(self, m):
-        m.return_value = self.get_resp({'status': 200})
+    @mock.patch('ecosystem_cicd_tools.utils.requests')
+    def test_delete_plugin_version(self, m, *_):
+        m.delete = mock.Mock()
         mod.delete_plugin_version('foo', 'bar')
-        expected = {
-            'url': 'https://marketplace.cloudify.co/plugins/foo/bar',
-            'method': 'DELETE'
-            }
-        m.assert_called_with(**expected)
+        m.delete.assert_called_with(
+            'https://marketplace.cloudify.co/plugins/foo/bar')
 
     def test_get_plugin_id(self, m):
         m.return_value = self.get_resp(
