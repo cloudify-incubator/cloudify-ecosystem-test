@@ -1,3 +1,4 @@
+2.9.11: Yank fixes.
 2.9.10: RND-921 add v2 flag to downgrade and create_v2_plugin_yaml
 2.9.9:
   - Docker security issues on Windows.

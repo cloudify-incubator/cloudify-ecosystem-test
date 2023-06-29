@@ -20,6 +20,7 @@ import shutil
 import logging
 import tarfile
 import zipfile
+import requests
 import mimetypes
 import urllib.request
 from contextlib import contextmanager
@@ -239,14 +240,20 @@ def create_archive(source_directory, destination):
 
 
 def get_json(url, method=None):
-    if method:
-        kwargs = {'url': url, 'method': method}
+    if method == 'DELETE':
+        return delete_request(url)
+    elif method:
+        req = urllib.request.Request(
+            url=url,
+            method=method)
+        logging.info('Getting JSON for request: {}'.format(req))
+        return get_req_resp(req)
     else:
         kwargs = {'url': url}
-    logging.info('Getting JSON for request: {}'.format(kwargs))
-    resp = get_resp(**kwargs)
-    body = resp.read()
-    return json.loads(body)
+        logging.info('Getting JSON for request: {}'.format(kwargs))
+        resp = get_resp(**kwargs)
+        body = resp.read()
+        return json.loads(body)
 
 
 def get_resp(**kwargs):
@@ -257,3 +264,30 @@ def get_resp(**kwargs):
     except urllib.error.HTTPError:
         return {}
     return resp
+
+
+def get_req_resp(req):
+    try:
+        with urllib.request.urlopen(req) as resp:
+            response_data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError:
+        return {}
+    return response_data
+
+
+def delete_request(url):
+    if 'MARKETPLACE_USER' in os.environ:
+        basic = (os.environ['MARKETPLACE_USER'],
+                 os.environ['MARKETPLACE_PASS'])
+        response = requests.delete(url, auth=basic)
+    else:
+        response = requests.delete(url)
+    try:
+        return response.json()
+    except requests.exceptions.JSONDecodeError:
+        return {}
+
+
+def download_file(url, target_file_obj):
+    with urllib.request.urlopen(url) as response:
+        target_file_obj.write(response.read())

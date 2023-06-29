@@ -40,14 +40,18 @@ class TestNewGithub(unittest.TestCase):
         release_mock = mock.MagicMock()
         ref_mock = mock.MagicMock()
         repo_mock.get_releases.return_value = [
-            {
-                'name': '0.0.2',
-                'id': 'foo',
-            },
-            {
-                'name': '0.0.1',
-                'id': 'bar'
-            }
+            mock.Mock(
+                name='0.0.2',
+                id='foo',
+                title='0.0.2',
+                tag_name='0.0.2'
+            ),
+            mock.Mock(
+                name='0.0.1',
+                id='bar',
+                title='0.0.1',
+                tag_name='0.0.1',
+            ),
         ]
         repo_mock.get_release.return_value = release_mock
         repo_mock.get_git_ref.return_value = ref_mock

@@ -55,7 +55,6 @@ def get_plugin_id(plugin_name):
         if len(json_resp['items']) == 1:
             return json_resp['items'][0]['id']
 
-
 def get_plugin_versions(plugin_id):
     logger.info('Getting plugin versions for ID: {}'.format(plugin_id))
     url_plugin_version = 'https://marketplace.cloudify.co/' \
