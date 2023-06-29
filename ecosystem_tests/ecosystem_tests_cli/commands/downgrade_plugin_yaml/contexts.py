@@ -286,18 +286,17 @@ class Context(object):
 
     def create_v2_plugin_yaml(self, clean_fns):
         dictionary = self._data.get('plugins', {})
-        for key, value in dictionary.items():
-            blueprint_labels = {
-                'obj-type': {
-                    'values': [key]
-                }
+        key = list(dictionary.keys())[0]
+        blueprint_labels = {
+            'obj-type': {
+                'values': [key]
             }
-            labels = {
-                'obj-type': {
-                    'values': [key]
-                }
+        }
+        labels = {
+            'obj-type': {
+                'values': [key]
             }
-            break
+        }
 
         if not self.file.target_path_object.exists():
             self.file.target_path_object.touch()
