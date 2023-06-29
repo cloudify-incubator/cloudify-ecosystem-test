@@ -122,7 +122,9 @@ class Context(object):
         return self._data
 
     def set_filename(self):
-        if self.source == '1.5' and self.target == '1.4':
+        if self.target == 'v2' and self.source == '1.3':
+            self._filename = 'v2_plugin.yaml'
+        elif self.source == '1.5' and self.target == '1.4':
             self._filename = 'plugin_1_4.yaml'
         elif self.source == '1.5':
             logger.error(
@@ -281,3 +283,25 @@ class Context(object):
         self.downgrade_node_types()
         self.downgrade_workflow_params_types()
         self.downgrade_relationship_interfaces()
+
+    def create_v2_plugin_yaml(self, clean_fns):
+        dictionary = self._data.get('plugins', {})
+        key = list(dictionary.keys())[0]
+        blueprint_labels = {
+            'obj-type': {
+                'values': [key]
+            }
+        }
+        labels = {
+            'obj-type': {
+                'values': [key]
+            }
+        }
+
+        if not self.file.target_path_object.exists():
+            self.file.target_path_object.touch()
+
+        self._data = load_yaml('plugin.yaml')
+        self._data['blueprint_labels'] = blueprint_labels
+        self._data['labels'] = labels
+        self.create_new_plugin_yaml(clean_fns)

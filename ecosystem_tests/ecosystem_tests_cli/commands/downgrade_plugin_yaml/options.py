@@ -51,3 +51,9 @@ clean_fns = option(
     is_flag=True,
     help='Remove single quotes in intrinsic fns.'
 )
+v2 = option(
+    '-v2',
+    type=BOOL,
+    is_flag=True,
+    help=' create a v2 YAML.'
+)
