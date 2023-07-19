@@ -46,7 +46,7 @@ def upload_plugin(plugin_name, plugin_version, wagon_type):
     if wagon_type not in legal_wagon_disto_names:
         raise Exception(
             "wagon_type = {}, it can only be one of {}.".format(
-            wagon_type, legal_wagon_disto_names))
+                wagon_type, legal_wagon_disto_names))
     plugin_id = get_plugin_id(repo)
     plugin_version = plugin_version or get_latest_version(
         plugin_id, repo)

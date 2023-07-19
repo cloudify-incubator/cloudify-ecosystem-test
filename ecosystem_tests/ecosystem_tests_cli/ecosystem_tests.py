@@ -153,9 +153,9 @@ class Options(object):
                                       help=helptexts.JSON_PATH)
 
         self.wagon_type = click.option('-WT',
-                                        '--wagon-type',
-                                        type=click.STRING,
-                                        help=helptexts.WAGON_TYPE)
+                                       '--wagon-type',
+                                       type=click.STRING,
+                                       help=helptexts.WAGON_TYPE)
 
         self.plugin_name = click.option('-PN',
                                         '--plugin-name',
