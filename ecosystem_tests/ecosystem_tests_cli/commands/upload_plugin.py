@@ -30,11 +30,18 @@ from ...ecosystem_tests_cli import ecosystem_tests
 @prepare_test_env
 @ecosystem_tests.options.plugin_name
 @ecosystem_tests.options.plugin_version
-def upload_plugin(plugin_name, plugin_version):
+@ecosystem_tests.options.wagon_distribution
+def upload_plugin(plugin_name, plugin_version, wagon_distribution='Centos Core'):
     """
     Upload wagon and yamls to Cfy Manager.
     """
     repo = 'cloudify-{}-plugin'.format(plugin_name)
+    legal_wagon_disto_names = [
+        'Centos Core', 'manylinux', 'Redhat Ootpa','Centos altarch']
+    if wagon_distribution not in legal_wagon_disto_names:
+        raise Exception(
+            "wagon_distribution = {}, it can only be one of {}.".format(
+            wagon_distribution, legal_wagon_disto_names))
     plugin_id = get_plugin_id(repo)
     plugin_version = plugin_version or get_latest_version(
         plugin_id, repo)
@@ -43,7 +50,7 @@ def upload_plugin(plugin_name, plugin_version):
     yaml_url_dict = get_spec_item(
         spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_4')
     wagon_url_dict = get_spec_item(
-        spec['wagon_urls'], 'release', 'Centos Core')
+        spec['wagon_urls'], 'release', wagon_distribution)
     if not yaml_url_dict['url'] or not wagon_url_dict['url']:
         logging.error('Unable to find wagon or yaml for {} {} in {} {}'.format(
             repo, plugin_version, yaml_url_dict, wagon_url_dict
