@@ -24,9 +24,10 @@ from ...dorkl.cloudify_api import plugins_upload
 from ..decorators import prepare_test_env
 from ...ecosystem_tests_cli import ecosystem_tests
 
-VALID_WAGON_DISTRO_NAMES = ['Centos Core', 'manylinux', 'Redhat Ootpa', 
+
+VALID_WAGON_DISTRO_NAMES = ['Centos Core', 'manylinux', 'Redhat Ootpa',
                             'Centos altarch', 'Redhat Maipo']
-    
+
 
 @ecosystem_tests.command(name='upload-plugin',
                          short_help='Upload plugins.')
