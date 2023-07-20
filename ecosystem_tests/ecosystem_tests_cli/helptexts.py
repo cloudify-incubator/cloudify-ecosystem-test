@@ -88,3 +88,6 @@ V2_PLUGIN = 'Add blueprint and deployment labels to the plugin.yaml ' \
 
 GITHUB_TOKEN = 'GitHub access token.'
 PULL_REQUEST_TITLE = "The title of the Pull Request of the fixed blueprints."
+
+WAGON_TYPE = 'The linux distrobution of the wagon, options are' \
+             'Centos Core/manylinux/Redhat Ootpa/Redhat Maipo/Centos altarch.'
