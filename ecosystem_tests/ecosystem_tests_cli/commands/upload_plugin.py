@@ -24,6 +24,9 @@ from ...dorkl.cloudify_api import plugins_upload
 from ..decorators import prepare_test_env
 from ...ecosystem_tests_cli import ecosystem_tests
 
+VALID_WAGON_DISTRO_NAMES = ['Centos Core', 'manylinux', 'Redhat Ootpa', 
+                            'Centos altarch', 'Redhat Maipo']
+    
 
 @ecosystem_tests.command(name='upload-plugin',
                          short_help='Upload plugins.')
@@ -36,17 +39,14 @@ def upload_plugin(plugin_name, plugin_version, wagon_type):
     Upload wagon and yamls to Cfy Manager.
     """
     repo = 'cloudify-{}-plugin'.format(plugin_name)
-    legal_wagon_disto_names = [
-        'Centos Core', 'manylinux', 'Redhat Ootpa',
-        'Centos altarch', 'Redhat Maipo']
     if plugin_name in ['kubernetes']:
         wagon_type = wagon_type or 'manylinux'
     else:
         wagon_type = wagon_type or 'Centos Core'
-    if wagon_type not in legal_wagon_disto_names:
+    if wagon_type not in VALID_WAGON_DISTRO_NAMES:
         raise Exception(
             "wagon_type = {}, it can only be one of {}.".format(
-                wagon_type, legal_wagon_disto_names))
+                wagon_type, VALID_WAGON_DISTRO_NAMES))
     plugin_id = get_plugin_id(repo)
     plugin_version = plugin_version or get_latest_version(
         plugin_id, repo)
