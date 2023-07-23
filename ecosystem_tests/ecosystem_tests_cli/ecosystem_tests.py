@@ -307,6 +307,22 @@ class Options(object):
                                          type=click.STRING,
                                          help='Github API token.')
 
+        self.cloudify_hostname = click.option(
+            '--cloudify-hostname',
+            type=click.STRING,
+            help='The hostname or IP of a Cloudify Manager',
+        )
+        self.cloudify_tenant = click.option(
+            '--cloudify-tenant',
+            type=click.STRING,
+            help='The Cloudify Manager Tenant',
+        )
+        self.cloudify_token = click.option(
+            '--cloudify-token',
+            type=click.STRING,
+            help='The Cloudify Manager Token',
+        )
+
         self.branch = click.option('-B',
                                    '--branch',
                                    default=None,
