@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import sys
 import shutil
 import zipfile
 import requests
@@ -22,6 +23,22 @@ import contextlib
 from urllib.parse import urlparse
 
 from ecosystem_tests.ecosystem_tests_cli.logger import logger
+
+from cloudify_rest_client import CloudifyClient
+
+DEP_CREATE = 'create_deployment_environment'
+
+
+def with_client(func):
+    """
+    :param func: This is fn to be called.
+    :return: a wrapper object encapsulating the invoked function
+    """
+
+    def wrapper_inner(*args, **kwargs):
+        kwargs['client'] = CloudifyClient(**get_client_kwargs_from_env())
+        return func(*args, **kwargs)
+    return wrapper_inner
 
 
 def download_file(url, destination=None, keep_name=False):
@@ -63,23 +80,19 @@ def get_local_path(source, destination=None, create_temp=False):
     if urlparse(source).scheme in allowed_schemes:
         downloaded_file = download_file(source, destination, keep_name=True)
         return downloaded_file
-    else:
-        source = os.path.abspath(source)
-        if os.path.isfile(source):
-            if not destination and create_temp:
-                source_name = os.path.basename(source)
-                destination = os.path.join(tempfile.mkdtemp(), source_name)
-            if destination:
-                shutil.copy(source, destination)
-                return destination
-            else:
-                return source
+    elif os.path.isfile(source):
+        if not destination and create_temp:
+            source_name = os.path.basename(source)
+            destination = os.path.join(tempfile.mkdtemp(), source_name)
+        if destination:
+            shutil.copy(source, destination)
+            return destination
         else:
-            logger.error(
-                'You must provide either a path to a local file, '
-                'or a remote URL '
-                'using one of the allowed schemes: {0}'.format(
-                    allowed_schemes))
+            return source
+    else:
+        logger.error(
+            'You must provide either a path to a local file, or a remote URL '
+            'using one of the allowed schemes: {0}'.format(allowed_schemes))
 
 
 def zip_files(files):
@@ -106,7 +119,7 @@ def create_zip(source, destination, include_folder=True):
 
 
 def generate_progress_handler(file_path, action='', max_bar_length=80):
-    terminal_width = os.get_terminal_size().columns
+    terminal_width = shutil.get_terminal_size().columns
     terminal_width = terminal_width or max_bar_length
     bar_length = min(max_bar_length, terminal_width) - len(action) - 12
     file_name = os.path.basename(file_path)
@@ -122,5 +135,7 @@ def generate_progress_handler(file_path, action='', max_bar_length=80):
         bar = '#' * filled_length + '-' * (bar_length - filled_length)
         msg = '\r{0} {1} |{2}| {3}%'.format(action, file_name, bar, percents)
         logger.info(msg)
+        if read_bytes >= total_bytes:
+            sys.stdout.write('\n')
 
     return print_progress

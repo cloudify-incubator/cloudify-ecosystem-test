@@ -17,6 +17,7 @@ import os
 import base64
 from boto3 import client
 from cloudify import ctx
+from tempfile import NamedTemporaryFile
 
 from ecosystem_tests.nerdl.api import (
     list_plugins,
@@ -152,9 +153,9 @@ def create_secrets(name, is_file=False):
         raise EcosystemTestException(
             'Secret env var not set {0}.'.format(name))
     if is_file:
+        outfile = NamedTemporaryFile(
+            mode='w+', dir=os.path.expanduser('~'), delete=False)
         try:
-            outfile = NamedTemporaryFile(
-                mode='w+', dir=os.path.expanduser('~'), delete=False)
             outfile.write(value)
             outfile.flush()
             outfile.close()

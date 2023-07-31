@@ -32,6 +32,7 @@ from .commands import (
     verify_plugins_json,
     prepare_test_manager,
     local_blueprint_test,
+    remote_blueprint_test,
     generate_plugins_json,
     downgrade_plugin_yaml,
     validate_plugin_yamls,
@@ -64,6 +65,7 @@ def _register_commands():
     _ecosystem_test.add_command(validate_blueprint.validate_blueprint)
     _ecosystem_test.add_command(verify_plugins_json.verify_plugins_json)
     _ecosystem_test.add_command(local_blueprint_test.local_blueprint_test)
+    _ecosystem_test.add_command(remote_blueprint_test.remote_blueprint_test)
     _ecosystem_test.add_command(prepare_test_manager.prepare_test_manager)
     _ecosystem_test.add_command(generate_plugins_json.generate_plugins_json)
     _ecosystem_test.add_command(validate_plugin_yamls.validate_plugin_yamls)
