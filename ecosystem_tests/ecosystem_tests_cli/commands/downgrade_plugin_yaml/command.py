@@ -51,6 +51,7 @@ def downgrade(yaml_path=None,
     ctx = Context(yaml_path, source, target, overwrite)
     ctx.full_downgrade()
     ctx.create_new_plugin_yaml(clean_fns)
+    Context.add_space(ctx)
     if source == '1.4' and target == '1.3' and v2:
         ctx_v2 = Context(yaml_path, target, 'v2', False)
         ctx_v2.create_v2_plugin_yaml(clean_fns)
