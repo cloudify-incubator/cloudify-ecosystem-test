@@ -16,6 +16,8 @@
 import os
 import sys
 from pathlib import Path
+from .utils import add_space
+
 from .yaml import (
     dump_yaml,
     load_yaml
@@ -150,6 +152,7 @@ class Context(object):
         if not self.file.target_path_object.exists():
             self.file.target_path_object.touch()
         dump_yaml(self.data, self.absolute_target_path, clean_fns)
+        add_space(self)
         logger.info('Wrote new plugin yaml at {}'.format(
             self.absolute_target_path))
 
