@@ -45,7 +45,12 @@ def upload_assets_to_release(assets, release_name, repository=None, **_):
 
     release_name = release_name or github.get_most_recent_release(repository)
 
-    release = repository.get_release(release_name)
+    try:
+        release = repository.get_release(release_name)
+    except:
+        for release in repository.get_releases():
+            logging.logger.info('Release exists: {}'.format(release))
+        raise
 
     if not release:
         raise RuntimeError(
