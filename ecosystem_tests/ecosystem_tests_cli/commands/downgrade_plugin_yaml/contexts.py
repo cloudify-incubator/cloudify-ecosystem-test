@@ -30,6 +30,7 @@ OBJECT_BASED_TYPES_DSL_1_4 = [
     'node_id', 'node_type', 'node_instance', 'secret_key', ]
 OBJECT_BASED_TYPES_DSL_1_5 = ['operation_name', ]
 
+
 class FileContext(object):
     def __init__(self, path, filename, overwrite=False):
         self._path = path

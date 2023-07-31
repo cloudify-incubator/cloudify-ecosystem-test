@@ -15,11 +15,13 @@
 
 import re
 
+
 def get_lines_file(ctx):
-    file = open(ctx.absolute_source_path, 'r')
+    file = open(ctx.absolute_target_path, 'r')
     yaml_lines = file.readlines()
     file.close()
     return yaml_lines
+
 
 def write_content_to_file(file_path, content):
     with open(file_path, 'w') as file:
@@ -34,7 +36,6 @@ def add_space(ctx):
     for line in yaml_lines:
         matches = re.findall(pattern, line)
         if matches:
-            yaml_lines[index - 1] = yaml_lines[index - 1].replace('\n', '\n')
-        index +=1
+            yaml_lines[index - 1] = yaml_lines[index - 1].replace('\n', '\n\n')
+        index += 1
     write_content_to_file(ctx.absolute_target_path, yaml_lines)
-
