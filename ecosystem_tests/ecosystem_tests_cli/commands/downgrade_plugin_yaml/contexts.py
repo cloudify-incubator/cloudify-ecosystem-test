@@ -14,9 +14,10 @@
 # limitations under the License.
 
 import os
-import re
 import sys
 from pathlib import Path
+from .utils import add_space
+
 from .yaml import (
     dump_yaml,
     load_yaml
@@ -150,6 +151,7 @@ class Context(object):
         if not self.file.target_path_object.exists():
             self.file.target_path_object.touch()
         dump_yaml(self.data, self.absolute_target_path, clean_fns)
+        add_space(self)
         logger.info('Wrote new plugin yaml at {}'.format(
             self.absolute_target_path))
 
@@ -305,28 +307,3 @@ class Context(object):
         self._data['blueprint_labels'] = blueprint_labels
         self._data['labels'] = labels
         self.create_new_plugin_yaml(clean_fns)
-
-    def get_lines_file(self):
-        file = open(self.absolute_source_path, 'r')
-        yaml_lines = file.readlines()
-        file.close()
-        return yaml_lines
-
-    def write_content_to_file(self, file_path, content):
-        with open(file_path, 'w') as file:
-            for line in content:
-                file.write(line)
-
-
-    def add_space(self):
-        index = 0
-        pattern = r'^(?! +)([a-zA-Z_]+):'
-        yaml_lines = self.get_lines_file()
-        for line in yaml_lines:
-            matches = re.findall(pattern, line)
-            if matches:
-                yaml_lines[index - 1] = yaml_lines[index - 1].replace('\n', '\n\n')
-            index +=1
-        self.write_content_to_file(self.absolute_target_path, yaml_lines)
-
-    
