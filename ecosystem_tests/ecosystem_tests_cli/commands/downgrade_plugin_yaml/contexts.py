@@ -28,7 +28,7 @@ from ...logger import logger
 OBJECT_BASED_TYPES_DSL_1_4 = [
     'blueprint_id', 'deployment_id', 'capability_value', 'scaling_group',
     'node_id', 'node_type', 'node_instance', 'secret_key', ]
-OBJECT_BASED_TYPES_DSL_1_5 = ['operation_name']
+OBJECT_BASED_TYPES_DSL_1_5 = ['operation_name', ]
 
 
 class FileContext(object):
@@ -310,15 +310,14 @@ class Context(object):
         self._data['labels'] = labels
         self.create_new_plugin_yaml(clean_fns)
 
-
     def downgrade_cleanup(self):
         if self.source == '1.5' and self.target == '1.4':
             dictionary = self._data.get('plugins', {})
             inner_dict = next(iter(dictionary.values()))
 
-            if 'properties' in  inner_dict:
+            if 'properties' in inner_dict:
                 del inner_dict['properties']
-            if 'properties_description' in  inner_dict:
+            if 'properties_description' in inner_dict:
                 del inner_dict['properties_description']
-            if 'resource_tags' in  self._data:
+            if 'resource_tags' in self._data:
                 del self._data['resource_tags']
