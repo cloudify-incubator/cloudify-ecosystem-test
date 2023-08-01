@@ -286,6 +286,7 @@ class Context(object):
         self.downgrade_node_types()
         self.downgrade_workflow_params_types()
         self.downgrade_relationship_interfaces()
+        self.downgrade_cleanup()
 
     def create_v2_plugin_yaml(self, clean_fns):
         dictionary = self._data.get('plugins', {})
@@ -308,3 +309,15 @@ class Context(object):
         self._data['blueprint_labels'] = blueprint_labels
         self._data['labels'] = labels
         self.create_new_plugin_yaml(clean_fns)
+
+    def downgrade_cleanup(self):
+        if self.source == '1.5' and self.target == '1.4':
+            dictionary = self._data.get('plugins', {})
+            inner_dict = next(iter(dictionary.values()))
+
+            if 'properties' in inner_dict:
+                del inner_dict['properties']
+            if 'properties_description' in inner_dict:
+                del inner_dict['properties_description']
+            if 'resource_tags' in self._data:
+                del self._data['resource_tags']
