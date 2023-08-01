@@ -2,6 +2,7 @@
   - Support Remote Test
   - Add Spaces to Sections in Downgraded yaml
   - Remove Properties in 1.5 to 1.4.
+  - Remove plugin properties and properties_description in 1.5 to 1.4 downgrade
 2.9.12: RND-1036 add wagon type to plugin upload command
 2.9.11: Yank fixes.
 2.9.10: RND-921 add v2 flag to downgrade and create_v2_plugin_yaml
