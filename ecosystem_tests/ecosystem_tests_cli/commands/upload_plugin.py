@@ -39,15 +39,7 @@ def upload_plugin(plugin_name, plugin_version, wagon_type):
     """
     Upload wagon and yamls to Cfy Manager.
     """
-    repo = 'cloudify-{}-plugin'.format(plugin_name)
-    if plugin_name in ['kubernetes']:
-        wagon_type = wagon_type or 'manylinux'
-    else:
-        wagon_type = wagon_type or 'Centos Core'
-    if wagon_type not in VALID_WAGON_DISTRO_NAMES:
-        raise Exception(
-            "wagon_type = {}, it can only be one of {}.".format(
-                wagon_type, VALID_WAGON_DISTRO_NAMES))
+    wagon_type, repo = validate_wagon_type(wagon_type, plugin_name)
     plugin_id = get_plugin_id(repo)
     plugin_version = plugin_version or get_latest_version(
         plugin_id, repo)
@@ -78,3 +70,16 @@ def get_spec_item(items, key, value):
     for item in items:
         if item[key] == value:
             return item
+
+
+def validate_wagon_type(wagon_type, plugin_name):
+    repo = 'cloudify-{}-plugin'.format(plugin_name)
+    if plugin_name in ['kubernetes']:
+        wagon_type = wagon_type or 'manylinux'
+    else:
+        wagon_type = wagon_type or 'Centos Core'
+    if wagon_type not in VALID_WAGON_DISTRO_NAMES:
+        raise Exception(
+            "wagon_type = {}, it can only be one of {}.".format(
+                wagon_type, VALID_WAGON_DISTRO_NAMES))
+    return wagon_type, repo
