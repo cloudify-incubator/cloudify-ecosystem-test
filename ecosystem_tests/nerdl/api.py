@@ -369,6 +369,7 @@ def upload_plugin(plugin_path, yaml_paths, client):
     try:
         plugin = client.plugins.upload(
             zip_path,
+            visibility='tenant',
             progress_callback=progress_handler)
         logger.info("Plugin uploaded. Plugin's id is %s", plugin.id)
     finally:

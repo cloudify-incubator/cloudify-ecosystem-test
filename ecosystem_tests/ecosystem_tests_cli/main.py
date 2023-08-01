@@ -30,6 +30,7 @@ from .commands import (
     blueprint_linting,
     validate_blueprint,
     verify_plugins_json,
+    remote_upload_plugin,
     prepare_test_manager,
     local_blueprint_test,
     remote_blueprint_test,
@@ -64,6 +65,7 @@ def _register_commands():
     _ecosystem_test.add_command(validate_branch.validate_pull_request)
     _ecosystem_test.add_command(validate_blueprint.validate_blueprint)
     _ecosystem_test.add_command(verify_plugins_json.verify_plugins_json)
+    _ecosystem_test.add_command(remote_upload_plugin.remote_upload_plugin)
     _ecosystem_test.add_command(local_blueprint_test.local_blueprint_test)
     _ecosystem_test.add_command(remote_blueprint_test.remote_blueprint_test)
     _ecosystem_test.add_command(prepare_test_manager.prepare_test_manager)
