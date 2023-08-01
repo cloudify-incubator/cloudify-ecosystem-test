@@ -60,6 +60,7 @@ PLUGIN_1_3 = """plugins:
     executor: central_deployment_agent
     package_name: cloudify-foo-plugin
     package_version: 10000.000111.1010101010101010101010
+
 data_types:
   bar:
     properties:
@@ -67,6 +68,7 @@ data_types:
         type: string
       qux:
         type: list
+
 node_types:
   quxx:
     derived_from: corge
@@ -82,6 +84,7 @@ node_types:
           inputs:
             bell:
               type: string
+
 relationships:
   garply:
     derived_from: waldo
@@ -92,6 +95,7 @@ relationships:
           inputs:
             fred:
               type: string
+
 """
 
 

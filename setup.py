@@ -26,7 +26,7 @@ setup(
         ]
     },
     install_requires=[
-        'cloudify-common>=5.1.0',
+        'cloudify-common>=7.0.0',
         'urllib3>=1.25.4',
         'deepdiff==5.7.0',
         'pytest',

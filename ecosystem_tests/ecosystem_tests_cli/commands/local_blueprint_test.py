@@ -19,20 +19,22 @@ from os import environ
 import yaml
 from nose.tools import nottest
 
-from ..logger import logger
-from ..decorators import prepare_test_env
-from ...dorkl.runners import basic_blueprint_test_dev
-from ..utilities import validate_and_generate_test_ids
 from ecosystem_cicd_tools.new_cicd.ec2 import check_eip_quota
+from ecosystem_tests.dorkl.runners import basic_blueprint_test_dev
 from ecosystem_tests.ecosystem_tests_cli.utilities import (
     get_universal_path)
-from ...ecosystem_tests_cli import ecosystem_tests, decorators
+from ecosystem_tests.ecosystem_tests_cli import (
+    logger,
+    utilities,
+    decorators,
+    ecosystem_tests
+)
 
 
 @nottest
 @ecosystem_tests.command(name='local-blueprint-test',
                          short_help='Test blueprint locally.')
-@prepare_test_env
+@decorators.prepare_test_env
 @ecosystem_tests.options.blueprint_path
 @ecosystem_tests.options.test_id
 @ecosystem_tests.options.inputs
@@ -57,7 +59,8 @@ def local_blueprint_test(blueprint_path,
                          dry_run,
                          required_ips):
 
-    bp_test_ids = validate_and_generate_test_ids(blueprint_path, test_id)
+    bp_test_ids = utilities.validate_and_generate_test_ids(
+        blueprint_path, test_id)
     check_eip_quota(required_ips)
 
     if dry_run:
@@ -94,11 +97,21 @@ def handle_dry_run(bp_test_ids,
                    on_failure,
                    uninstall_on_success,
                    on_subsequent_invoke,
-                   container_name,
-                   nested_test):
-    dry_run_str = '\nDry run:\n' \
-                  'Manager container name: {container_name} \n' \
-                  'Tests: \n\n'.format(container_name=container_name)
+                   container_name=None,
+                   nested_test=None,
+                   cloudify_host=None,
+                   cloudify_tenant=None):
+
+    if container_name:
+        dry_run_str = '\nDry run:\n' \
+                    'Manager container name: {container_name} \n' \
+                    'Tests: \n\n'.format(container_name=container_name)
+    else:
+        dry_run_str = '\nDry run:\n' \
+                    'Manager host: {cloudify_host} \n' \
+                    'Manager tenant: {cloudify_tenant} \n' \
+                    'Tests: \n\n'.format(cloudify_host=cloudify_host,
+                                         cloudify_tenant=cloudify_tenant)
 
     for blueprint, test_id in bp_test_ids:
         dry_run_str += 'Test ID: {id} \n' \
@@ -132,13 +145,13 @@ def handle_dry_run(bp_test_ids,
                    '  - blueprint path\n' \
                    '  - inputs '
 
-    logger.info(dry_run_str)
+    logger.logger.info(dry_run_str)
 
 
 def nested_test_executor(nested_tests=None):
     nested_tests = nested_tests or []
     for nested_test in nested_tests:
-        logger.info('Executing nested test: {test_path} '.format(
+        logger.logger.info('Executing nested test: {test_path} '.format(
             test_path=nested_test))
         nested_result = pytest.main(['-s', nested_test])
         if nested_result != 0:
