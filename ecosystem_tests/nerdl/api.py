@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import re
 import time
 import shutil
 import zipfile
@@ -48,6 +49,7 @@ JIBBERISH = [
     'Deleting node instance',
     'Deleted node instance',
 ]
+PLUGIN_ID_EXC_REG = r'Plugin\sid=\`[A-Za-z0-9\-]{1,50}\`'
 
 
 def with_client(func):
@@ -374,6 +376,10 @@ def upload_plugin(plugin_path, yaml_paths, client):
         logger.info("Plugin uploaded. Plugin's id is %s", plugin.id)
     except exceptions.CloudifyClientError as e:
         if '409' in str(e):
+            matches = re.search(PLUGIN_ID_EXC_REG, str(e))
+            plugin = {
+                'id': matches.group().split('`')[-2]
+            }
             logger.error('Skipping plugin upload: {}'.format(e))
         else:
             raise e
