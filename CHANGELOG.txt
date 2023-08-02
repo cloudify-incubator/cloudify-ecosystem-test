@@ -1,5 +1,5 @@
-2.10.1:
-  - Add remote-upload-plugin command.
+2.10.2: Skip Upload Command if plugin already exists.
+2.10.1: Add remote-upload-plugin command.
 2.10.0:
   - Support Remote Test
   - Add Spaces to Sections in Downgraded yaml

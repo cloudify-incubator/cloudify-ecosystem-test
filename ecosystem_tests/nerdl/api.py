@@ -372,6 +372,11 @@ def upload_plugin(plugin_path, yaml_paths, client):
             visibility='tenant',
             progress_callback=progress_handler)
         logger.info("Plugin uploaded. Plugin's id is %s", plugin.id)
+    except exceptions.CloudifyClientError as e:
+        if '409' in str(e):
+            logger.error('Skipping plugin upload: {}'.format(e))
+        else:
+            raise e
     finally:
         for f in zips:
             os.remove(f)
