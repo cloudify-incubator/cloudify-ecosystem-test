@@ -70,6 +70,8 @@ def get_client_kwargs_from_env():
         client_kwargs['host'] = os.environ['CLOUDIFY_HOST']
     if 'CLOUDIFY_TENANT' in os.environ:
         client_kwargs['tenant'] = os.environ['CLOUDIFY_TENANT']
+    elif 'CIRCLE_PROJECT_REPONAME' in os.environ:
+        client_kwargs['tenant'] = os.environ['CIRCLE_PROJECT_REPONAME']
     if 'CLOUDIFY_TOKEN' in os.environ:
         client_kwargs['token'] = os.environ['CLOUDIFY_TOKEN']
     if 'CLOUDIFY_CERTIFICATE' in os.environ and os.path.exists(
