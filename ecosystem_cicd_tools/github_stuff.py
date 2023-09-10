@@ -12,7 +12,7 @@ logger.setLevel(logging.DEBUG)
 
 def get_client(github_token=None):
     github_token = github_token or environ['RELEASE_BUILD_TOKEN']
-    return Github(github_token)
+    return Github(github_token.strip())
 
 
 def get_repository(client=None, org=None, repo_name=None):
