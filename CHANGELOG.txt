@@ -1,3 +1,4 @@
+2.10.6: Strip new line from token.
 2.10.5: Strip new line from token.
 2.10.4: Overload the tenant parameter with CIRCLE_PROJECT_REPONAME in addition to CLOUDIFY_TOKEN.
 2.10.3: Use Regex to get plugin ID when error thrown.
