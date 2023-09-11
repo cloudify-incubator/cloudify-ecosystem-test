@@ -39,7 +39,7 @@ def get_client(kwargs):
             'No repository provided. '
             'Add environment variable RELEASE_BUILD_TOKEN.')
 
-    return github.Github(github_token)
+    return github.Github(github_token.strip())
 
 
 def get_repository_name(kwargs):
