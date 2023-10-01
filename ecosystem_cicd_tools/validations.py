@@ -32,6 +32,7 @@ version = version_file.read().strip()"""
 CHANGELOG = 'CHANGELOG.txt'
 INCLUDE_NAMES = ['plugin.yaml', 'v2_plugin.yaml']
 PLUGIN_PACKAGES = ['fabric_plugin' ,
+                   'openstack_plugin',
                    'serverless_plugin', 
                    'managed_nagios_plugin']
 
