@@ -1,6 +1,7 @@
 import os
-from functools import wraps
+import pathlib
 from tqdm import tqdm
+from functools import wraps
 
 from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
@@ -44,6 +45,7 @@ def upload_plugin_asset_to_s3(local_path, plugin_name, plugin_version):
                                plugin_name,
                                plugin_version,
                                os.path.basename(local_path))
+    bucket_path = pathlib.Path(bucket_path).as_posix()
     logger.info('Uploading {plugin_name} {plugin_version} to S3.'.format(
         plugin_name=plugin_name, plugin_version=plugin_version))
     upload_to_s3(local_path, bucket_path)
@@ -141,6 +143,7 @@ def get_plugin_yaml_url(plugin_name, filename, plugin_version, s3=None):
                                plugin_name,
                                plugin_version,
                                filename)
+    bucket_path = pathlib.Path(bucket_path).as_posix()
     s3_object = s3.Object(BUCKET_NAME, bucket_path)
     if object_exists(s3_object):
         return URL_TEMPLATE.format(plugin_name, plugin_version, filename)

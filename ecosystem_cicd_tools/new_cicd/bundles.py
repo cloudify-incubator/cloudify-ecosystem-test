@@ -14,9 +14,11 @@
 # limitations under the License.
 
 import os
+import json
 import yaml
 import shutil
 import tarfile
+import pathlib
 from tempfile import mkdtemp
 from urllib.parse import urlparse
 
@@ -59,7 +61,8 @@ PLUGINS_BUNDLE_NAME = 'cloudify-plugins-bundle'
 
 def get_local_file_from_workspace(filename, workspace):
     if workspace and filename in os.listdir(workspace):
-        return os.path.abspath(os.path.join(workspace, filename))
+        filename = os.path.abspath(os.path.join(workspace, filename))
+        return pathlib.Path(filename).as_posix()
 
 
 def find_plugin_yaml_in_workspace(filename,
@@ -140,6 +143,7 @@ def package_archive(mappings,
     tempdir = mkdtemp()
     create_metadata_file(mappings, tempdir, workspace)
     tar_path = os.path.join(directory, archive_name + '.tgz')
+    tar_path = pathlib.Path(tar_path).as_posix()
     tarfile_ = tarfile.open(tar_path, 'w:gz')
     try:
         tarfile_.add(tempdir, arcname=archive_name)
@@ -168,7 +172,7 @@ def create_metadata_file(mappings, tempdir, workspace=None):
         logger.info(
             'create_plugin_bundle_archive writing metadata {m}'.format(
                 m=metadata))
-        yaml.dump(metadata, f)
+        json.dump(metadata, f)
 
 
 def download_or_find_wagon_and_yaml(wagon_url,
@@ -178,6 +182,8 @@ def download_or_find_wagon_and_yaml(wagon_url,
 
     logger.info('Downloading {} and {}'.format(wagon_url, yaml_url))
     plugin_root_dir = os.path.basename(wagon_url).rsplit('.', 1)[0]
+    plugin_root_dir = pathlib.Path(plugin_root_dir).as_posix()
+
     try:
         os.mkdir(os.path.join(tempdir, plugin_root_dir))
     except FileExistsError:
@@ -196,6 +202,7 @@ def get_file_from_s3_or_workspace(url, plugin_root_dir, tempdir, workspace):
         tempdir,
         plugin_root_dir,
         filename)
+    destination_path = pathlib.Path(destination_path).as_posix()
     if os.path.exists(url) and \
             os.path.basename(parsed.path[1:]) in os.listdir(workspace):
         shutil.copyfile(
@@ -211,4 +218,7 @@ def get_file_from_s3_or_workspace(url, plugin_root_dir, tempdir, workspace):
                 filename,
                 os.path.basename(parsed.path[1:]),
                 os.listdir(workspace)))
-    return os.path.join(plugin_root_dir, os.path.basename(parsed.path[1:]))
+    result = os.path.join(plugin_root_dir, os.path.basename(parsed.path[1:]))
+    result = pathlib.Path(result).as_posix()
+    return result
+

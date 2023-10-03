@@ -1,3 +1,4 @@
+2.10.8: Create Bundle Refactor.
 2.10.7: Add Openstack Plugin package name.
 2.10.6: Strip new line from token.
 2.10.5: Strip new line from token.

@@ -1,9 +1,15 @@
-
+import os
+import hashlib
+import pathlib
+import requests
 from copy import deepcopy
+from urllib.parse import urlparse
 
 from .s3 import (
     URL_TEMPLATE,
-    get_objects_in_key)
+    get_objects_in_key,
+    upload_plugin_asset_to_s3
+)
 
 from .logging import logger
 
@@ -18,14 +24,48 @@ MAIPO_ID = 'redhat-Maipo'
 OOTPA_ID = 'redhat-Ootpa'
 
 
+def get_file(url):
+    url = 'http://repository.cloudifysource.org/' + url
+    local_filename = os.path.join(
+        os.getcwd(),
+        'workspace\\build',
+        urlparse(url).path.split('/').pop()
+    )
+    local_filename = pathlib.Path(local_filename).as_posix()
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024): 
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
+    return local_filename
+
+
+def add_md5_file(obj, plugin_name, plugin_version):
+    logger.info('Adding this md5: {}'.format(obj))
+    md5_name = obj + '.md5'
+    filename = get_file(obj)
+    md5_filename = filename + '.md5'
+    md5_filename = pathlib.Path(md5_filename).as_posix()
+    result = hashlib.md5(open(filename, 'rb').read()).hexdigest()
+    with open(md5_filename + '.', 'w') as inf:
+        inf.write(result)
+    upload_plugin_asset_to_s3(md5_filename, plugin_name, plugin_version)
+
+
+
 def get_wagons_list(plugin_name, plugin_version):
     wagons_list = deepcopy(WAGONS_LIST_TEMPLATE)
     plugin_version_objects = get_objects_in_key(
         plugin_name,
         plugin_version
     )
+    logger.info('We have these plugin objects: {}'.format(plugin_version_objects))
     total_objects = len(plugin_version_objects)
     for i in range(0, total_objects):
+        if plugin_version_objects[i].endswith('.wgn'):
+            md5_name = plugin_version_objects[i] + '.md5'
+            if md5_name not in plugin_version_objects:
+                add_md5_file(plugin_version_objects[i], plugin_name, plugin_version)
         if i + 2 >= total_objects:
             break
         if plugin_version not in plugin_version_objects[i] and \
