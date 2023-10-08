@@ -231,6 +231,7 @@ def wait_for_execution(execution_id, client, timeout=1800):
     start = time.time()
     while int(time.time() - start) < timeout:
         exec = client.executions.get(execution_id, _include=['status'])
+        logger.info('Exec is {}'.format(exec))
         events, total = client.events.get(execution_id, total)
         for event in events:
             em = event.get('message', '')
@@ -257,7 +258,7 @@ def wait_for_execution(execution_id, client, timeout=1800):
                     logger.info(message)
 
         if exec.get('status') in executions.Execution.END_STATES:
-            if exec.get('status') in executions.Execution.FAILED:
+            if exec.get('status').lower() == executions.Execution.FAILED:
                 raise Exception('Execution {} failed....'.format(
                     execution_id))
             logger.info('Workflow ID {} in state {}'.format(
@@ -362,6 +363,11 @@ def delete_plugin(plugin_id, client):
     return client.plugins.delete(plugin_id)
 
 
+def delete_plugins():
+    for plugin in list_plugins():
+        delete_plugin(plugin['id'])
+
+
 @with_client
 def upload_plugin(plugin_path, yaml_paths, client):
     logger.info('Getting: {} {}'.format(plugin_path, yaml_paths))
@@ -412,6 +418,7 @@ def cleanup_on_failure(deployment_id, timeout=1800):
         wait_for_workflow(deployment_id, 'uninstall', timeout)
         delete_deployment(deployment_id)
         delete_blueprint(deployment_id)
+        delete_plugins()
 
 
 @with_client

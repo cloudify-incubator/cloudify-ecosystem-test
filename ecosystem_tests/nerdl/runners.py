@@ -210,6 +210,7 @@ def handle_uninstall_on_success(test_name, timeout):
     api.wait_for_uninstall(test_name, timeout=timeout)
     api.delete_deployment(test_name)
     api.delete_blueprint(test_name)
+    api.delete_plugins()
 
 
 def handle_deployment_update(blueprint_file_name,
