@@ -347,7 +347,7 @@ def wait_for_uninstall(deployment_id, timeout):
 
 def wait_for_workflow(deployment_id, workflow_id, timeout, params=None):
     execution = start_execution(
-        deployment_id, workflow=workflow_id, params=None)
+        deployment_id, workflow=workflow_id, params=params)
     ready = wait_for_execution(execution['id'], timeout=timeout)
     return execution['id'], ready
 
