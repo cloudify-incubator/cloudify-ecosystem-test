@@ -365,7 +365,10 @@ def delete_plugin(plugin_id, client):
 
 def delete_plugins():
     for plugin in list_plugins():
-        delete_plugin(plugin['id'])
+        try:
+            delete_plugin(plugin['id'])
+        except Exception:
+            pass
 
 
 @with_client
