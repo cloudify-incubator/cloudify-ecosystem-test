@@ -17,6 +17,7 @@ from ..ecosystem_tests_cli import ecosystem_tests
 from .commands import (
     yank,
     merge_docs,
+    marketplace,
     pypi_release,
     validate_docs,
     upload_assets,
@@ -51,6 +52,7 @@ def _ecosystem_test():
 def _register_commands():
     _ecosystem_test.add_command(yank.yank)
     _ecosystem_test.add_command(merge_docs.merge_docs)
+    _ecosystem_test.add_command(marketplace.marketplace)
     _ecosystem_test.add_command(pypi_release.pypi_release)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)
