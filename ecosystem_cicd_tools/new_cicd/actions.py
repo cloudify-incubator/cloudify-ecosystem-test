@@ -24,6 +24,9 @@ from . import logging
 from . import plugins_json
 from . import marketplace
 
+clilogger = logging.logging.getLogger('ecosystem-cli')
+clilogger.setLevel(logging.logging.DEBUG)
+
 
 @github.with_github_client
 def upload_assets_to_release(assets, release_name, repository=None, **_):
