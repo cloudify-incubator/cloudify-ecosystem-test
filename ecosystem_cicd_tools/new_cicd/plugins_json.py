@@ -11,7 +11,10 @@ from .s3 import (
     upload_plugin_asset_to_s3
 )
 
-from .logging import logger
+from .logging import logging, logger
+
+clilogger = logging.getLogger('ecosystem-cli')
+clilogger.setLevel(logging.DEBUG)
 
 CORE_INDEX = 0
 ALTARCH_INDEX = 1
@@ -28,7 +31,8 @@ def get_file(url):
     url = 'http://repository.cloudifysource.org/' + url
     local_filename = os.path.join(
         os.getcwd(),
-        'workspace\\build',
+        'workspace',
+        'build',
         urlparse(url).path.split('/').pop()
     )
     local_filename = pathlib.Path(local_filename).as_posix()
