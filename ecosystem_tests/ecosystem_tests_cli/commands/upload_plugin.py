@@ -46,7 +46,7 @@ def upload_plugin(plugin_name, plugin_version, wagon_type):
     spec = get_plugin_release_spec_from_marketplace(
         plugin_id, plugin_version)
     yaml_url_dict = get_spec_item(
-        spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_4')
+        spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_5')
     wagon_url_dict = get_spec_item(
         spec['wagon_urls'], 'release', wagon_type)
     if not yaml_url_dict['url'] or not wagon_url_dict['url']:
@@ -77,7 +77,7 @@ def validate_wagon_type(wagon_type, plugin_name):
     if plugin_name in ['kubernetes']:
         wagon_type = wagon_type or 'manylinux'
     else:
-        wagon_type = wagon_type or 'Centos Core'
+        wagon_type = wagon_type or 'manylinux'
     if wagon_type not in VALID_WAGON_DISTRO_NAMES:
         raise Exception(
             "wagon_type = {}, it can only be one of {}.".format(
