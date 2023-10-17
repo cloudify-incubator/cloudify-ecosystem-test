@@ -64,8 +64,9 @@ def remote_upload_plugin(plugin_name,
         plugin_id, repo)
     spec = get_plugin_release_spec_from_marketplace(
         plugin_id, plugin_version)
+    logger.logger.info('We got this spec: {}'.format(spec))
     yaml_url_dict = get_spec_item(
-        spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_4')
+        spec['yaml_urls'], 'dsl_version', 'cloudify_dsl_1_5')
     wagon_url_dict = get_spec_item(
         spec['wagon_urls'], 'release', wagon_type)
     if not yaml_url_dict['url'] or not wagon_url_dict['url']:
