@@ -103,7 +103,8 @@ def checking_the_upload_of_the_plugin(repository,
     # marketplace
     if not marketplace.get_node_types_for_plugin_version(
             repository.name, release_name):
-        return False
+        if 'fabric' not in repository.name:
+            return False
 
     # github
     latest_release = repository.get_release(release_name)

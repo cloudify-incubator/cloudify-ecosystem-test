@@ -1,3 +1,4 @@
+2.11.3: Skip certain plugins for node types in API verification.
 2.11.2: Upload 1.5 DSL YAML.
 2.11.1: Update get file.
 2.11.0: Marketplace query.
