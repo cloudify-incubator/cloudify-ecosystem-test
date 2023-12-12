@@ -51,7 +51,7 @@ def add_md5_file(obj, plugin_name, plugin_version):
     md5_filename = filename + '.md5'
     md5_filename = pathlib.Path(md5_filename).as_posix()
     result = hashlib.md5(open(filename, 'rb').read()).hexdigest()
-    with open(md5_filename + '.', 'w') as inf:
+    with open(md5_filename, 'w') as inf:
         inf.write(result)
     upload_plugin_asset_to_s3(md5_filename, plugin_name, plugin_version)
 
