@@ -147,5 +147,19 @@
       "description":"Cloudify Helm 3 plugin",
       "repo":"cloudify-incubator/cloudify-helm-plugin",
       "icon":"https://cloudify.co/wp-content/uploads/2020/11/helm-icon.png"
+   },
+   {
+      "name":"cloudify-serverless-plugin",
+      "title":"Serverless",
+      "description":"Cloudify Serverless plugin",
+      "repo":"cloudify-incubator/cloudify-serverless-plugin",
+      "icon":"https://cloudify.co/wp-content/uploads/2022/11/serverless-Icon.png"
+   },
+   {
+      "name":"cloudify-spot-ocean-plugin",
+      "title":"Spot Ocean",
+      "description":"Cloudify Spot Ocean plugin",
+      "repo":"cloudify-cosmo/cloudify-spot-ocean-plugin",
+      "icon":"https://cloudify.co/wp-content/uploads/2022/11/spot-ocean-icon.png"
    }
 ]
