@@ -36,7 +36,7 @@ PLUGIN_PACKAGES = ['fabric_plugin' ,
                    'serverless_plugin', 
                    'managed_nagios_plugin']
 
-logger = logging.getLogger()
+logger = logging.getLogger('validations')
 logger.setLevel(logging.DEBUG)
 
 
@@ -44,7 +44,7 @@ def does_protected_branch_have_build_source(pr):
     string_pattern = '[0-9.]*-build'
     patt = compile(string_pattern)
     if pr.base.ref in ['main', 'master'] and not patt.match(pr.head.ref):
-        logging.error(
+        logger.error(
             'Protected branches "main" and "master" require build branch. '
             'Branch name is {}'.format(pr.head.ref))
         sys.exit(1)
@@ -82,7 +82,7 @@ def get_plugin_version(file_path=None):
         ),
         'VERSION')
     if not os.path.exists(file_path):
-        logging.error(
+        logger.error(
             'Plugins must store version in a VERSION file in your plugin. '
             'That file should be read into setup.py like this: ' +
             VERSION_EXAMPLE)
@@ -96,12 +96,12 @@ def get_plugin_version(file_path=None):
 
 
 def read_yaml_file(file_path):
-    logging.info('OPENING: {}'.format(file_path))
+    logger.info('OPENING: {}'.format(file_path))
     with open(file_path, 'r') as stream:
         try:
             return safe_load(stream)
         except ParserError:
-            logging.error('{path} is not in YAML format.'.format(
+            logger.error('{path} is not in YAML format.'.format(
                 path=file_path))
             raise
 
@@ -158,7 +158,7 @@ def check_setuppy_version(version, plugin_directory):
         raise Exception('Plugin YAML {version} does not match '
                         'setup.py {output}.'.format(version=version.strip(),
                                                     output=output.strip()))
-    logging.info('Version {version} matches {output}.'.format(
+    logger.info('Version {version} matches {output}.'.format(
         version=version, output=output))
 
 
@@ -174,7 +174,7 @@ def get_plugin_yaml_version(file_path):
     :return:
     """
 
-    logging.debug(
+    logger.debug(
         'Checking plugin YAML version with {file_path}'.format(
             file_path=file_path))
 
@@ -189,9 +189,9 @@ def get_plugin_yaml_version(file_path):
         package_version = v['package_version']
         package_source = v.get('source')
 
-        logging.debug('Package version {package_version}'.format(
+        logger.debug('Package version {package_version}'.format(
             package_version=package_version))
-        logging.debug('Package source {package_source}'.format(
+        logger.debug('Package source {package_source}'.format(
             package_source=package_source))
 
         if not package_version:
@@ -234,7 +234,7 @@ def is_valid_plugin_package_name(f):
                       f == 'cover' or
                       f == 'examples' or 
                       'sdk' in f)
-    is_correct_name = f.startswith('cloudify_')
+    is_correct_name = f.startswith('ne_') or f.startswith('cloudify_')
 
     return (is_package_special_name or is_correct_name) and not is_bad_details
 
@@ -276,12 +276,15 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     :param branch_name: The name of the branch if its *-build.
     :return: official version
     """
+    logger.info(f'plugin_directory {plugin_directory} branch name {branch_name}.')
 
     plugin_directory = plugin_directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
     plugins_asset = get_plugins(plugin_directory)
     version = get_version_py(plugin_directory)
+
+    logger.info(f'Version from version file: {version}.')
 
     # check and update all plugins yaml
     check_version_plugins_and_update(plugin_directory, plugins_asset, version)
@@ -292,7 +295,7 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     else:
         check_changelog_version(version,
                                 os.path.join(plugin_directory, CHANGELOG))
-    logging.info('The official version of this plugin is {version}'
+    logger.info('The official version of this plugin is {version}'
                  .format(version=version))
     return version
 
@@ -313,7 +316,7 @@ def check_version_plugins_and_update(path, plugins, version):
 
 
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
-    logging.info('Update version in {}'.format(file_name))
+    logger.info('Update version in {}'.format(file_name))
     pattern = re.compile("(package_version:\s*)'\d+.\d+.\d+'")
     replacement = "package_version: '{}'".format(version)
 
@@ -333,7 +336,7 @@ def edit_version_in_plugin_yaml(rel_file, file_name, version):
 def _validate_documenation_pulls(docs_repo, jira_ids):
     merges = 0
     pulls = docs_repo.get_pulls(state='open')
-    logging.info('validate documentation pulls jira_ids = {}'.format(jira_ids))
+    logger.info('validate documentation pulls jira_ids = {}'.format(jira_ids))
     for jira_id in jira_ids:
         for pull in pulls:
             if jira_id in pull.head.label:
@@ -356,22 +359,22 @@ def validate_documentation_pulls(repo=None, docs_repo=None, branch=None):
     :return:
     """
 
-    logging.info('Validating documentation pull requests are ready.')
+    logger.info('Validating documentation pull requests are ready.')
     repo = repo or get_repository()
     docs_repo = docs_repo or get_repository(
         org='cloudify-cosmo', repo_name='docs.getcloudify.org')
 
     branch = branch or os.environ.get('CIRCLE_BRANCH')
-    logging.info('Checking pull requests for {branch}'.format(branch=branch))
+    logger.info('Checking pull requests for {branch}'.format(branch=branch))
 
     pr_numbers = find_pull_request_numbers(branch, repo)
     if not pr_numbers and branch not in ['master', 'main', '2.X-master']:
-        logging.info('A PR has not yet been opened.')
+        logger.info('A PR has not yet been opened.')
         return
-    logging.info('Found these PR numbers: {}'.format(pr_numbers))
+    logger.info('Found these PR numbers: {}'.format(pr_numbers))
 
     pull_requests = get_pull_requests(pr_numbers)
-    logging.info('Found these PRs: {}'.format(pull_requests))
+    logger.info('Found these PRs: {}'.format(pull_requests))
     jira_ids = get_pull_request_jira_ids(pulls=pull_requests)
 
     if not check_if_label_in_pr_labels(pr_numbers):

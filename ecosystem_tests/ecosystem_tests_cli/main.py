@@ -19,6 +19,7 @@ from .commands import (
     merge_docs,
     marketplace,
     pypi_release,
+    copy_releases,
     validate_docs,
     upload_assets,
     create_bundle,
@@ -54,6 +55,7 @@ def _register_commands():
     _ecosystem_test.add_command(merge_docs.merge_docs)
     _ecosystem_test.add_command(marketplace.marketplace)
     _ecosystem_test.add_command(pypi_release.pypi_release)
+    _ecosystem_test.add_command(copy_releases.copy_releases)
     _ecosystem_test.add_command(validate_docs.validate_docs)
     _ecosystem_test.add_command(upload_assets.upload_assets)
     _ecosystem_test.add_command(create_bundle.create_bundle)

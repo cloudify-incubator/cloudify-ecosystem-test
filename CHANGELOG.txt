@@ -1,3 +1,4 @@
+2.11.6: Updates to validations.
 2.11.5: Update Plugins info JSON
 2.11.4: Fix md5 creation.
 2.11.3: Skip certain plugins for node types in API verification.
