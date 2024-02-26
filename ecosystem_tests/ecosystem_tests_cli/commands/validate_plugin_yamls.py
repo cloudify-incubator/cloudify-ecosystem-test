@@ -39,6 +39,7 @@ def validate_plugin_yamls(directory):
     directory = directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
+    logger.info(f'Checking for YAMLs in {directory}')
     for plugin_yaml in plugin_yamls:
         check_required_plugin_yaml(directory, plugin_yaml)
 

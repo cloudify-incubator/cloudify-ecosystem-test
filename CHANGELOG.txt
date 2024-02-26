@@ -1,3 +1,4 @@
+2.11.8: Skip upload nativeedge plugins to marketplace.
 2.11.7: Make github token and release build token interchangable.
 2.11.6: Updates to validations.
 2.11.5: Update Plugins info JSON

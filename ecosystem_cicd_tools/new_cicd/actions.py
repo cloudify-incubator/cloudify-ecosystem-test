@@ -66,7 +66,8 @@ def upload_assets_to_release(assets, release_name, repository=None, **_):
     if release_name == 'latest':
         return
 
-    if repository.name.endswith('-plugin'):
+    if repository.name.endswith('-plugin') and not \
+            repository.name.startswith('nativeedge-'):
         marketplace.call_plugins_webhook(
             repository.name,
             release_name,
