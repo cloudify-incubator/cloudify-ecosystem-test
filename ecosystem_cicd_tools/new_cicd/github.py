@@ -1,4 +1,4 @@
-import os
+from os import environ
 from functools import wraps
 from pkg_resources import parse_version
 
@@ -32,20 +32,24 @@ def with_github_client(func):
 
 def get_client(kwargs):
     logger.info('Setting up Github client.')
-    github_token = kwargs.get(
-        'github_token') or os.environ.get('RELEASE_BUILD_TOKEN')
-    if not github_token:
+    if 'github_token' in kwargs:
+        github_token = kwargs['github_token']
+    elif 'RELEASE_BUILD_TOKEN' in environ:
+        github_token = environ['RELEASE_BUILD_TOKEN']
+    elif 'GITHUB_TOKEN' in environ:
+        github_token = environ['GITHUB_TOKEN']
+    else:
         raise RuntimeError(
-            'No repository provided. '
-            'Add environment variable RELEASE_BUILD_TOKEN.')
-
+            'No token provided. '
+            f'We have these kwargs {kwargs} '
+            f'and environ: {environ}')
     return github.Github(github_token.strip())
 
 
 def get_repository_name(kwargs):
     logger.info('Getting repository name.')
     repo = kwargs.get(
-        'repository_name') or os.environ.get('CIRCLE_PROJECT_REPONAME')
+        'repository_name') or environ.get('CIRCLE_PROJECT_REPONAME')
     if not repo:
         raise RuntimeError(
             'No repository provided. '
@@ -56,7 +60,7 @@ def get_repository_name(kwargs):
 def get_organization_name(kwargs):
     logger.info('Getting organization name.')
     org = kwargs.get(
-        'organization_name') or os.environ.get('CIRCLE_PROJECT_USERNAME')
+        'organization_name') or environ.get('CIRCLE_PROJECT_USERNAME')
     if not org:
         raise RuntimeError(
             'No organization provided. '
@@ -75,7 +79,7 @@ def get_repository_object(kwargs):
 
 def get_commit(kwargs):
     logger.info('Getting commit object.')
-    commit_id = kwargs.get('commit_id') or os.environ.get('CIRCLE_SHA1')
+    commit_id = kwargs.get('commit_id') or environ.get('CIRCLE_SHA1')
     if isinstance(commit_id, github.Commit.Commit):
         commit_id = commit_id.commit
     try:

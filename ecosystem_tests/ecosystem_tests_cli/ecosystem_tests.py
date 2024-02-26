@@ -44,6 +44,8 @@ from .constants import (RERUN,
 
 CLICK_CONTEXT_SETTINGS = dict(
     help_option_names=['-h', '--help'])
+TOKEN = os.environ.get(
+    'RELEASE_BUILD_TOKEN') or os.environ.get('GITHUB_TOKEN')
 
 
 def init():
@@ -307,8 +309,7 @@ class Options(object):
 
         self.github_token = click.option('-gt',
                                          '--github-token',
-                                         default=os.environ.get(
-                                             'RELEASE_BUILD_TOKEN'),
+                                         default=TOKEN,
                                          type=click.STRING,
                                          help='Github API token.')
 

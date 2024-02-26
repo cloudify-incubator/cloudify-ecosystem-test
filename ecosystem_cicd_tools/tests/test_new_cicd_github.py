@@ -28,14 +28,6 @@ class mockCommit(object):
 class TestNewGithub(unittest.TestCase):
 
     def test_delete_release(self, m):
-        os.environ.update(
-            {
-                'RELEASE_BUILD_TOKEN': 'foo',
-                'CIRCLE_PROJECT_REPONAME': 'bar',
-                'CIRCLE_PROJECT_USERNAME': 'baz',
-                'CIRCLE_SHA1': 'taco',
-            }
-        )
         repo_mock = mock.MagicMock()
         release_mock = mock.MagicMock()
         ref_mock = mock.MagicMock()
@@ -61,11 +53,19 @@ class TestNewGithub(unittest.TestCase):
         commit_mock = mock.MagicMock()
         commit_mock.Commit = mockCommit
         m.Commit = commit_mock
-        mod.delete_release(
-            '0.0.2',
-            repository_name='foo',
-            organization_name='bar'
-        )
+        menv = {
+            'RELEASE_BUILD_TOKEN': 'foo',
+            'CIRCLE_PROJECT_REPONAME': 'bar',
+            'CIRCLE_PROJECT_USERNAME': 'baz',
+            'CIRCLE_SHA1': 'taco',
+        }
+        with mock.patch.dict('ecosystem_cicd_tools.new_cicd.'
+                             'github.environ', menv):
+            mod.delete_release(
+                '0.0.2',
+                repository_name='foo',
+                organization_name='bar'
+            )
         repo_mock.get_releases.assert_called()
         repo_mock.get_release.assert_called_with('foo')
         release_mock.delete_release.assert_called()
