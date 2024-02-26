@@ -8,10 +8,11 @@ from github.GithubException import UnknownObjectException, GithubException
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+TOKEN = environ.get('RELEASE_BUILD_TOKEN') or environ.get('GITHUB_TOKEN')
 
 
 def get_client(github_token=None):
-    github_token = github_token or environ['RELEASE_BUILD_TOKEN']
+    github_token = github_token or TOKEN
     return Github(github_token.strip())
 
 

@@ -28,6 +28,9 @@ from ecosystem_cicd_tools.utils import download_file
 from ecosystem_tests.ecosystem_tests_cli.logger import logger
 from ecosystem_tests.ecosystem_tests_cli import ecosystem_tests
 
+TOKEN = os.environ.get(
+    'RELEASE_BUILD_TOKEN') or os.environ.get('GITHUB_TOKEN')
+
 
 @ecosystem_tests.command(
     name='copy-releases',
@@ -89,7 +92,7 @@ def copy_assets(from_release, to_release):
 
 def copy_asset(url, download_url, to_release):
     headers = {
-        'Authorization': 'token ' + os.environ['RELEASE_BUILD_TOKEN'],
+        'Authorization': 'token ' + TOKEN,
         'Accept': 'application/octet-stream'
     }
     with tempfile.TemporaryDirectory() as download_dir:
