@@ -1,3 +1,4 @@
+2.11.9: Skip node types validation for NE in marketplace.
 2.11.8: Skip upload nativeedge plugins to marketplace.
 2.11.7: Make github token and release build token interchangable.
 2.11.6: Updates to validations.
