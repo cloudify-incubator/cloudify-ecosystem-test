@@ -23,12 +23,10 @@ from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 
 exit_codes = []
-plugin_yamls = ['plugin.yaml', 'plugin_1_4.yaml']
+PLUGIN_YAML = 'plugin.yaml'
 content = {
-    'plugin.yaml': {},
-    'v2_plugin.yaml': {}
+    'plugin.yaml': {}
 }
-V2_KEYS = ['labels', 'blueprint_labels', 'resource_tags']
 TAG_PLUGINS = set('aws')
 
 
@@ -39,72 +37,20 @@ def validate_plugin_yamls(directory):
     directory = directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
-    logger.info(f'Checking for YAMLs in {directory}')
-    for plugin_yaml in plugin_yamls:
-        check_required_plugin_yaml(directory, plugin_yaml)
-
-    check_content_rules(directory)
-
+    logger.info(f'Checking for plugin.yaml in {directory}')
+    check_required_plugin_yaml(directory, PLUGIN_YAML)
     if any(exit_codes):
         sys.exit(1)
 
 
 def check_required_plugin_yaml(directory, filename):
-    """Check that we have all plugin yamls that are expected. """
+    """Check that we have plugin yaml that are expected. """
     fullpath = os.path.join(directory, filename)
     if not os.path.exists(fullpath):
         logger.info('The file {} does not exist.'.format(filename))
         exit_codes.append(1)
     else:
         content[filename] = safe_load(open(fullpath)) or {}
-
-
-def check_content_rules(directory):
-    check_v1_plugin_yaml_no_forbidden_keys()
-    check_v2_plugin_yaml_required_keys()
-    compare_v2_v1_plugin_yaml(directory)
-
-
-def check_v1_plugin_yaml_no_forbidden_keys():
-    """Check that plugin.yaml does not contain any incompatible keys."""
-    v1_plugin_yaml_keys = content['plugin.yaml'].keys()
-    for forbidden in V2_KEYS:
-        if forbidden in v1_plugin_yaml_keys:
-            logger.error('plugin.yaml '
-                         'contains forbidden key {}'.format(forbidden))
-            exit_codes.append(1)
-
-
-def check_v2_plugin_yaml_required_keys():
-    """Make sure that v2_plugin.yaml has expected keys."""
-    if not content['v2_plugin.yaml']:
-        return
-    plugins = set(content['v2_plugin.yaml']['plugins'])
-    v2_plugin_yaml_keys = content['v2_plugin.yaml'].keys()
-    for expected in V2_KEYS:
-        if expected == 'resource_tags' and not plugins.issubset(TAG_PLUGINS):
-            continue
-        if expected not in v2_plugin_yaml_keys:
-            logger.error('v2_plugin.yaml '
-                         'does not contain expected key {}'.format(expected))
-            exit_codes.append(1)
-
-
-def compare_v2_v1_plugin_yaml(directory):
-    """Make sure that plugin.yaml and v2_plugin.yaml are the same core."""
-    if not content['v2_plugin.yaml']:
-        return
-    cp_v2_plugin_yaml = deepcopy(content['v2_plugin.yaml'])
-    for expected in V2_KEYS:
-        if expected in cp_v2_plugin_yaml:
-            del cp_v2_plugin_yaml[expected]
-    if not cp_v2_plugin_yaml == content['plugin.yaml']:
-        if not ignore_plugin_yaml_differences(content['plugin.yaml'],
-                                              cp_v2_plugin_yaml,
-                                              directory):
-            logger.error('plugin.yaml and v2_plugin.yaml '
-                         'are not equivalent after removing v2 features.')
-            exit_codes.append(1)
 
 
 def ignore_plugin_yaml_differences(v1, v2, directory):
