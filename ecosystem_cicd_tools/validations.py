@@ -304,8 +304,6 @@ def check_version_plugins_and_update(path, plugins, version):
     path_plugin = os.path.join(os.path.abspath(path))
     for file_name in plugins:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
-        print('version_in_plugin: ', version_in_plugin)
-
         if version_in_plugin > version:
             raise Exception('Version mismatch, please check manually.'
                             ' The version in {file_name} is greater than '
