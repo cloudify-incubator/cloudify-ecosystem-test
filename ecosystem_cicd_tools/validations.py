@@ -304,22 +304,16 @@ def check_version_plugins_and_update(path, plugins, version):
     path_plugin = os.path.join(os.path.abspath(path))
     for file_name in plugins:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
-        if version_in_plugin > version:
-            raise Exception('Version mismatch, please check manually.'
-                            ' The version in {file_name} is greater than '
-                            '__verison__.py'
+        if version_in_plugin < version and os.environ.get('CIRCLECI') is None:
+            edit_version_in_plugin_yaml(path_plugin, file_name, version)
+        elif version_in_plugin != version:
+            raise Exception('Version mismatch detected. The version in'
+                            ' {file_name} ({version_in_plugin}) is different'
+                            ' from the expected version ({version}).'
+                            ' Please check manually.'
                             .format(file_name=file_name,
                                     version_in_plugin=version_in_plugin,
-                                    version=version ))
-        if version_in_plugin != version and os.environ.get('CIRCLECI') is None:
-            edit_version_in_plugin_yaml(path_plugin, file_name, version)
-        else:
-            raise Exception('Version mismatch, please check manually.'
-                ' The version in {file_name} and __verison__.py'
-                .format(file_name=file_name,
-                        version_in_plugin=version_in_plugin,
-                        version=version ))
-
+                                    version=version))
 
 
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
