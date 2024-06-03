@@ -132,20 +132,27 @@ def update_changelog(plugin_directory, branch_name, version):
                   default_flow_style=False)
 
 
-def check_changelog_version(version, file_path):
-    if not check_is_latest_version(version, file_path):
-        raise Exception('Version {version} not in {path}.'.format(
-            version=version, path=file_path))
+def check_version_changelog_and_update(plugin_directory,
+                                       version,
+                                       file_path,
+                                       branch_name):
+
+    if version != get_latest_version_in_changelog(version, file_path):
+        if os.environ.get('CIRCLECI') is None:
+            update_changelog(plugin_directory, branch_name, version)
+        else:
+            raise Exception('Version {version} not in {path}.'.format(
+                version=version, path=file_path))
 
 
-def check_is_latest_version(version, file_path):
+def get_latest_version_in_changelog(version, file_path):
     dict_file = read_yaml_file(file_path)
     list_of_versions = []
     for i in dict_file:
         list_of_versions.append(str(i))
 
     sorted_l = sorted(list_of_versions, key=parse_version)
-    return version == sorted_l.pop()
+    return sorted_l.pop()
 
 
 def check_setuppy_version(version, plugin_directory):
@@ -280,6 +287,7 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
 
     plugin_directory = plugin_directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+    changelog_directory = os.path.join(plugin_directory, CHANGELOG)
 
     plugins_asset = get_plugins(plugin_directory)
     version = get_version_py(plugin_directory)
@@ -287,22 +295,23 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     logger.info(f'Version from version file: {version}.')
 
     # check and update all plugins yaml
-    check_version_plugins_and_update(plugin_directory, plugins_asset, version)
+    check_version_plugin_yamls_and_update(plugin_directory,
+                                          plugins_asset,
+                                          version)
 
-    # check or update (CHANGELOG if "*-build" branch name)
-    if branch_name:
-        update_changelog(plugin_directory, branch_name, version)
-    else:
-        check_changelog_version(version,
-                                os.path.join(plugin_directory, CHANGELOG))
+    # check or update CHANGELOG.txt
+    check_version_changelog_and_update(plugin_directory,
+                                       version,
+                                       changelog_directory,
+                                       branch_name)
     logger.info('The official version of this plugin is {version}'
-                 .format(version=version))
+                .format(version=version))
     return version
 
 
-def check_version_plugins_and_update(path, plugins, version):
+def check_version_plugin_yamls_and_update(path, plugins_asset, version):
     path_plugin = os.path.join(os.path.abspath(path))
-    for file_name in plugins:
+    for file_name in plugins_asset:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
         if version_in_plugin < version and os.environ.get('CIRCLECI') is None:
             edit_version_in_plugin_yaml(path_plugin, file_name, version)
