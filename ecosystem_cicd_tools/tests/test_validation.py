@@ -31,9 +31,9 @@ class CheckIsMaxVersion(unittest.TestCase):
 
             if version_number == version_to_check:
                 self.assertTrue(
-                    version_number == get_latest_version_in_changelog(version_to_check, f.name))
+                    version_to_check == get_latest_version_in_changelog(version_to_check, f.name))
             else:
                 self.assertFalse(
-                    version_number == get_latest_version_in_changelog(version_to_check, f.name))
+                    version_to_check == get_latest_version_in_changelog(version_to_check, f.name))
 
         os.remove(f.name)
