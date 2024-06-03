@@ -106,53 +106,20 @@ def read_yaml_file(file_path):
             raise
 
 
-def update_changelog(plugin_directory, branch_name, version):
-
-    commits_from_branch = get_list_of_commits_from_branch(branch_name)
-
-    changelog_yaml = read_yaml_file(
-        os.path.join(plugin_directory, CHANGELOG)) or {}
-    commits_from_changelog = changelog_yaml.get(version, [])
-
-    # need to be list type
-    if isinstance(commits_from_changelog, str):
-        commits_from_changelog = [commits_from_changelog]
-
-    # Go through the list of commit_message in *-Build
-    for commit_message in commits_from_branch:
-        # If the message is not already in the changelog Add it
-        if commit_message.commit.message not in commits_from_changelog:
-            commits_from_changelog.append(commit_message.commit.message)
-
-    # Overwrite the list with the updated list
-    changelog_yaml[version] = commits_from_changelog
-    with open(os.path.join(plugin_directory, CHANGELOG), 'w') as f:
-        yaml.dump(changelog_yaml,
-                  f,
-                  default_flow_style=False)
+def check_version_changelog(version, file_path):
+    if not check_is_latest_version(version, file_path):
+        raise Exception('Version {version} not in {path}.'.format(
+            version=version, path=file_path))
 
 
-def check_version_changelog_and_update(plugin_directory,
-                                       version,
-                                       file_path,
-                                       branch_name):
-
-    if version != get_latest_version_in_changelog(version, file_path):
-        if os.environ.get('CIRCLECI') is None:
-            update_changelog(plugin_directory, branch_name, version)
-        else:
-            raise Exception('Version {version} not in {path}.'.format(
-                version=version, path=file_path))
-
-
-def get_latest_version_in_changelog(version, file_path):
+def check_is_latest_version(version, file_path):
     dict_file = read_yaml_file(file_path)
     list_of_versions = []
     for i in dict_file:
         list_of_versions.append(str(i))
 
     sorted_l = sorted(list_of_versions, key=parse_version)
-    return sorted_l.pop()
+    return version == sorted_l.pop()
 
 
 def check_setuppy_version(version, plugin_directory):
@@ -298,12 +265,8 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     check_version_plugin_yamls_and_update(plugin_directory,
                                           plugins_asset,
                                           version)
-
-    # check or update CHANGELOG.txt
-    check_version_changelog_and_update(plugin_directory,
-                                       version,
-                                       changelog_directory,
-                                       branch_name)
+    # check CHANGELOG.txt
+    check_version_changelog(version, changelog_directory)
     logger.info('The official version of this plugin is {version}'
                 .format(version=version))
     return version

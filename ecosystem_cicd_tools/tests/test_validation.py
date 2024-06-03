@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from ..validations import get_latest_version_in_changelog
+from ..validations import check_is_latest_version
 
 
 class CheckIsMaxVersion(unittest.TestCase):
@@ -31,9 +31,9 @@ class CheckIsMaxVersion(unittest.TestCase):
 
             if version_number == version_to_check:
                 self.assertTrue(
-                    version_to_check == get_latest_version_in_changelog(version_to_check, f.name))
+                    check_is_latest_version(version_to_check, f.name))
             else:
                 self.assertFalse(
-                    version_to_check == get_latest_version_in_changelog(version_to_check, f.name))
+                    check_is_latest_version(version_to_check, f.name))
 
         os.remove(f.name)
