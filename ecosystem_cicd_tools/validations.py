@@ -106,33 +106,7 @@ def read_yaml_file(file_path):
             raise
 
 
-def update_changelog(plugin_directory, branch_name, version):
-
-    commits_from_branch = get_list_of_commits_from_branch(branch_name)
-
-    changelog_yaml = read_yaml_file(
-        os.path.join(plugin_directory, CHANGELOG)) or {}
-    commits_from_changelog = changelog_yaml.get(version, [])
-
-    # need to be list type
-    if isinstance(commits_from_changelog, str):
-        commits_from_changelog = [commits_from_changelog]
-
-    # Go through the list of commit_message in *-Build
-    for commit_message in commits_from_branch:
-        # If the message is not already in the changelog Add it
-        if commit_message.commit.message not in commits_from_changelog:
-            commits_from_changelog.append(commit_message.commit.message)
-
-    # Overwrite the list with the updated list
-    changelog_yaml[version] = commits_from_changelog
-    with open(os.path.join(plugin_directory, CHANGELOG), 'w') as f:
-        yaml.dump(changelog_yaml,
-                  f,
-                  default_flow_style=False)
-
-
-def check_changelog_version(version, file_path):
+def check_version_changelog(version, file_path):
     if not check_is_latest_version(version, file_path):
         raise Exception('Version {version} not in {path}.'.format(
             version=version, path=file_path))
@@ -280,6 +254,7 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
 
     plugin_directory = plugin_directory or os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+    changelog_directory = os.path.join(plugin_directory, CHANGELOG)
 
     plugins_asset = get_plugins(plugin_directory)
     version = get_version_py(plugin_directory)
@@ -287,32 +262,30 @@ def validate_plugin_version(plugin_directory=None, branch_name=None):
     logger.info(f'Version from version file: {version}.')
 
     # check and update all plugins yaml
-    check_version_plugins_and_update(plugin_directory, plugins_asset, version)
-
-    # check or update (CHANGELOG if "*-build" branch name)
-    if branch_name:
-        update_changelog(plugin_directory, branch_name, version)
-    else:
-        check_changelog_version(version,
-                                os.path.join(plugin_directory, CHANGELOG))
+    check_version_plugin_yamls_and_update(plugin_directory,
+                                          plugins_asset,
+                                          version)
+    # check CHANGELOG.txt
+    check_version_changelog(version, changelog_directory)
     logger.info('The official version of this plugin is {version}'
-                 .format(version=version))
+                .format(version=version))
     return version
 
 
-def check_version_plugins_and_update(path, plugins, version):
+def check_version_plugin_yamls_and_update(path, plugins_asset, version):
     path_plugin = os.path.join(os.path.abspath(path))
-    for file_name in plugins:
+    for file_name in plugins_asset:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
-        if version_in_plugin > version:
-            raise Exception('Version mismatch, please check manually.'
-                            ' The version in {file_name} is greater than '
-                            '__verison__.py'
+        if version_in_plugin < version and os.environ.get('CIRCLECI') is None:
+            edit_version_in_plugin_yaml(path_plugin, file_name, version)
+        elif version_in_plugin != version:
+            raise Exception('Version mismatch detected. The version in'
+                            ' {file_name} ({version_in_plugin}) is different'
+                            ' from the expected version ({version}).'
+                            ' Please check manually.'
                             .format(file_name=file_name,
                                     version_in_plugin=version_in_plugin,
-                                    version=version ))
-        if version_in_plugin != version:
-            edit_version_in_plugin_yaml(path_plugin, file_name, version)
+                                    version=version))
 
 
 def edit_version_in_plugin_yaml(rel_file, file_name, version):
