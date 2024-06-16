@@ -15,7 +15,7 @@
 
 import re
 import shutil
-import logging
+import logging as ilogging
 import requests
 from os import path
 from tempfile import NamedTemporaryFile
@@ -33,7 +33,10 @@ from .packaging import (
 )
 from .validations import get_plugin_version
 
-logging.basicConfig(level=logging.INFO)
+ilogging.basicConfig(level=ilogging.INFO)
+logging = ilogging.getLogger('ecosystem-cli')
+logging.setLevel(ilogging.DEBUG)
+
 VERSION_STRING_RE = r"version\s{0,1}=\s{0,1}\'[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}[\-]{0,1}[A-Za-z09]{0,5}\'" # noqa
 
 
@@ -118,9 +121,10 @@ def plugin_release_with_latest(plugin_name,
                                plugin_release_name=None,
                                plugins=None,
                                v2_plugin=False):
+    
     # if we have release for this version we do not want update nothing
     if get_release(version):
-        logging.warn('Found existing release for {0}. '
+        logging.info('Found existing release for {0}. '
                      'No new build.'.format(version))
     else:
         logging.info('Starting create plugin release for {} {} {} {}'.format(

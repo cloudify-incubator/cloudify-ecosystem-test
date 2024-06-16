@@ -15,6 +15,7 @@
 
 import os
 
+from ..logger import logger
 from ...ecosystem_tests_cli import ecosystem_tests
 from ecosystem_cicd_tools.validations import get_plugin_yaml_version
 from ecosystem_cicd_tools.release import (
@@ -38,15 +39,20 @@ def package_release(directory, name, v2_plugin=False):
         raise ValueError('Argument name can not be "NoneType"')
     try:
         version = find_version_in_files(directory)
+        logger.info(f'Version: {version}')
         plugin_release_with_latest(name, version, v2_plugin=v2_plugin)
     except (RuntimeError, FileNotFoundError):
         plugin_yaml = os.path.join(directory, 'plugin.yaml')
+        version = get_plugin_yaml_version(plugin_yaml)
+        logger.info(f'Version: {version}')
         plugin_release_with_latest(
-            name, get_plugin_yaml_version(plugin_yaml), v2_plugin=v2_plugin)
+            name, version, v2_plugin=v2_plugin)
 
 
 def find_version_in_files(directory):
+    logger.info(f'Finding version in {directory}')
     __version__py = find_version_file(directory)
+    logger.info(f'Got __version__.py: {__version__py}.')
     try:
         return find_version(__version__py)
     except (TypeError, RuntimeError):
