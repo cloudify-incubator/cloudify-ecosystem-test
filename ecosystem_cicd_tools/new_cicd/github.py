@@ -125,6 +125,7 @@ def upload_asset(release, asset_path, asset_label):
         if asset.label == asset_label:
             asset.delete()
             break
+    logger.info('Starting upload...')
     try:
         release.upload_asset(asset_path, asset_label)
     except (http.client.RemoteDisconnected, urllib3.exceptions.ProtocolError, requests.exceptions.ConnectionError):
