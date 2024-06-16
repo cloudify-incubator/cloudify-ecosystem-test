@@ -112,12 +112,14 @@ def get_plugin_release_spec_from_marketplace(plugin_id, plugin_version):
 
 def get_assets(repository, version):
     logger.info('Getting Assets: {} {}'.format(repository, version))
+    assets_list_marketplace = []
     plugin_id = get_plugin_id(repository.name)
+    if not plugin_id:
+        return assets_list_marketplace
     items = get_plugin_release_spec_from_marketplace(plugin_id, version)
     logger.info('Got assets: {}'.format(items))
     if not items:
         return items
-    assets_list_marketplace = []
 
     yaml_urls = items['yaml_urls']
     for yaml in yaml_urls:
