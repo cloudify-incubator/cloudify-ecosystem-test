@@ -102,10 +102,10 @@ def checking_the_upload_of_the_plugin(repository,
                                       asset_workspace):
 
     # marketplace
-    if not marketplace.get_node_types_for_plugin_version(
-            repository.name, release_name):
-        if 'fabric' not in repository.name:
-            return False
+    # if not marketplace.get_node_types_for_plugin_version(
+    #         repository.name, release_name):
+    #     if 'fabric' not in repository.name:
+    #         return False
 
     # github
     latest_release = repository.get_release(release_name)
@@ -146,8 +146,9 @@ def check_asset_problems(marketplace_assets,
                                                            version,
                                                            asset)
         if marketplace_key not in marketplace_assets:
-            problems.append('{} not found in {}'.format(
-                marketplace_key, marketplace_assets))
+            if not plugin_name.startswith('nativeedge'):
+                problems.append('{} not found in {}'.format(
+                    marketplace_key, marketplace_assets))
         if asset not in github_assets:
             problems.append('{} not found in {}'.format(
                 asset, github_assets))

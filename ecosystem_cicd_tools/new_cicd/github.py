@@ -120,10 +120,12 @@ def upload_asset(release, asset_path, asset_label):
     logger.info('Uploading {} {} to {}.'.format(
         asset_path, asset_label, release
     ))
-    for asset in release.get_assets():
+    existing_assets = release.get_assets()
+    for asset in existing_assets:
         if asset.label == asset_label:
-            asset.delete_asset()
-            upload_asset(release, asset_path, asset_label)
+            asset.delete()
+            break
+    logger.info('Starting upload...')
     try:
         release.upload_asset(asset_path, asset_label)
     except (http.client.RemoteDisconnected, urllib3.exceptions.ProtocolError, requests.exceptions.ConnectionError):
