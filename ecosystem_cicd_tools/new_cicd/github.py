@@ -123,7 +123,7 @@ def upload_asset(release, asset_path, asset_label):
     existing_assets = release.get_assets()
     for asset in existing_assets:
         if asset.label == asset_label:
-            asset.delete()
+            asset.delete_asset()
             break
     logger.info('Starting upload...')
     try:
