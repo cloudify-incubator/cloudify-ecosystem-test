@@ -1,3 +1,4 @@
+2.12.3: Update version PY.
 2.12.2: Update release process with logs.
 2.12.1: NE-29038 skip marketplace validation of ne assets.
 2.12.0: NE-26234 only validate plugin.yaml exists.
