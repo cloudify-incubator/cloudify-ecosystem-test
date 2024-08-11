@@ -222,7 +222,10 @@ def get_version_py(plugin_directory):
                 if '__version__.py' == file:
                     line = read_file(os.path.join(lib, file))
                     # The version line.
-                    return re.search(r"\d+\.\d+\.\d+", line).group()
+                    try:
+                        return re.search(r'(\d+\.)+\d+', line).group()
+                    except AttributeError:
+                        pass
             raise Exception(
                 'Failed to get version from file __version__.py')
 
@@ -305,12 +308,11 @@ def check_version_plugins_and_update(path, plugins, version):
     for file_name in plugins:
         version_in_plugin = get_version_in_plugin(path_plugin, file_name)
         if version_in_plugin > version:
-            raise Exception('Version mismatch, please check manually.'
-                            ' The version in {file_name} is greater than '
-                            '__verison__.py'
-                            .format(file_name=file_name,
-                                    version_in_plugin=version_in_plugin,
-                                    version=version ))
+            raise Exception(
+                'Version mismatch, please check manually. '
+                f'The version in {file_name} ({version_in_plugin}) '
+                f'is greater than __verison__.py: {version}'
+            )
         if version_in_plugin != version:
             edit_version_in_plugin_yaml(path_plugin, file_name, version)
 
