@@ -110,7 +110,7 @@ def get_most_recent_release(repository=None, **_):
 
 def check_version_valid(text):
     logger.info('Looking for version in {text}.'.format(text=text))
-    version = re.findall('(^\\d+.\\d+.\\d+$)', text)
+    version = re.findall(r'^(?:v)?(\d+\.\d+\.\d+(?:\.\d+)?)$', text)
     if text == 'latest' or len(version) == 1:
         return True
     return False
